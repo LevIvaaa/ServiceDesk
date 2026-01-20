@@ -1,0 +1,68 @@
+{
+  "tickets": {
+    "status": {
+      "new": "New",
+      "open": "Open",
+      "in_progress": "In Progress",
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "category": {
+      "hardware": "Hardware Issue",
+      "software": "Software Issue",
+      "network": "Network",
+      "billing": "Billing",
+      "other": "Other"
+    }
+  },
+  "notifications": {
+    "ticket_created": {
+      "subject": "New ticket #{ticket_number}",
+      "body": "New ticket created: {title}"
+    },
+    "ticket_assigned": {
+      "subject": "Ticket #{ticket_number} assigned to you",
+      "body": "You have been assigned ticket: {title}"
+    },
+    "ticket_status_changed": {
+      "subject": "Ticket #{ticket_number} status changed",
+      "body": "Status changed from {old_status} to {new_status}"
+    },
+    "ticket_commented": {
+      "subject": "New comment on ticket #{ticket_number}",
+      "body": "{user} added a comment to the ticket"
+    },
+    "ticket_sla_warning": {
+      "subject": "SLA Warning: ticket #{ticket_number}",
+      "body": "Ticket is approaching SLA breach"
+    }
+  },
+  "errors": {
+    "not_found": "Not found",
+    "permission_denied": "Permission denied",
+    "validation_error": "Validation error",
+    "unauthorized": "Unauthorized",
+    "server_error": "Server error"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading...",
+    "no_data": "No data"
+  }
+}

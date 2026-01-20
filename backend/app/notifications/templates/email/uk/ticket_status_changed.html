@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Статус тікету змінено</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #1890ff;">Статус тікету змінено</h2>
+
+        <p>Вітаємо, {{ user_name }}!</p>
+
+        <p>Статус тікету було змінено:</p>
+
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p><strong>Номер тікету:</strong> {{ ticket_number }}</p>
+            <p><strong>Заголовок:</strong> {{ title }}</p>
+            <p><strong>Попередній статус:</strong> {{ old_status }}</p>
+            <p><strong>Новий статус:</strong> {{ new_status }}</p>
+            <p><strong>Змінив:</strong> {{ changed_by }}</p>
+        </div>
+
+        <p>
+            <a href="{{ url }}" style="display: inline-block; background-color: #1890ff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                Переглянути тікет
+            </a>
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+        <p style="color: #888; font-size: 12px;">
+            Це автоматичне повідомлення від SK.AI Service Desk.<br>
+            Не відповідайте на цей лист.
+        </p>
+    </div>
+</body>
+</html>

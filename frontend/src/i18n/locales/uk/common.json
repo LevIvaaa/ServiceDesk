@@ -1,0 +1,42 @@
+{
+  "app": {
+    "title": "SK.AI Service Desk",
+    "logout": "Вийти",
+    "settings": "Налаштування",
+    "profile": "Профіль"
+  },
+  "menu": {
+    "dashboard": "Головна",
+    "tickets": "Тікети",
+    "stations": "Станції",
+    "operators": "Оператори",
+    "knowledge": "База знань",
+    "users": "Користувачі",
+    "departments": "Відділи",
+    "settings": "Налаштування"
+  },
+  "actions": {
+    "create": "Створити",
+    "edit": "Редагувати",
+    "delete": "Видалити",
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "search": "Пошук",
+    "filter": "Фільтр",
+    "export": "Експорт",
+    "back": "Назад"
+  },
+  "language": {
+    "uk": "Українська",
+    "en": "English"
+  },
+  "table": {
+    "total": "Всього: {total}",
+    "noData": "Дані відсутні"
+  },
+  "validation": {
+    "required": "Це поле обов'язкове",
+    "email": "Введіть коректний email",
+    "minLength": "Мінімальна довжина: {min} символів"
+  }
+}

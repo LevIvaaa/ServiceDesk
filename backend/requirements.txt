@@ -1,0 +1,60 @@
+# FastAPI and server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Database
+sqlalchemy[asyncio]==2.0.25
+asyncpg==0.29.0
+alembic==1.13.1
+greenlet==3.0.3
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.2
+
+# Validation
+pydantic==2.5.3
+pydantic-settings==2.1.0
+email-validator==2.1.0
+
+# HTTP client
+aiohttp==3.9.1
+httpx==0.26.0
+
+# Vector database
+qdrant-client==1.7.0
+
+# OpenAI
+openai==1.8.0
+
+# LangChain (optional, for advanced RAG)
+langchain==0.1.1
+langchain-openai==0.0.2
+
+# Redis and Celery
+redis==5.0.1
+celery==5.3.6
+
+# Email
+aiosmtplib==3.0.1
+jinja2==3.1.2
+
+# Telegram
+aiogram==3.3.0
+
+# File handling
+aiofiles==23.2.1
+python-magic==0.4.27
+
+# Utilities
+python-dateutil==2.8.2
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+httpx==0.26.0
+
+# Development
+ruff==0.1.13

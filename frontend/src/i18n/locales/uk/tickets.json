@@ -1,0 +1,130 @@
+{
+  "title": "Тікети",
+  "create": "Створити тікет",
+  "ticketNumber": "Номер тікету",
+  "incidentInfo": "Інформація про інцидент",
+  "station": {
+    "title": "Станція",
+    "select": "Оберіть станцію",
+    "searchPlaceholder": "Пошук за ID або назвою станції...",
+    "operator": "Оператор",
+    "address": "Адреса",
+    "model": "Модель",
+    "selectPort": "Оберіть порт (опціонально)",
+    "portPlaceholder": "Оберіть порт..."
+  },
+  "logs": {
+    "title": "Логи станції",
+    "upload": "Завантажити логи",
+    "hint": "Підтримувані формати: .log, .txt, .zip, .gz, .tar, .json, .xml, .csv (макс. 50MB на файл)",
+    "textLogTitle": "Вставити текст логу",
+    "textLogPlaceholder": "Вставте OCPP логи, вивід станції або інші текстові логи сюди...",
+    "textLogHint": "Можна вставити OCPP повідомлення, діагностику станції або будь-який текстовий вивід",
+    "orUploadFile": "або завантажте файли",
+    "textLogUploadError": "Не вдалося зберегти текстовий лог"
+  },
+  "status": {
+    "label": "Статус",
+    "new": "Новий",
+    "open": "Відкритий",
+    "in_progress": "В роботі",
+    "pending": "Очікування",
+    "resolved": "Вирішено",
+    "closed": "Закритий"
+  },
+  "priority": {
+    "label": "Пріоритет",
+    "low": "Низький",
+    "medium": "Середній",
+    "high": "Високий",
+    "critical": "Критичний"
+  },
+  "category": {
+    "label": "Категорія",
+    "hardware": "Апаратна проблема",
+    "software": "Програмна проблема",
+    "network": "Мережа",
+    "billing": "Оплата",
+    "other": "Інше"
+  },
+  "fields": {
+    "title": "Заголовок",
+    "titlePlaceholder": "Короткий опис проблеми",
+    "description": "Опис",
+    "descriptionPlaceholder": "Детальний опис проблеми",
+    "station": "Станція",
+    "port": "Порт",
+    "assignedUser": "Виконавець",
+    "assignedDepartment": "Відділ",
+    "createdBy": "Створив",
+    "createdAt": "Створено",
+    "updatedAt": "Оновлено",
+    "resolvedAt": "Вирішено",
+    "slaDueDate": "SLA до"
+  },
+  "reporter": {
+    "title": "Заявник",
+    "name": "Ім'я",
+    "namePlaceholder": "Ім'я клієнта",
+    "phone": "Телефон",
+    "email": "Email"
+  },
+  "comments": {
+    "title": "Коментарі",
+    "add": "Додати коментар",
+    "internal": "Внутрішній коментар",
+    "placeholder": "Введіть коментар..."
+  },
+  "history": {
+    "title": "Історія змін"
+  },
+  "actions": {
+    "assign": "Призначити",
+    "delegate": "Делегувати",
+    "changeStatus": "Змінити статус",
+    "collectLogs": "Зібрати логи"
+  },
+  "parseMessage": {
+    "title": "Повідомлення клієнта",
+    "parse": "Розпізнати AI",
+    "placeholder": "Вставте повідомлення клієнта (email, чат, тощо) і натисніть 'Розпізнати AI' для автоматичного заповнення полів...",
+    "hint": "AI витягне: заголовок, опис, категорію, пріоритет, ID станції, номер порту та контакти заявника",
+    "emptyMessage": "Введіть повідомлення для розпізнавання",
+    "success": "Повідомлення успішно розпізнано!",
+    "error": "Помилка розпізнавання повідомлення",
+    "missingEntities": "Дані не знайдено в базі",
+    "missingEntitiesDesc": "Наступні дані не знайдено в базі даних:",
+    "operator": "Оператор",
+    "station": "Станція",
+    "createOperator": "Створити",
+    "createStation": "Створити",
+    "skipAndContinue": "Пропустити і продовжити без додавання",
+    "createOperatorTitle": "Створити нового оператора",
+    "createStationTitle": "Створити нову станцію",
+    "operatorName": "Назва оператора",
+    "operatorCode": "Код",
+    "operatorPhone": "Телефон",
+    "operatorEmail": "Email",
+    "stationId": "ID станції",
+    "stationName": "Назва станції",
+    "stationAddress": "Адреса",
+    "stationCity": "Місто",
+    "operatorId": "Оператор",
+    "selectOperator": "Оберіть оператора",
+    "operatorCreated": "Оператор створений!",
+    "stationCreated": "Станція створена!"
+  },
+  "quickCreate": {
+    "operator": "Додати оператора",
+    "station": "Додати станцію",
+    "operatorTitle": "Додати нового оператора",
+    "stationTitle": "Додати нову станцію"
+  },
+  "assignment": {
+    "title": "Призначення",
+    "department": "Відділ",
+    "assignee": "Виконавець",
+    "selectDepartment": "Оберіть відділ...",
+    "selectAssignee": "Оберіть виконавця..."
+  }
+}

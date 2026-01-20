@@ -1,0 +1,43 @@
+{
+  "title": "Станції",
+  "create": "Додати станцію",
+  "fields": {
+    "stationNumber": "Номер станції",
+    "operator": "Оператор",
+    "address": "Адреса",
+    "city": "Місто",
+    "region": "Область",
+    "model": "Модель",
+    "portsCount": "Кількість портів",
+    "status": "Статус",
+    "installationDate": "Дата встановлення",
+    "lastMaintenance": "Останнє обслуговування"
+  },
+  "status": {
+    "active": "Активна",
+    "maintenance": "На обслуговуванні",
+    "offline": "Офлайн"
+  },
+  "ports": {
+    "title": "Порти",
+    "portNumber": "Номер порту",
+    "connectorType": "Тип роз'єму",
+    "maxPower": "Макс. потужність (кВт)",
+    "status": {
+      "available": "Доступний",
+      "charging": "Заряджає",
+      "faulted": "Несправний",
+      "offline": "Офлайн"
+    }
+  },
+  "operators": {
+    "title": "Оператори",
+    "create": "Додати оператора",
+    "name": "Назва",
+    "contactPerson": "Контактна особа",
+    "contactPhone": "Телефон",
+    "contactEmail": "Email",
+    "contractNumber": "Номер договору",
+    "stationsCount": "Станцій"
+  }
+}

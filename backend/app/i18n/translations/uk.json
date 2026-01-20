@@ -1,0 +1,68 @@
+{
+  "tickets": {
+    "status": {
+      "new": "Новий",
+      "open": "Відкритий",
+      "in_progress": "В роботі",
+      "pending": "Очікування",
+      "resolved": "Вирішено",
+      "closed": "Закритий"
+    },
+    "priority": {
+      "low": "Низький",
+      "medium": "Середній",
+      "high": "Високий",
+      "critical": "Критичний"
+    },
+    "category": {
+      "hardware": "Апаратна проблема",
+      "software": "Програмна проблема",
+      "network": "Мережа",
+      "billing": "Оплата",
+      "other": "Інше"
+    }
+  },
+  "notifications": {
+    "ticket_created": {
+      "subject": "Новий тікет #{ticket_number}",
+      "body": "Створено новий тікет: {title}"
+    },
+    "ticket_assigned": {
+      "subject": "Вам призначено тікет #{ticket_number}",
+      "body": "Вам призначено тікет: {title}"
+    },
+    "ticket_status_changed": {
+      "subject": "Статус тікету #{ticket_number} змінено",
+      "body": "Статус змінено з {old_status} на {new_status}"
+    },
+    "ticket_commented": {
+      "subject": "Новий коментар до тікету #{ticket_number}",
+      "body": "{user} додав коментар до тікету"
+    },
+    "ticket_sla_warning": {
+      "subject": "Попередження SLA: тікет #{ticket_number}",
+      "body": "Тікет наближається до порушення SLA"
+    }
+  },
+  "errors": {
+    "not_found": "Не знайдено",
+    "permission_denied": "Доступ заборонено",
+    "validation_error": "Помилка валідації",
+    "unauthorized": "Не авторизовано",
+    "server_error": "Помилка сервера"
+  },
+  "common": {
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "delete": "Видалити",
+    "edit": "Редагувати",
+    "create": "Створити",
+    "search": "Пошук",
+    "filter": "Фільтр",
+    "export": "Експорт",
+    "yes": "Так",
+    "no": "Ні",
+    "loading": "Завантаження...",
+    "no_data": "Дані відсутні"
+  }
+}

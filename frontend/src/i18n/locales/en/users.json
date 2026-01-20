@@ -1,0 +1,40 @@
+{
+  "title": "Users",
+  "create": "Create User",
+  "fields": {
+    "email": "Email",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone": "Phone",
+    "department": "Department",
+    "roles": "Roles",
+    "isActive": "Active",
+    "isAdmin": "Administrator"
+  },
+  "departments": {
+    "title": "Departments",
+    "create": "Create Department",
+    "name": "Name",
+    "description": "Description",
+    "head": "Head",
+    "usersCount": "Users"
+  },
+  "roles": {
+    "title": "Roles",
+    "operator": "Operator",
+    "technician": "Technician",
+    "manager": "Manager"
+  },
+  "notifications": {
+    "title": "Notification Settings",
+    "email": "Email Notifications",
+    "telegram": "Telegram Notifications",
+    "events": {
+      "ticketCreated": "Ticket Created",
+      "ticketAssigned": "Ticket Assigned",
+      "ticketStatusChanged": "Status Changed",
+      "ticketCommented": "New Comment",
+      "ticketSlaWarning": "SLA Warning"
+    }
+  }
+}

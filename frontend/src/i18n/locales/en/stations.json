@@ -1,0 +1,43 @@
+{
+  "title": "Stations",
+  "create": "Add Station",
+  "fields": {
+    "stationNumber": "Station Number",
+    "operator": "Operator",
+    "address": "Address",
+    "city": "City",
+    "region": "Region",
+    "model": "Model",
+    "portsCount": "Ports Count",
+    "status": "Status",
+    "installationDate": "Installation Date",
+    "lastMaintenance": "Last Maintenance"
+  },
+  "status": {
+    "active": "Active",
+    "maintenance": "Maintenance",
+    "offline": "Offline"
+  },
+  "ports": {
+    "title": "Ports",
+    "portNumber": "Port Number",
+    "connectorType": "Connector Type",
+    "maxPower": "Max Power (kW)",
+    "status": {
+      "available": "Available",
+      "charging": "Charging",
+      "faulted": "Faulted",
+      "offline": "Offline"
+    }
+  },
+  "operators": {
+    "title": "Operators",
+    "create": "Add Operator",
+    "name": "Name",
+    "contactPerson": "Contact Person",
+    "contactPhone": "Phone",
+    "contactEmail": "Email",
+    "contractNumber": "Contract Number",
+    "stationsCount": "Stations"
+  }
+}

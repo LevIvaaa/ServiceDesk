@@ -1,0 +1,27 @@
+{
+  "title": "База знань",
+  "create": "Створити статтю",
+  "search": "Пошук в базі знань",
+  "searchPlaceholder": "Введіть запит для пошуку...",
+  "fields": {
+    "title": "Заголовок",
+    "content": "Зміст",
+    "category": "Категорія",
+    "tags": "Теги",
+    "author": "Автор",
+    "viewCount": "Переглядів",
+    "helpfulCount": "Корисно"
+  },
+  "category": {
+    "troubleshooting": "Усунення несправностей",
+    "how-to": "Інструкції",
+    "faq": "FAQ",
+    "technical": "Технічна документація"
+  },
+  "actions": {
+    "publish": "Опублікувати",
+    "unpublish": "Зняти з публікації",
+    "markHelpful": "Корисно"
+  },
+  "suggestedArticles": "Можливо, це допоможе"
+}

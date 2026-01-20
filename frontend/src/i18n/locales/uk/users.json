@@ -1,0 +1,42 @@
+{
+  "title": "Користувачі",
+  "create": "Створити користувача",
+  "fields": {
+    "email": "Email",
+    "firstName": "Ім'я",
+    "lastName": "Прізвище",
+    "fullName": "ПІБ",
+    "phone": "Телефон",
+    "department": "Відділ",
+    "roles": "Ролі",
+    "status": "Статус",
+    "isActive": "Активний",
+    "isAdmin": "Адміністратор"
+  },
+  "departments": {
+    "title": "Відділи",
+    "create": "Створити відділ",
+    "name": "Назва",
+    "description": "Опис",
+    "head": "Керівник",
+    "usersCount": "Користувачів"
+  },
+  "roles": {
+    "title": "Ролі",
+    "operator": "Оператор",
+    "technician": "Технічний спеціаліст",
+    "manager": "Керівник"
+  },
+  "notifications": {
+    "title": "Налаштування сповіщень",
+    "email": "Email сповіщення",
+    "telegram": "Telegram сповіщення",
+    "events": {
+      "ticketCreated": "Створення тікету",
+      "ticketAssigned": "Призначення тікету",
+      "ticketStatusChanged": "Зміна статусу",
+      "ticketCommented": "Новий коментар",
+      "ticketSlaWarning": "Попередження SLA"
+    }
+  }
+}

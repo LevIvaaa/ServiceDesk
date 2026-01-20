@@ -1,0 +1,27 @@
+{
+  "title": "Knowledge Base",
+  "create": "Create Article",
+  "search": "Search Knowledge Base",
+  "searchPlaceholder": "Enter search query...",
+  "fields": {
+    "title": "Title",
+    "content": "Content",
+    "category": "Category",
+    "tags": "Tags",
+    "author": "Author",
+    "viewCount": "Views",
+    "helpfulCount": "Helpful"
+  },
+  "category": {
+    "troubleshooting": "Troubleshooting",
+    "how-to": "How-To",
+    "faq": "FAQ",
+    "technical": "Technical Documentation"
+  },
+  "actions": {
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "markHelpful": "Helpful"
+  },
+  "suggestedArticles": "Suggested Articles"
+}

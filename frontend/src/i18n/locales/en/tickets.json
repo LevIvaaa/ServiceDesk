@@ -1,0 +1,63 @@
+{
+  "title": "Tickets",
+  "create": "Create Ticket",
+  "ticketNumber": "Ticket Number",
+  "status": {
+    "label": "Status",
+    "new": "New",
+    "open": "Open",
+    "in_progress": "In Progress",
+    "pending": "Pending",
+    "resolved": "Resolved",
+    "closed": "Closed"
+  },
+  "priority": {
+    "label": "Priority",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "critical": "Critical"
+  },
+  "category": {
+    "label": "Category",
+    "hardware": "Hardware Issue",
+    "software": "Software Issue",
+    "network": "Network",
+    "billing": "Billing",
+    "other": "Other"
+  },
+  "fields": {
+    "title": "Title",
+    "description": "Description",
+    "station": "Station",
+    "port": "Port",
+    "assignedUser": "Assigned To",
+    "assignedDepartment": "Department",
+    "createdBy": "Created By",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "resolvedAt": "Resolved At",
+    "slaDueDate": "SLA Due"
+  },
+  "reporter": {
+    "title": "Reporter",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email"
+  },
+  "comments": {
+    "title": "Comments",
+    "add": "Add Comment",
+    "internal": "Internal Comment",
+    "placeholder": "Enter comment..."
+  },
+  "history": {
+    "title": "History"
+  },
+  "actions": {
+    "assign": "Assign",
+    "delegate": "Delegate",
+    "changeStatus": "Change Status",
+    "collectLogs": "Collect Logs"
+  }
+}

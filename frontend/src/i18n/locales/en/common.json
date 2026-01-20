@@ -1,0 +1,42 @@
+{
+  "app": {
+    "title": "SK.AI Service Desk",
+    "logout": "Logout",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "menu": {
+    "dashboard": "Dashboard",
+    "tickets": "Tickets",
+    "stations": "Stations",
+    "operators": "Operators",
+    "knowledge": "Knowledge Base",
+    "users": "Users",
+    "departments": "Departments",
+    "settings": "Settings"
+  },
+  "actions": {
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "back": "Back"
+  },
+  "language": {
+    "uk": "Українська",
+    "en": "English"
+  },
+  "table": {
+    "total": "Total: {total}",
+    "noData": "No data"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Enter a valid email",
+    "minLength": "Minimum length: {min} characters"
+  }
+}
