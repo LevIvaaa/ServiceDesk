@@ -2,6 +2,40 @@
 
 Система управління інцидентами для зарядних станцій електромобілів.
 
+## Основні можливості
+
+✨ **Управління тікетами**
+- Створення, призначення та відстеження інцидентів
+- Автоматичне призначення тікетів на основі категорії
+- Підтримка SLA та контроль термінів
+- Коментарі та історія змін
+
+🤖 **AI-асистент**
+- RAG-система для пошуку в базі знань
+- Аналіз логів зарядних станцій
+- Автоматична класифікація проблем
+- Рекомендації щодо вирішення
+
+📊 **Аналітика**
+- Дашборд з ключовими метриками
+- Статистика по станціях та операторам
+- Звіти по інцидентам
+- Моніторинг SLA
+
+🔔 **Сповіщення**
+- Email та Telegram уведомлення
+- Настроювані шаблони повідомлень
+- Сповіщення про нові тікети та зміну статусу
+
+👥 **Управління доступом**
+- Ролі та права доступу
+- Відділи та призначення
+- Аудит дій користувачів
+
+🌍 **Локалізація**
+- Українська та англійська мови
+- Легке додавання нових мов
+
 ## Технологічний стек
 
 ### Backend
@@ -34,10 +68,55 @@
 ### 1. Клонування та налаштування
 
 ```bash
-git clone <repo>
-cd skai-servicedesk
-cp .env.example .env
-# Відредагуйте .env файл
+git clone https://github.com/mishastd/ServiceDesk.git
+cd ServiceDesk
+```
+
+Створіть файл `.env` з наступним вмістом:
+
+```env
+# Database
+POSTGRES_DB=skai_servicedesk
+POSTGRES_USER=skai
+POSTGRES_PASSWORD=changeme_strong_password
+
+# Backend
+SECRET_KEY=your-secret-key-change-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# OpenAI (тестовий ключ)
+OPENAI_API_KEY=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
+
+# Qdrant
+QDRANT_HOST=localhost
+QDRANT_PORT=6333
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# Storage paths
+LOGS_STORAGE_PATH=/app/logs
+ATTACHMENTS_STORAGE_PATH=/app/attachments
+
+# Email (SMTP) - опціонально
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+EMAIL_FROM=noreply@skai.ua
+EMAIL_FROM_NAME=SK.AI Service Desk
+
+# Telegram - опціонально
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+
+# Frontend
+VITE_API_URL=http://localhost:8000/api/v1
+FRONTEND_URL=http://localhost:3000
+
+# Localization
+DEFAULT_LANGUAGE=uk
 ```
 
 ### 2. Запуск всіх сервісів
@@ -191,6 +270,100 @@ alembic revision --autogenerate -m "description"
 alembic upgrade head
 ```
 
+## Архітектура системи
+
+### Компоненти
+
+**Backend (FastAPI)**
+- REST API для всіх операцій
+- WebSocket для real-time оновлень
+- JWT аутентифікація
+- Celery workers для фонових задач
+
+**Frontend (React)**
+- SPA з роутингом
+- Zustand для state management
+- Ant Design UI компоненти
+- i18next для локалізації
+
+**База даних**
+- PostgreSQL - головна реляційна БД
+- Qdrant - векторна БД для RAG
+- Redis - кеш та черги Celery
+
+**AI/ML**
+- OpenAI Embeddings для векторизації
+- RAG для пошуку в базі знань
+- GPT для аналізу логів
+
+### Потік даних
+
+```
+Користувач → Frontend → Backend API → PostgreSQL
+                              ↓
+                        Celery Worker → Email/Telegram
+                              ↓
+                        RAG Service → Qdrant → OpenAI
+```
+
+## Імпорт даних станцій
+
+Для імпорту станцій з CSV файлу:
+
+```bash
+# Скопіюйте CSV файл в контейнер
+docker cp chargePoints.csv skai_backend:/app/
+
+# Запустіть імпорт
+docker exec skai_backend python -m app.scripts.import_stations /app/chargePoints.csv
+```
+
+Формат CSV:
+- `StationId` - унікальний ID станції
+- `ExternalId` - зовнішній ID
+- `Name` - назва станції
+- `Address` - адреса
+- `Operator` - назва оператора
+
+## Розробка нових функцій
+
+### Додавання нового API endpoint
+
+1. Створіть схему в `backend/app/schemas/`
+2. Додайте роутер в `backend/app/api/v1/`
+3. Реалізуйте бізнес-логіку в `backend/app/services/`
+4. Додайте frontend API клієнт в `frontend/src/api/`
+5. Створіть компонент в `frontend/src/pages/`
+
+### Додавання нової мови
+
+1. Backend: додайте JSON в `backend/app/i18n/translations/`
+2. Frontend: додайте JSON в `frontend/src/i18n/locales/`
+3. Оновіть конфігурацію i18next
+
+## Troubleshooting
+
+**Backend не запускається**
+- Перевірте, що PostgreSQL запущений: `docker ps | grep postgres`
+- Перегляньте логи: `docker logs skai_backend`
+- Перевірте підключення до БД в `.env`
+
+**Frontend показує помилки API**
+- Перевірте VITE_API_URL в `.env`
+- Переконайтеся, що backend запущений на порту 8000
+- Перегляньте Network tab в DevTools
+
+**Проблеми з RAG/AI**
+- Перевірте OPENAI_API_KEY
+- Переконайтеся, що Qdrant запущений: `docker ps | grep qdrant`
+- Перегляньте логи векторної БД: `docker logs skai_qdrant`
+
+## Контакти
+
+**Команда розробки**: SK.AI R&D
+**Проект**: Service Desk for EV Charging Stations
+
 ## Ліцензія
 
 Proprietary - SK.AI R&D
+⚠️ Це закритий проект. Використання тільки для внутрішніх потреб SK.AI.
