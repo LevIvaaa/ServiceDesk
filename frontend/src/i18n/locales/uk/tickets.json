@@ -21,7 +21,18 @@
     "textLogPlaceholder": "Вставте OCPP логи, вивід станції або інші текстові логи сюди...",
     "textLogHint": "Можна вставити OCPP повідомлення, діагностику станції або будь-який текстовий вивід",
     "orUploadFile": "або завантажте файли",
-    "textLogUploadError": "Не вдалося зберегти текстовий лог"
+    "textLogUploadError": "Не вдалося зберегти текстовий лог",
+    "emptyLog": "Введіть лог для аналізу",
+    "analysisSuccess": "Лог успішно проаналізовано",
+    "analysisError": "Помилка аналізу логу",
+    "aiAnalysis": "AI Розшифровка",
+    "stationStatus": "Статус станції",
+    "analysis": "Аналіз",
+    "analysisSection": "Аналіз",
+    "errorCodes": "Коди помилок",
+    "recommendations": "Рекомендації",
+    "analyzeWithAI": "Розшифрувати з AI",
+    "analyzing": "AI аналізує лог..."
   },
   "status": {
     "label": "Статус",

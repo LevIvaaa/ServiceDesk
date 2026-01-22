@@ -1,7 +1,7 @@
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -32,9 +32,10 @@ async def list_users(
     search: Optional[str] = None,
     department_id: Optional[int] = None,
     is_active: Optional[bool] = None,
+    lang: Optional[str] = Query(None, description="Language code (en, uk)"),
 ):
     """List all users with pagination and filters."""
-    query = select(User).options(selectinload(User.department))
+    query = select(User).options(selectinload(User.department), selectinload(User.roles))
 
     # Apply filters
     if search:
@@ -60,8 +61,27 @@ async def list_users(
     result = await db.execute(query)
     users = result.scalars().all()
 
+    # Build response with translated names
+    items = []
+    for user in users:
+        user_dict = {
+            "id": user.id,
+            "email": user.email,
+            "first_name": user.first_name_en if lang == "en" and user.first_name_en else user.first_name,
+            "last_name": user.last_name_en if lang == "en" and user.last_name_en else user.last_name,
+            "is_active": user.is_active,
+            "is_admin": user.is_admin,
+            "department": {
+                "id": user.department.id,
+                "name": user.department.name_en if lang == "en" and user.department.name_en else user.department.name
+            } if user.department else None,
+            "roles": [{"id": r.id, "name": r.name} for r in user.roles],
+            "created_at": user.created_at,
+        }
+        items.append(UserListResponse(**user_dict))
+
     return PaginatedResponse(
-        items=[UserListResponse.model_validate(u) for u in users],
+        items=items,
         total=total,
         page=page,
         per_page=per_page,
@@ -259,10 +279,22 @@ async def update_user(
                 detail="User with this email already exists",
             )
 
-    # Update fields
-    update_data = user_data.model_dump(exclude_unset=True)
+    # Update fields (excluding role_ids which needs special handling)
+    update_data = user_data.model_dump(exclude_unset=True, exclude={'role_ids'})
     for field, value in update_data.items():
         setattr(user, field, value)
+
+    # Update roles if provided
+    if user_data.role_ids is not None:
+        # Delete existing roles
+        await db.execute(
+            delete(UserRole).where(UserRole.user_id == user_id)
+        )
+        
+        # Add new roles
+        for role_id in user_data.role_ids:
+            user_role = UserRole(user_id=user_id, role_id=role_id)
+            db.add(user_role)
 
     await db.commit()
     await db.refresh(user, ["roles", "department"])

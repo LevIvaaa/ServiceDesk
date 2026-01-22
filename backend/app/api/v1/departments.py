@@ -28,9 +28,10 @@ async def list_departments(
     per_page: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
     is_active: Optional[bool] = None,
+    lang: Optional[str] = Query(None, description="Language code (en, uk)"),
 ):
     """List all departments with pagination."""
-    query = select(Department)
+    query = select(Department).options(selectinload(Department.head_user))
 
     if search:
         query = query.where(Department.name.ilike(f"%{search}%"))
@@ -55,13 +56,30 @@ async def list_departments(
             select(func.count()).where(User.department_id == dept.id)
         )
         users_count = count_result.scalar()
+        
+        # Use translated name if language is English and translation exists
+        name = dept.name_en if lang == "en" and dept.name_en else dept.name
+        description = dept.description_en if lang == "en" and dept.description_en else dept.description
+        
+        # Prepare head_user data with translations
+        head_user_data = None
+        if dept.head_user:
+            head_user_data = {
+                "id": dept.head_user.id,
+                "first_name": dept.head_user.first_name_en if lang == "en" and dept.head_user.first_name_en else dept.head_user.first_name,
+                "last_name": dept.head_user.last_name_en if lang == "en" and dept.head_user.last_name_en else dept.head_user.last_name,
+                "email": dept.head_user.email,
+            }
+        
         items.append(
             DepartmentListResponse(
                 id=dept.id,
-                name=dept.name,
-                description=dept.description,
+                name=name,
+                description=description,
                 is_active=dept.is_active,
                 users_count=users_count,
+                head_user_id=dept.head_user_id,
+                head_user=head_user_data,
             )
         )
 
@@ -78,10 +96,12 @@ async def list_departments(
 async def list_all_departments(
     db: DbSession,
     current_user: CurrentUser,
+    lang: Optional[str] = Query(None, description="Language code (en, uk)"),
 ):
     """List all active departments without pagination (for dropdowns)."""
     result = await db.execute(
         select(Department)
+        .options(selectinload(Department.head_user))
         .where(Department.is_active == True)
         .order_by(Department.name)
     )
@@ -93,13 +113,30 @@ async def list_all_departments(
             select(func.count()).where(User.department_id == dept.id)
         )
         users_count = count_result.scalar()
+        
+        # Use translated name if language is English and translation exists
+        name = dept.name_en if lang == "en" and dept.name_en else dept.name
+        description = dept.description_en if lang == "en" and dept.description_en else dept.description
+        
+        # Prepare head_user data with translations
+        head_user_data = None
+        if dept.head_user:
+            head_user_data = {
+                "id": dept.head_user.id,
+                "first_name": dept.head_user.first_name_en if lang == "en" and dept.head_user.first_name_en else dept.head_user.first_name,
+                "last_name": dept.head_user.last_name_en if lang == "en" and dept.head_user.last_name_en else dept.head_user.last_name,
+                "email": dept.head_user.email,
+            }
+        
         items.append(
             DepartmentListResponse(
                 id=dept.id,
-                name=dept.name,
-                description=dept.description,
+                name=name,
+                description=description,
                 is_active=dept.is_active,
                 users_count=users_count,
+                head_user_id=dept.head_user_id,
+                head_user=head_user_data,
             )
         )
 

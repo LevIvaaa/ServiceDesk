@@ -149,9 +149,10 @@ export default function CreateTicket() {
   const loadUsers = async (departmentId?: number) => {
     try {
       setUsersLoading(true)
-      const params: { is_active: boolean; per_page: number; department_id?: number } = {
+      const params: { is_active: boolean; per_page: number; department_id?: number; lang?: string } = {
         is_active: true,
         per_page: 100,
+        lang: i18n.language,
       }
       if (departmentId) {
         params.department_id = departmentId

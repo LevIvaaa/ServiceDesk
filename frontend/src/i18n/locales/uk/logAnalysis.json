@@ -1,0 +1,15 @@
+{
+  "title": "Розшифровка логів",
+  "inputTitle": "Вхідні дані",
+  "resultTitle": "Результат аналізу",
+  "placeholder": "Вставте сюди OCPP лог станції для аналізу...\n\nПриклад:\n2025-12-28T10:00:00 OcppIn StatusNotification {\"connectorId\": 1, \"status\": \"Faulted\", \"errorCode\": \"GroundFailure\"}",
+  "analyze": "Аналізувати з AI",
+  "analyzing": "AI аналізує лог...",
+  "emptyLog": "Введіть лог для аналізу",
+  "error": "Помилка аналізу логу",
+  "noResult": "Вставте лог та натисніть \"Аналізувати з AI\" для отримання розшифровки",
+  "status": "Статус станції",
+  "analysisSection": "Аналіз",
+  "errorCodes": "Коди помилок",
+  "recommendations": "Рекомендації"
+}

@@ -31,7 +31,7 @@ import { rolesApi, Role } from '../../api/roles'
 const { Title } = Typography
 
 export default function UsersList() {
-  const { t } = useTranslation(['users', 'common'])
+  const { t, i18n } = useTranslation(['users', 'common'])
   const [users, setUsers] = useState<User[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [roles, setRoles] = useState<Role[]>([])
@@ -56,11 +56,12 @@ export default function UsersList() {
         per_page: pageSize,
         search: search || undefined,
         department_id: filterDepartment,
+        lang: i18n.language,
       })
       setUsers(response.items)
       setTotal(response.total)
     } catch (error) {
-      message.error('Помилка завантаження користувачів')
+      message.error(t('messages.loadError'))
     } finally {
       setLoading(false)
     }
@@ -68,7 +69,7 @@ export default function UsersList() {
 
   const fetchDepartments = async () => {
     try {
-      const response = await departmentsApi.getAll()
+      const response = await departmentsApi.getAll(i18n.language)
       setDepartments(response)
     } catch (error) {
       // Ignore
@@ -87,11 +88,11 @@ export default function UsersList() {
   useEffect(() => {
     fetchDepartments()
     fetchRoles()
-  }, [])
+  }, [i18n.language])
 
   useEffect(() => {
     fetchUsers()
-  }, [page, pageSize, search, filterDepartment])
+  }, [page, pageSize, search, filterDepartment, i18n.language])
 
   const handleCreate = () => {
     setEditingUser(null)
@@ -111,10 +112,10 @@ export default function UsersList() {
   const handleDelete = async (id: number) => {
     try {
       await usersApi.delete(id)
-      message.success('Користувача успішно видалено')
+      message.success(t('messages.deleted'))
       fetchUsers()
     } catch (error) {
-      message.error('Помилка видалення користувача')
+      message.error(t('messages.deleteError'))
     }
   }
 
@@ -132,7 +133,7 @@ export default function UsersList() {
           role_ids: values.role_ids,
         }
         await usersApi.update(editingUser.id, updateData)
-        message.success('Користувача успішно оновлено')
+        message.success(t('messages.updated'))
       } else {
         const createData: CreateUserData = {
           email: values.email,
@@ -146,12 +147,12 @@ export default function UsersList() {
           role_ids: values.role_ids,
         }
         await usersApi.create(createData)
-        message.success('Користувача успішно створено')
+        message.success(t('messages.created'))
       }
       setModalVisible(false)
       fetchUsers()
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Помилка збереження')
+      message.error(error.response?.data?.detail || t('messages.saveError'))
     }
   }
 
@@ -165,10 +166,10 @@ export default function UsersList() {
     if (!selectedUserId) return
     try {
       await usersApi.resetPassword(selectedUserId, values.new_password)
-      message.success('Пароль успішно скинуто')
+      message.success(t('messages.passwordReset'))
       setPasswordModalVisible(false)
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Помилка скидання пароля')
+      message.error(error.response?.data?.detail || t('messages.passwordResetError'))
     }
   }
 
@@ -199,9 +200,9 @@ export default function UsersList() {
       render: (_: any, record: User) => (
         <Space wrap>
           {(record.roles || []).map(role => (
-            <Tag key={role.id} color="blue">{role.name}</Tag>
+            <Tag key={role.id} color="blue">{t(`roles.${role.name}`)}</Tag>
           ))}
-          {record.is_admin && <Tag color="red">Адмін</Tag>}
+          {record.is_admin && <Tag color="red">{t('switches.admin')}</Tag>}
         </Space>
       ),
     },
@@ -212,7 +213,7 @@ export default function UsersList() {
       width: 100,
       render: (isActive: boolean) => (
         <Tag color={isActive ? 'green' : 'red'}>
-          {isActive ? 'Активний' : 'Неактивний'}
+          {isActive ? t('status.active') : t('status.inactive')}
         </Tag>
       ),
     },
@@ -231,14 +232,14 @@ export default function UsersList() {
             type="text"
             icon={<KeyOutlined />}
             onClick={() => handleResetPassword(record.id)}
-            title="Скинути пароль"
+            title={t('actions.resetPassword')}
           />
           <Popconfirm
-            title="Видалити користувача?"
-            description="Ця дія незворотна"
+            title={t('messages.deleteConfirm')}
+            description={t('messages.deleteDescription')}
             onConfirm={() => handleDelete(record.id)}
-            okText="Так"
-            cancelText="Ні"
+            okText={t('common:actions.yes')}
+            cancelText={t('common:actions.no')}
           >
             <Button type="text" danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -291,7 +292,7 @@ export default function UsersList() {
           pageSize,
           total,
           showSizeChanger: true,
-          showTotal: (total) => `Всього: ${total}`,
+          showTotal: (total) => t('common:table.total', { total }),
           onChange: (p, ps) => {
             setPage(p)
             setPageSize(ps)
@@ -301,7 +302,7 @@ export default function UsersList() {
 
       {/* Create/Edit User Modal */}
       <Modal
-        title={editingUser ? 'Редагувати користувача' : t('create')}
+        title={editingUser ? t('edit') : t('create')}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
@@ -318,7 +319,7 @@ export default function UsersList() {
               <Form.Item
                 name="first_name"
                 label={t('fields.firstName')}
-                rules={[{ required: true, message: "Ім'я обов'язкове" }]}
+                rules={[{ required: true, message: t('validation.firstNameRequired') }]}
               >
                 <Input />
               </Form.Item>
@@ -327,7 +328,7 @@ export default function UsersList() {
               <Form.Item
                 name="last_name"
                 label={t('fields.lastName')}
-                rules={[{ required: true, message: "Прізвище обов'язкове" }]}
+                rules={[{ required: true, message: t('validation.lastNameRequired') }]}
               >
                 <Input />
               </Form.Item>
@@ -338,8 +339,8 @@ export default function UsersList() {
             name="email"
             label={t('fields.email')}
             rules={[
-              { required: true, message: "Email обов'язковий" },
-              { type: 'email', message: 'Невірний формат email' },
+              { required: true, message: t('validation.emailRequired') },
+              { type: 'email', message: t('validation.emailInvalid') },
             ]}
           >
             <Input />
@@ -348,10 +349,10 @@ export default function UsersList() {
           {!editingUser && (
             <Form.Item
               name="password"
-              label="Пароль"
+              label={t('fields.password')}
               rules={[
-                { required: true, message: "Пароль обов'язковий" },
-                { min: 6, message: 'Мінімум 6 символів' },
+                { required: true, message: t('validation.passwordRequired') },
+                { min: 6, message: t('validation.passwordMinLength') },
               ]}
             >
               <Input.Password />
@@ -365,7 +366,7 @@ export default function UsersList() {
           <Form.Item name="department_id" label={t('fields.department')}>
             <Select
               allowClear
-              placeholder="Оберіть відділ"
+              placeholder={t('placeholders.selectDepartment')}
               options={departments.map(d => ({ value: d.id, label: d.name }))}
             />
           </Form.Item>
@@ -373,20 +374,20 @@ export default function UsersList() {
           <Form.Item name="role_ids" label={t('fields.roles')}>
             <Select
               mode="multiple"
-              placeholder="Оберіть ролі"
-              options={roles.map(r => ({ value: r.id, label: r.name }))}
+              placeholder={t('placeholders.selectRoles')}
+              options={roles.map(r => ({ value: r.id, label: t(`roles.${r.name}`) }))}
             />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="is_active" label={t('fields.status')} valuePropName="checked">
-                <Switch checkedChildren="Активний" unCheckedChildren="Неактивний" />
+                <Switch checkedChildren={t('switches.active')} unCheckedChildren={t('switches.inactive')} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="is_admin" label={t('fields.isAdmin')} valuePropName="checked">
-                <Switch checkedChildren="Так" unCheckedChildren="Ні" />
+                <Switch checkedChildren={t('switches.yes')} unCheckedChildren={t('switches.no')} />
               </Form.Item>
             </Col>
           </Row>
@@ -406,7 +407,7 @@ export default function UsersList() {
 
       {/* Reset Password Modal */}
       <Modal
-        title="Скинути пароль"
+        title={t('actions.resetPasswordTitle')}
         open={passwordModalVisible}
         onCancel={() => setPasswordModalVisible(false)}
         footer={null}
@@ -415,10 +416,10 @@ export default function UsersList() {
         <Form form={passwordForm} layout="vertical" onFinish={handlePasswordSubmit}>
           <Form.Item
             name="new_password"
-            label="Новий пароль"
+            label={t('fields.newPassword')}
             rules={[
-              { required: true, message: "Пароль обов'язковий" },
-              { min: 6, message: 'Мінімум 6 символів' },
+              { required: true, message: t('validation.passwordRequired') },
+              { min: 6, message: t('validation.passwordMinLength') },
             ]}
           >
             <Input.Password />
@@ -427,7 +428,7 @@ export default function UsersList() {
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit">
-                Скинути
+                {t('actions.reset')}
               </Button>
               <Button onClick={() => setPasswordModalVisible(false)}>
                 {t('common:actions.cancel')}

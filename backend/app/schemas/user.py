@@ -25,6 +25,8 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = Field(None, max_length=20)
     department_id: Optional[int] = None
     is_active: Optional[bool] = None
+    is_admin: Optional[bool] = None
+    role_ids: Optional[list[int]] = None
 
 
 class UserRolesUpdate(BaseModel):
@@ -73,6 +75,7 @@ class UserListResponse(BaseModel):
     is_active: bool
     is_admin: bool
     department: Optional[DepartmentShort]
+    roles: list[RoleShort] = []
     created_at: datetime
 
     class Config:

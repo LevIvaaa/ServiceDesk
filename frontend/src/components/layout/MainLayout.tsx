@@ -176,7 +176,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     {
       key: '/log-analysis',
       icon: <FileTextOutlined />,
-      label: t('menu.logAnalysis', 'Розшифровка логів'),
+      label: t('menu.logAnalysis'),
     },
     {
       key: '/users',

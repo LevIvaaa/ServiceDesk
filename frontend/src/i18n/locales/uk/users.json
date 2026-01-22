@@ -1,6 +1,7 @@
 {
   "title": "Користувачі",
   "create": "Створити користувача",
+  "edit": "Редагувати користувача",
   "fields": {
     "email": "Email",
     "firstName": "Ім'я",
@@ -11,19 +12,74 @@
     "roles": "Ролі",
     "status": "Статус",
     "isActive": "Активний",
-    "isAdmin": "Адміністратор"
+    "isAdmin": "Адміністратор",
+    "password": "Пароль",
+    "newPassword": "Новий пароль"
+  },
+  "status": {
+    "active": "Активний",
+    "inactive": "Неактивний"
+  },
+  "actions": {
+    "resetPassword": "Скинути пароль",
+    "resetPasswordTitle": "Скинути пароль",
+    "reset": "Скинути"
+  },
+  "messages": {
+    "loadError": "Помилка завантаження користувачів",
+    "created": "Користувача успішно створено",
+    "updated": "Користувача успішно оновлено",
+    "deleted": "Користувача успішно видалено",
+    "deleteError": "Помилка видалення користувача",
+    "saveError": "Помилка збереження",
+    "passwordReset": "Пароль успішно скинуто",
+    "passwordResetError": "Помилка скидання пароля",
+    "deleteConfirm": "Видалити користувача?",
+    "deleteDescription": "Ця дія незворотна"
+  },
+  "validation": {
+    "firstNameRequired": "Ім'я обов'язкове",
+    "lastNameRequired": "Прізвище обов'язкове",
+    "emailRequired": "Email обов'язковий",
+    "emailInvalid": "Невірний формат email",
+    "passwordRequired": "Пароль обов'язковий",
+    "passwordMinLength": "Мінімум 6 символів",
+    "nameRequired": "Назва обов'язкова"
+  },
+  "placeholders": {
+    "selectDepartment": "Оберіть відділ",
+    "selectRoles": "Оберіть ролі",
+    "selectHead": "Оберіть керівника"
+  },
+  "switches": {
+    "active": "Активний",
+    "inactive": "Неактивний",
+    "yes": "Так",
+    "no": "Ні",
+    "admin": "Адмін"
   },
   "departments": {
     "title": "Відділи",
     "create": "Створити відділ",
+    "edit": "Редагувати відділ",
     "name": "Назва",
     "description": "Опис",
     "head": "Керівник",
-    "usersCount": "Користувачів"
+    "usersCount": "Користувачів",
+    "messages": {
+      "loadError": "Помилка завантаження відділів",
+      "created": "Відділ успішно створено",
+      "updated": "Відділ успішно оновлено",
+      "deleted": "Відділ успішно видалено",
+      "deleteError": "Помилка видалення відділу",
+      "saveError": "Помилка збереження",
+      "deleteConfirm": "Видалити відділ?",
+      "deleteDescription": "Ця дія незворотна"
+    }
   },
   "roles": {
     "title": "Ролі",
-    "operator": "Оператор",
+    "operator": "Користувач",
     "technician": "Технічний спеціаліст",
     "manager": "Керівник"
   },

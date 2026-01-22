@@ -22,6 +22,7 @@ export interface DepartmentListParams {
   per_page?: number
   search?: string
   is_active?: boolean
+  lang?: string
 }
 
 export interface CreateDepartmentData {
@@ -37,8 +38,10 @@ export const departmentsApi = {
     return response.data
   },
 
-  getAll: async (): Promise<Department[]> => {
-    const response = await client.get<Department[]>('/departments/all')
+  getAll: async (lang?: string): Promise<Department[]> => {
+    const response = await client.get<Department[]>('/departments/all', { 
+      params: lang ? { lang } : undefined 
+    })
     return response.data
   },
 

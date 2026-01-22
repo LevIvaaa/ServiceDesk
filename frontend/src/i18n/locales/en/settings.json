@@ -1,0 +1,52 @@
+{
+  "title": "Settings",
+  "tabs": {
+    "profile": "Profile",
+    "security": "Security",
+    "notifications": "Notifications",
+    "language": "Language"
+  },
+  "profile": {
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone",
+    "save": "Save",
+    "updated": "Profile updated successfully",
+    "updateError": "Error updating profile",
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required"
+  },
+  "security": {
+    "title": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "changePassword": "Change Password",
+    "passwordChanged": "Password changed successfully",
+    "passwordError": "Error changing password",
+    "currentPasswordRequired": "Enter current password",
+    "newPasswordRequired": "Enter new password",
+    "confirmPasswordRequired": "Confirm password",
+    "passwordMinLength": "Minimum 6 characters",
+    "passwordsDoNotMatch": "Passwords do not match"
+  },
+  "notifications": {
+    "channels": "Notification Channels",
+    "email": "Email Notifications",
+    "telegram": "Telegram Notifications",
+    "telegramChatId": "Telegram Chat ID",
+    "telegramTooltip": "Get Chat ID via @userinfobot",
+    "events": "Notification Events",
+    "save": "Save Settings",
+    "updated": "Notification settings updated",
+    "updateError": "Error updating settings"
+  },
+  "language": {
+    "title": "Interface Language",
+    "current": "Current language",
+    "ukrainian": "Ukrainian",
+    "english": "English",
+    "changed": "Language changed"
+  }
+}

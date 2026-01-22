@@ -28,7 +28,7 @@ import { usersApi, User } from '../../api/users'
 const { Title } = Typography
 
 export default function DepartmentsList() {
-  const { t } = useTranslation(['users', 'common'])
+  const { t, i18n } = useTranslation(['users', 'common'])
   const [departments, setDepartments] = useState<Department[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
@@ -47,11 +47,13 @@ export default function DepartmentsList() {
         page,
         per_page: pageSize,
         search: search || undefined,
+        is_active: true,
+        lang: i18n.language,
       })
       setDepartments(response.items)
       setTotal(response.total)
     } catch (error) {
-      message.error('Помилка завантаження відділів')
+      message.error(t('departments.messages.loadError'))
     } finally {
       setLoading(false)
     }
@@ -59,7 +61,7 @@ export default function DepartmentsList() {
 
   const fetchUsers = async () => {
     try {
-      const response = await usersApi.list({ per_page: 100 })
+      const response = await usersApi.list({ per_page: 100, lang: i18n.language })
       setUsers(response.items)
     } catch (error) {
       // Ignore
@@ -68,11 +70,11 @@ export default function DepartmentsList() {
 
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [i18n.language])
 
   useEffect(() => {
     fetchDepartments()
-  }, [page, pageSize, search])
+  }, [page, pageSize, search, i18n.language])
 
   const handleCreate = () => {
     setEditingDepartment(null)
@@ -89,10 +91,10 @@ export default function DepartmentsList() {
   const handleDelete = async (id: number) => {
     try {
       await departmentsApi.delete(id)
-      message.success('Відділ успішно видалено')
+      message.success(t('departments.messages.deleted'))
       fetchDepartments()
     } catch (error) {
-      message.error('Помилка видалення відділу')
+      message.error(t('departments.messages.deleteError'))
     }
   }
 
@@ -100,15 +102,15 @@ export default function DepartmentsList() {
     try {
       if (editingDepartment) {
         await departmentsApi.update(editingDepartment.id, values)
-        message.success('Відділ успішно оновлено')
+        message.success(t('departments.messages.updated'))
       } else {
         await departmentsApi.create(values)
-        message.success('Відділ успішно створено')
+        message.success(t('departments.messages.created'))
       }
       setModalVisible(false)
       fetchDepartments()
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Помилка збереження')
+      message.error(error.response?.data?.detail || t('departments.messages.saveError'))
     }
   }
 
@@ -147,13 +149,13 @@ export default function DepartmentsList() {
       render: (count: number) => count ?? 0,
     },
     {
-      title: 'Статус',
+      title: t('fields.status'),
       dataIndex: 'is_active',
       key: 'is_active',
       width: 100,
       render: (isActive: boolean) => (
         <Tag color={isActive ? 'green' : 'red'}>
-          {isActive ? 'Активний' : 'Неактивний'}
+          {isActive ? t('status.active') : t('status.inactive')}
         </Tag>
       ),
     },
@@ -169,11 +171,11 @@ export default function DepartmentsList() {
             onClick={() => handleEdit(record)}
           />
           <Popconfirm
-            title="Видалити відділ?"
-            description="Ця дія незворотна"
+            title={t('departments.messages.deleteConfirm')}
+            description={t('departments.messages.deleteDescription')}
             onConfirm={() => handleDelete(record.id)}
-            okText="Так"
-            cancelText="Ні"
+            okText={t('common:actions.yes')}
+            cancelText={t('common:actions.no')}
           >
             <Button type="text" danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -212,7 +214,7 @@ export default function DepartmentsList() {
           pageSize,
           total,
           showSizeChanger: true,
-          showTotal: (total) => `Всього: ${total}`,
+          showTotal: (total) => t('common:table.total', { total }),
           onChange: (p, ps) => {
             setPage(p)
             setPageSize(ps)
@@ -221,7 +223,7 @@ export default function DepartmentsList() {
       />
 
       <Modal
-        title={editingDepartment ? 'Редагувати відділ' : t('departments.create')}
+        title={editingDepartment ? t('departments.edit') : t('departments.create')}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
@@ -236,7 +238,7 @@ export default function DepartmentsList() {
           <Form.Item
             name="name"
             label={t('departments.name')}
-            rules={[{ required: true, message: "Назва обов'язкова" }]}
+            rules={[{ required: true, message: t('validation.nameRequired') }]}
           >
             <Input />
           </Form.Item>
@@ -249,7 +251,7 @@ export default function DepartmentsList() {
             <Select
               allowClear
               showSearch
-              placeholder="Оберіть керівника"
+              placeholder={t('placeholders.selectHead')}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -261,8 +263,8 @@ export default function DepartmentsList() {
             />
           </Form.Item>
 
-          <Form.Item name="is_active" label="Статус" valuePropName="checked">
-            <Switch checkedChildren="Активний" unCheckedChildren="Неактивний" />
+          <Form.Item name="is_active" label={t('fields.status')} valuePropName="checked">
+            <Switch checkedChildren={t('switches.active')} unCheckedChildren={t('switches.inactive')} />
           </Form.Item>
 
           <Form.Item>

@@ -1,27 +1,85 @@
 {
   "title": "Users",
   "create": "Create User",
+  "edit": "Edit User",
   "fields": {
     "email": "Email",
     "firstName": "First Name",
     "lastName": "Last Name",
+    "fullName": "Full Name",
     "phone": "Phone",
     "department": "Department",
     "roles": "Roles",
+    "status": "Status",
     "isActive": "Active",
-    "isAdmin": "Administrator"
+    "isAdmin": "Administrator",
+    "password": "Password",
+    "newPassword": "New Password"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "actions": {
+    "resetPassword": "Reset Password",
+    "resetPasswordTitle": "Reset Password",
+    "reset": "Reset"
+  },
+  "messages": {
+    "loadError": "Error loading users",
+    "created": "User created successfully",
+    "updated": "User updated successfully",
+    "deleted": "User deleted successfully",
+    "deleteError": "Error deleting user",
+    "saveError": "Save error",
+    "passwordReset": "Password reset successfully",
+    "passwordResetError": "Password reset error",
+    "deleteConfirm": "Delete user?",
+    "deleteDescription": "This action is irreversible"
+  },
+  "validation": {
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email format",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Minimum 6 characters",
+    "nameRequired": "Name is required"
+  },
+  "placeholders": {
+    "selectDepartment": "Select department",
+    "selectRoles": "Select roles",
+    "selectHead": "Select head"
+  },
+  "switches": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "yes": "Yes",
+    "no": "No",
+    "admin": "Admin"
   },
   "departments": {
     "title": "Departments",
     "create": "Create Department",
+    "edit": "Edit Department",
     "name": "Name",
     "description": "Description",
     "head": "Head",
-    "usersCount": "Users"
+    "usersCount": "Users",
+    "messages": {
+      "loadError": "Error loading departments",
+      "created": "Department created successfully",
+      "updated": "Department updated successfully",
+      "deleted": "Department deleted successfully",
+      "deleteError": "Error deleting department",
+      "saveError": "Save error",
+      "deleteConfirm": "Delete department?",
+      "deleteDescription": "This action is irreversible"
+    }
   },
   "roles": {
     "title": "Roles",
-    "operator": "Operator",
+    "operator": "User",
     "technician": "Technician",
     "manager": "Manager"
   },

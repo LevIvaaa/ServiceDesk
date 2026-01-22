@@ -29,6 +29,7 @@ export interface UserListParams {
   is_active?: boolean
   department_id?: number
   role_id?: number
+  lang?: string
 }
 
 export interface CreateUserData {

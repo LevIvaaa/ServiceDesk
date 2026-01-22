@@ -50,6 +50,8 @@ class DepartmentListResponse(BaseModel):
     description: Optional[str]
     is_active: bool
     users_count: int = 0
+    head_user_id: Optional[int] = None
+    head_user: Optional[HeadUserShort] = None
 
     class Config:
         from_attributes = True

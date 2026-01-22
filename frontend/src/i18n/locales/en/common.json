@@ -13,7 +13,8 @@
     "knowledge": "Knowledge Base",
     "users": "Users",
     "departments": "Departments",
-    "settings": "Settings"
+    "settings": "Settings",
+    "logAnalysis": "Log Analysis"
   },
   "actions": {
     "create": "Create",
@@ -28,7 +29,8 @@
     "close": "Close",
     "yes": "Yes",
     "no": "No",
-    "title": "Actions"
+    "title": "Actions",
+    "clear": "Clear"
   },
   "language": {
     "uk": "Українська",

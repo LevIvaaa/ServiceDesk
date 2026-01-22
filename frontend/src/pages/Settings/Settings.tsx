@@ -47,7 +47,7 @@ interface ProfileData {
 }
 
 export default function Settings() {
-  const { t, i18n } = useTranslation(['users', 'common'])
+  const { t, i18n } = useTranslation(['settings', 'users', 'common'])
   const { user, setUser } = useAuthStore()
   const [profileForm] = Form.useForm()
   const [passwordForm] = Form.useForm()
@@ -82,9 +82,9 @@ export default function Settings() {
     try {
       const response = await client.put('/users/me', values)
       setUser(response.data)
-      message.success('Профіль успішно оновлено')
+      message.success(t('profile.updated'))
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Помилка оновлення профілю')
+      message.error(error.response?.data?.detail || t('profile.updateError'))
     } finally {
       setLoading(false)
     }
@@ -94,10 +94,10 @@ export default function Settings() {
     setLoading(true)
     try {
       await client.put('/auth/change-password', values)
-      message.success('Пароль успішно змінено')
+      message.success(t('security.passwordChanged'))
       passwordForm.resetFields()
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Помилка зміни пароля')
+      message.error(error.response?.data?.detail || t('security.passwordError'))
     } finally {
       setLoading(false)
     }
@@ -107,9 +107,9 @@ export default function Settings() {
     setLoading(true)
     try {
       await client.put('/users/me/notifications', values)
-      message.success('Налаштування сповіщень оновлено')
+      message.success(t('notifications.updated'))
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Помилка оновлення налаштувань')
+      message.error(error.response?.data?.detail || t('notifications.updateError'))
     } finally {
       setLoading(false)
     }
@@ -118,7 +118,7 @@ export default function Settings() {
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang)
     localStorage.setItem('language', lang)
-    message.success('Мову змінено')
+    message.success(t('language.changed'))
   }
 
   const tabItems = [
@@ -381,7 +381,7 @@ export default function Settings() {
 
   return (
     <div>
-      <Title level={2}>{t('common:menu.settings')}</Title>
+      <Title level={2}>{t('title')}</Title>
       <Tabs items={tabItems} tabPosition="left" style={{ minHeight: 400 }} />
     </div>
   )

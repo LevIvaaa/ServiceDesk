@@ -31,11 +31,11 @@ export default function LogAnalysis() {
   const [analyzing, setAnalyzing] = useState(false)
   const [result, setResult] = useState<LogAnalysisResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useTranslation(['logAnalysis', 'common'])
 
   const handleAnalyze = async () => {
     if (!logContent.trim()) {
-      setError(t('logAnalysis.emptyLog', 'Введіть лог для аналізу'))
+      setError(t('emptyLog'))
       return
     }
 
@@ -48,7 +48,7 @@ export default function LogAnalysis() {
       })
       setResult(response)
     } catch (err: any) {
-      setError(err.response?.data?.detail || t('logAnalysis.error', 'Помилка аналізу логу'))
+      setError(err.response?.data?.detail || t('error'))
     } finally {
       setAnalyzing(false)
     }
@@ -82,7 +82,7 @@ export default function LogAnalysis() {
       <Title level={2}>
         <Space>
           <CodeOutlined />
-          {t('logAnalysis.title', 'Розшифровка логів')}
+          {t('title')}
         </Space>
       </Title>
 
@@ -92,7 +92,7 @@ export default function LogAnalysis() {
             title={
               <Space>
                 <CodeOutlined />
-                {t('logAnalysis.inputTitle', 'Вхідні дані')}
+                {t('inputTitle')}
               </Space>
             }
           >
@@ -100,7 +100,7 @@ export default function LogAnalysis() {
               rows={20}
               value={logContent}
               onChange={(e) => setLogContent(e.target.value)}
-              placeholder={t('logAnalysis.placeholder', 'Вставте сюди OCPP лог станції для аналізу...\n\nПриклад:\n2025-12-28T10:00:00 OcppIn StatusNotification {"connectorId": 1, "status": "Faulted", "errorCode": "GroundFailure"}')}
+              placeholder={t('placeholder')}
               style={{ fontFamily: 'monospace', fontSize: 12 }}
             />
             <Space style={{ marginTop: 16 }}>
@@ -112,10 +112,10 @@ export default function LogAnalysis() {
                 disabled={!logContent.trim()}
                 size="large"
               >
-                {t('logAnalysis.analyze', 'Аналізувати з AI')}
+                {t('analyze')}
               </Button>
               <Button onClick={handleClear}>
-                {t('common:actions.clear', 'Очистити')}
+                {t('common:actions.clear')}
               </Button>
             </Space>
 
@@ -136,7 +136,7 @@ export default function LogAnalysis() {
             title={
               <Space>
                 <RobotOutlined />
-                {t('logAnalysis.resultTitle', 'Результат аналізу')}
+                {t('resultTitle')}
               </Space>
             }
           >
@@ -144,14 +144,14 @@ export default function LogAnalysis() {
               <div style={{ textAlign: 'center', padding: 40 }}>
                 <Spin size="large" />
                 <div style={{ marginTop: 16 }}>
-                  <Text type="secondary">{t('logAnalysis.analyzing', 'AI аналізує лог...')}</Text>
+                  <Text type="secondary">{t('analyzing')}</Text>
                 </div>
               </div>
             ) : result ? (
               <Space direction="vertical" style={{ width: '100%' }} size="large">
                 {/* Status */}
                 <div>
-                  <Text strong>{t('logAnalysis.status', 'Статус станції')}:</Text>
+                  <Text strong>{t('status')}:</Text>
                   <div style={{ marginTop: 4 }}>
                     <Tag color={getStatusColor(result.status)} style={{ fontSize: 14, padding: '4px 12px' }}>
                       {result.status}
@@ -165,7 +165,7 @@ export default function LogAnalysis() {
                 <div>
                   <Space>
                     <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                    <Text strong>{t('logAnalysis.analysisSection', 'Аналіз')}</Text>
+                    <Text strong>{t('analysisSection')}</Text>
                   </Space>
                   <Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
                     {result.analysis}
@@ -179,7 +179,7 @@ export default function LogAnalysis() {
                     <div>
                       <Space>
                         <WarningOutlined style={{ color: '#faad14' }} />
-                        <Text strong>{t('logAnalysis.errorCodes', 'Коди помилок')}</Text>
+                        <Text strong>{t('errorCodes')}</Text>
                       </Space>
                       <div style={{ marginTop: 8 }}>
                         {result.error_codes.map((code, index) => (
@@ -199,7 +199,7 @@ export default function LogAnalysis() {
                     <div>
                       <Space>
                         <BulbOutlined style={{ color: '#1890ff' }} />
-                        <Text strong>{t('logAnalysis.recommendations', 'Рекомендації')}</Text>
+                        <Text strong>{t('recommendations')}</Text>
                       </Space>
                       <List
                         size="small"
@@ -220,7 +220,7 @@ export default function LogAnalysis() {
                 <RobotOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />
                 <div style={{ marginTop: 16 }}>
                   <Text type="secondary">
-                    {t('logAnalysis.noResult', 'Вставте лог та натисніть "Аналізувати з AI" для отримання розшифровки')}
+                    {t('noResult')}
                   </Text>
                 </div>
               </div>
