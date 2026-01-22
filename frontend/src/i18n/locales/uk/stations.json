@@ -1,28 +1,56 @@
 {
   "title": "Станції",
   "create": "Додати станцію",
+  "edit": "Редагувати станцію",
+  "search": "Пошук...",
   "fields": {
+    "stationId": "ID станції",
     "stationNumber": "Номер станції",
+    "name": "Назва",
     "operator": "Оператор",
     "address": "Адреса",
     "city": "Місто",
     "region": "Область",
     "model": "Модель",
+    "manufacturer": "Виробник",
+    "firmwareVersion": "Версія прошивки",
     "portsCount": "Кількість портів",
     "status": "Статус",
     "installationDate": "Дата встановлення",
-    "lastMaintenance": "Останнє обслуговування"
+    "lastMaintenance": "Останнє ТО",
+    "latitude": "Широта",
+    "longitude": "Довгота",
+    "coordinates": "Координати"
+  },
+  "placeholders": {
+    "stationId": "CHG-001",
+    "name": "Зарядна станція #1",
+    "selectOperator": "Оберіть оператора",
+    "model": "ABB Terra 54",
+    "manufacturer": "ABB",
+    "firmwareVersion": "v1.2.3",
+    "address": "вул. Хрещатик, 1",
+    "city": "Київ",
+    "region": "Київська",
+    "latitude": "50.4501",
+    "longitude": "30.5234"
   },
   "status": {
+    "unknown": "Невідомо",
     "active": "Активна",
+    "available": "Доступна",
+    "charging": "Заряджає",
+    "faulted": "Несправна",
+    "offline": "Офлайн",
     "maintenance": "На обслуговуванні",
-    "offline": "Офлайн"
+    "decommissioned": "Виведена з експлуатації"
   },
   "ports": {
-    "title": "Порти",
+    "title": "Порти (конектори)",
     "portNumber": "Номер порту",
-    "connectorType": "Тип роз'єму",
-    "maxPower": "Макс. потужність (кВт)",
+    "connectorType": "Тип конектора",
+    "maxPower": "Потужність (кВт)",
+    "addPort": "Додати порт",
     "status": {
       "available": "Доступний",
       "charging": "Заряджає",
@@ -30,6 +58,23 @@
       "offline": "Офлайн"
     }
   },
+  "tabs": {
+    "info": "Інформація",
+    "ports": "Порти"
+  },
+  "actions": {
+    "decommission": "Вивести станцію з експлуатації?"
+  },
+  "messages": {
+    "loadError": "Помилка завантаження станцій",
+    "stationLoadError": "Помилка завантаження станції",
+    "created": "Станцію успішно створено",
+    "updated": "Станцію успішно оновлено",
+    "decommissioned": "Станцію виведено з експлуатації",
+    "deleteError": "Помилка видалення станції",
+    "saveError": "Помилка збереження"
+  },
+  "total": "Всього: {{count}}",
   "operators": {
     "title": "Оператори",
     "create": "Додати оператора",
@@ -39,5 +84,11 @@
     "contactEmail": "Email",
     "contractNumber": "Номер договору",
     "stationsCount": "Станцій"
+  },
+  "validation": {
+    "idRequired": "ID обов'язковий",
+    "nameRequired": "Назва обов'язкова",
+    "operatorRequired": "Оператор обов'язковий",
+    "portNumberRequired": "Номер порту обов'язковий"
   }
 }

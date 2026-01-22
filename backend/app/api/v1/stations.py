@@ -32,6 +32,7 @@ async def list_stations(
     operator_id: Optional[int] = None,
     city: Optional[str] = None,
     station_status: Optional[str] = None,
+    language: str = Query("uk", regex="^(uk|en)$"),
 ):
     """List all stations with pagination and filters."""
     query = select(Station).options(selectinload(Station.operator))
@@ -61,9 +62,25 @@ async def list_stations(
 
     result = await db.execute(query)
     stations = result.scalars().all()
+    
+    # Apply translations
+    items = []
+    for station in stations:
+        station_dict = {
+            "id": station.id,
+            "station_id": station.station_id,
+            "external_id": station.external_id,
+            "name": station.name_en if language == "en" and station.name_en else station.name,
+            "operator": station.operator,
+            "address": station.address_en if language == "en" and station.address_en else station.address,
+            "city": station.city_en if language == "en" and station.city_en else station.city,
+            "model": station.model,
+            "status": station.status,
+        }
+        items.append(StationListResponse(**station_dict))
 
     return PaginatedResponse(
-        items=[StationListResponse.model_validate(s) for s in stations],
+        items=items,
         total=total,
         page=page,
         per_page=per_page,
@@ -144,6 +161,7 @@ async def get_station(
     station_id: int,
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("stations.view"))],
+    language: str = Query("uk", regex="^(uk|en)$"),
 ):
     """Get a specific station by ID."""
     result = await db.execute(
@@ -158,8 +176,32 @@ async def get_station(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Station not found",
         )
+    
+    # Apply translations
+    station_dict = {
+        "id": station.id,
+        "station_id": station.station_id,
+        "external_id": station.external_id,
+        "name": station.name_en if language == "en" and station.name_en else station.name,
+        "operator_id": station.operator_id,
+        "operator": station.operator,
+        "address": station.address_en if language == "en" and station.address_en else station.address,
+        "city": station.city_en if language == "en" and station.city_en else station.city,
+        "region": station.region_en if language == "en" and station.region_en else station.region,
+        "latitude": station.latitude,
+        "longitude": station.longitude,
+        "model": station.model,
+        "manufacturer": station.manufacturer,
+        "firmware_version": station.firmware_version,
+        "installation_date": station.installation_date,
+        "last_maintenance_date": station.last_maintenance_date,
+        "status": station.status,
+        "ports": station.ports,
+        "created_at": station.created_at,
+        "updated_at": station.updated_at,
+    }
 
-    return StationResponse.model_validate(station)
+    return StationResponse(**station_dict)
 
 
 @router.put("/{station_id}", response_model=StationResponse)

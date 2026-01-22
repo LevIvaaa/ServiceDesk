@@ -44,7 +44,7 @@ const STATUS_COLORS: Record<string, string> = {
 const CONNECTOR_TYPES = ['CCS2', 'CHAdeMO', 'Type2', 'Type1', 'GBT']
 
 export default function StationsList() {
-  const { t } = useTranslation(['stations', 'common'])
+  const { t, i18n } = useTranslation(['stations', 'common'])
   const [stations, setStations] = useState<StationListItem[]>([])
   const [operators, setOperators] = useState<Operator[]>([])
   const [loading, setLoading] = useState(false)
@@ -69,11 +69,12 @@ export default function StationsList() {
         search: search || undefined,
         operator_id: filterOperator,
         station_status: filterStatus,
+        language: i18n.language,
       })
       setStations(response.items)
       setTotal(response.total)
     } catch (error) {
-      message.error('Помилка завантаження станцій')
+      message.error(t('messages.loadError'))
     } finally {
       setLoading(false)
     }
@@ -94,7 +95,7 @@ export default function StationsList() {
 
   useEffect(() => {
     fetchStations()
-  }, [page, pageSize, search, filterOperator, filterStatus])
+  }, [page, pageSize, search, filterOperator, filterStatus, i18n.language])
 
   const handleCreate = () => {
     setEditingStation(null)
@@ -104,7 +105,7 @@ export default function StationsList() {
 
   const handleEdit = async (id: number) => {
     try {
-      const station = await stationsApi.get(id)
+      const station = await stationsApi.get(id, i18n.language)
       setEditingStation(station)
       form.setFieldsValue({
         ...station,
@@ -113,27 +114,27 @@ export default function StationsList() {
       })
       setModalVisible(true)
     } catch (error) {
-      message.error('Помилка завантаження станції')
+      message.error(t('messages.stationLoadError'))
     }
   }
 
   const handleView = async (id: number) => {
     try {
-      const station = await stationsApi.get(id)
+      const station = await stationsApi.get(id, i18n.language)
       setViewingStation(station)
       setDetailModalVisible(true)
     } catch (error) {
-      message.error('Помилка завантаження станції')
+      message.error(t('messages.stationLoadError'))
     }
   }
 
   const handleDelete = async (id: number) => {
     try {
       await stationsApi.delete(id)
-      message.success('Станцію виведено з експлуатації')
+      message.success(t('messages.decommissioned'))
       fetchStations()
     } catch (error) {
-      message.error('Помилка видалення станції')
+      message.error(t('messages.deleteError'))
     }
   }
 
@@ -157,7 +158,7 @@ export default function StationsList() {
           status: values.status,
         }
         await stationsApi.update(editingStation.id, updateData)
-        message.success('Станцію успішно оновлено')
+        message.success(t('messages.updated'))
       } else {
         const createData: CreateStationData = {
           station_id: values.station_id,
@@ -175,63 +176,63 @@ export default function StationsList() {
           ports: values.ports || [],
         }
         await stationsApi.create(createData)
-        message.success('Станцію успішно створено')
+        message.success(t('messages.created'))
       }
       setModalVisible(false)
       fetchStations()
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Помилка збереження')
+      message.error(error.response?.data?.detail || t('messages.saveError'))
     }
   }
 
   const columns = [
     {
-      title: 'ID станції',
+      title: t('fields.stationId'),
       dataIndex: 'station_id',
       key: 'station_id',
       width: 150,
     },
     {
-      title: 'Назва',
+      title: t('fields.name'),
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Оператор',
+      title: t('fields.operator'),
       key: 'operator',
       render: (_: any, record: StationListItem) => record.operator?.name || '-',
     },
     {
-      title: 'Адреса',
+      title: t('fields.address'),
       dataIndex: 'address',
       key: 'address',
       ellipsis: true,
     },
     {
-      title: 'Місто',
+      title: t('fields.city'),
       dataIndex: 'city',
       key: 'city',
       width: 120,
     },
     {
-      title: 'Модель',
+      title: t('fields.model'),
       dataIndex: 'model',
       key: 'model',
       width: 120,
     },
     {
-      title: 'Статус',
+      title: t('fields.status'),
       dataIndex: 'status',
       key: 'status',
       width: 120,
       render: (status: string) => (
         <Tag color={STATUS_COLORS[status] || 'default'}>
-          {status}
+          {t(`status.${status}`)}
         </Tag>
       ),
     },
     {
-      title: 'Дії',
+      title: t('common:actions.title'),
       key: 'actions',
       width: 150,
       render: (_: any, record: StationListItem) => (
@@ -247,10 +248,10 @@ export default function StationsList() {
             onClick={() => handleEdit(record.id)}
           />
           <Popconfirm
-            title="Вивести станцію з експлуатації?"
+            title={t('actions.decommission')}
             onConfirm={() => handleDelete(record.id)}
-            okText="Так"
-            cancelText="Ні"
+            okText={t('common:actions.yes')}
+            cancelText={t('common:actions.no')}
           >
             <Button type="text" danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -262,9 +263,9 @@ export default function StationsList() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Title level={2}>Станції</Title>
+        <Title level={2}>{t('title')}</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          Додати станцію
+          {t('create')}
         </Button>
       </div>
 
@@ -272,7 +273,7 @@ export default function StationsList() {
         <Row gutter={16}>
           <Col>
             <Input
-              placeholder="Пошук..."
+              placeholder={t('search')}
               prefix={<SearchOutlined />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -282,7 +283,7 @@ export default function StationsList() {
           </Col>
           <Col>
             <Select
-              placeholder="Оператор"
+              placeholder={t('fields.operator')}
               value={filterOperator}
               onChange={setFilterOperator}
               style={{ width: 200 }}
@@ -292,17 +293,17 @@ export default function StationsList() {
           </Col>
           <Col>
             <Select
-              placeholder="Статус"
+              placeholder={t('fields.status')}
               value={filterStatus}
               onChange={setFilterStatus}
               style={{ width: 150 }}
               allowClear
               options={[
-                { value: 'unknown', label: 'Невідомо' },
-                { value: 'available', label: 'Доступна' },
-                { value: 'charging', label: 'Заряджає' },
-                { value: 'faulted', label: 'Несправна' },
-                { value: 'offline', label: 'Офлайн' },
+                { value: 'unknown', label: t('status.unknown') },
+                { value: 'available', label: t('status.available') },
+                { value: 'charging', label: t('status.charging') },
+                { value: 'faulted', label: t('status.faulted') },
+                { value: 'offline', label: t('status.offline') },
               ]}
             />
           </Col>
@@ -319,7 +320,7 @@ export default function StationsList() {
           pageSize,
           total,
           showSizeChanger: true,
-          showTotal: (total) => `Всього: ${total}`,
+          showTotal: (total) => t('total', { count: total }),
           onChange: (p, ps) => {
             setPage(p)
             setPageSize(ps)
@@ -329,7 +330,7 @@ export default function StationsList() {
 
       {/* Create/Edit Station Modal */}
       <Modal
-        title={editingStation ? 'Редагувати станцію' : 'Додати станцію'}
+        title={editingStation ? t('edit') : t('create')}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
@@ -344,19 +345,19 @@ export default function StationsList() {
             <Col span={12}>
               <Form.Item
                 name="station_id"
-                label="ID станції"
-                rules={[{ required: true, message: "ID обов'язковий" }]}
+                label={t('fields.stationId')}
+                rules={[{ required: true, message: t('validation.idRequired') }]}
               >
-                <Input placeholder="CHG-001" />
+                <Input placeholder={t('placeholders.stationId')} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="name"
-                label="Назва"
-                rules={[{ required: true, message: "Назва обов'язкова" }]}
+                label={t('fields.name')}
+                rules={[{ required: true, message: t('validation.nameRequired') }]}
               >
-                <Input placeholder="Зарядна станція #1" />
+                <Input placeholder={t('placeholders.name')} />
               </Form.Item>
             </Col>
           </Row>
@@ -365,52 +366,52 @@ export default function StationsList() {
             <Col span={12}>
               <Form.Item
                 name="operator_id"
-                label="Оператор"
-                rules={[{ required: true, message: "Оператор обов'язковий" }]}
+                label={t('fields.operator')}
+                rules={[{ required: true, message: t('validation.operatorRequired') }]}
               >
                 <Select
-                  placeholder="Оберіть оператора"
+                  placeholder={t('placeholders.selectOperator')}
                   options={operators.map(o => ({ value: o.id, label: o.name }))}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="model" label="Модель">
-                <Input placeholder="ABB Terra 54" />
+              <Form.Item name="model" label={t('fields.model')}>
+                <Input placeholder={t('placeholders.model')} />
               </Form.Item>
             </Col>
           </Row>
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="manufacturer" label="Виробник">
-                <Input placeholder="ABB" />
+              <Form.Item name="manufacturer" label={t('fields.manufacturer')}>
+                <Input placeholder={t('placeholders.manufacturer')} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="firmware_version" label="Версія прошивки">
-                <Input placeholder="v1.2.3" />
+              <Form.Item name="firmware_version" label={t('fields.firmwareVersion')}>
+                <Input placeholder={t('placeholders.firmwareVersion')} />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item name="address" label="Адреса">
-            <Input placeholder="вул. Хрещатик, 1" />
+          <Form.Item name="address" label={t('fields.address')}>
+            <Input placeholder={t('placeholders.address')} />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item name="city" label="Місто">
-                <Input placeholder="Київ" />
+              <Form.Item name="city" label={t('fields.city')}>
+                <Input placeholder={t('placeholders.city')} />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="region" label="Область">
-                <Input placeholder="Київська" />
+              <Form.Item name="region" label={t('fields.region')}>
+                <Input placeholder={t('placeholders.region')} />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="installation_date" label="Дата встановлення">
+              <Form.Item name="installation_date" label={t('fields.installationDate')}>
                 <Input type="date" />
               </Form.Item>
             </Col>
@@ -418,13 +419,13 @@ export default function StationsList() {
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="latitude" label="Широта">
-                <InputNumber style={{ width: '100%' }} placeholder="50.4501" step={0.0001} />
+              <Form.Item name="latitude" label={t('fields.latitude')}>
+                <InputNumber style={{ width: '100%' }} placeholder={t('placeholders.latitude')} step={0.0001} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="longitude" label="Довгота">
-                <InputNumber style={{ width: '100%' }} placeholder="30.5234" step={0.0001} />
+              <Form.Item name="longitude" label={t('fields.longitude')}>
+                <InputNumber style={{ width: '100%' }} placeholder={t('placeholders.longitude')} step={0.0001} />
               </Form.Item>
             </Col>
           </Row>
@@ -432,20 +433,20 @@ export default function StationsList() {
           {editingStation && (
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="status" label="Статус">
+                <Form.Item name="status" label={t('fields.status')}>
                   <Select
                     options={[
-                      { value: 'unknown', label: 'Невідомо' },
-                      { value: 'available', label: 'Доступна' },
-                      { value: 'charging', label: 'Заряджає' },
-                      { value: 'faulted', label: 'Несправна' },
-                      { value: 'offline', label: 'Офлайн' },
+                      { value: 'unknown', label: t('status.unknown') },
+                      { value: 'available', label: t('status.available') },
+                      { value: 'charging', label: t('status.charging') },
+                      { value: 'faulted', label: t('status.faulted') },
+                      { value: 'offline', label: t('status.offline') },
                     ]}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="last_maintenance_date" label="Останнє ТО">
+                <Form.Item name="last_maintenance_date" label={t('fields.lastMaintenance')}>
                   <Input type="date" />
                 </Form.Item>
               </Col>
@@ -454,7 +455,7 @@ export default function StationsList() {
 
           {!editingStation && (
             <>
-              <Title level={5} style={{ marginTop: 16 }}>Порти (конектори)</Title>
+              <Title level={5} style={{ marginTop: 16 }}>{t('ports.title')}</Title>
               <Form.List name="ports">
                 {(fields, { add, remove }) => (
                   <>
@@ -464,8 +465,8 @@ export default function StationsList() {
                           <Form.Item
                             {...restField}
                             name={[name, 'port_number']}
-                            label="Номер порту"
-                            rules={[{ required: true }]}
+                            label={t('ports.portNumber')}
+                            rules={[{ required: true, message: t('validation.portNumberRequired') }]}
                           >
                             <InputNumber min={1} style={{ width: '100%' }} />
                           </Form.Item>
@@ -474,10 +475,10 @@ export default function StationsList() {
                           <Form.Item
                             {...restField}
                             name={[name, 'connector_type']}
-                            label="Тип конектора"
+                            label={t('ports.connectorType')}
                           >
                             <Select
-                              placeholder="Тип"
+                              placeholder={t('ports.connectorType')}
                               options={CONNECTOR_TYPES.map(t => ({ value: t, label: t }))}
                             />
                           </Form.Item>
@@ -486,7 +487,7 @@ export default function StationsList() {
                           <Form.Item
                             {...restField}
                             name={[name, 'power_kw']}
-                            label="Потужність (кВт)"
+                            label={t('ports.maxPower')}
                           >
                             <InputNumber min={0} style={{ width: '100%' }} />
                           </Form.Item>
@@ -500,7 +501,7 @@ export default function StationsList() {
                     ))}
                     <Form.Item>
                       <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                        Додати порт
+                        {t('ports.addPort')}
                       </Button>
                     </Form.Item>
                   </>
@@ -524,18 +525,18 @@ export default function StationsList() {
 
       {/* Station Detail Modal */}
       <Modal
-        title={`Станція: ${viewingStation?.name}`}
+        title={`${t('title')}: ${viewingStation?.name}`}
         open={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
         footer={[
           <Button key="close" onClick={() => setDetailModalVisible(false)}>
-            Закрити
+            {t('common:actions.close')}
           </Button>,
           <Button key="edit" type="primary" onClick={() => {
             setDetailModalVisible(false)
             if (viewingStation) handleEdit(viewingStation.id)
           }}>
-            Редагувати
+            {t('common:actions.edit')}
           </Button>,
         ]}
         width={800}
@@ -545,24 +546,24 @@ export default function StationsList() {
             items={[
               {
                 key: 'info',
-                label: 'Інформація',
+                label: t('tabs.info'),
                 children: (
                   <Descriptions column={2} bordered size="small">
-                    <Descriptions.Item label="ID станції">{viewingStation.station_id}</Descriptions.Item>
-                    <Descriptions.Item label="Назва">{viewingStation.name}</Descriptions.Item>
-                    <Descriptions.Item label="Оператор">{viewingStation.operator?.name}</Descriptions.Item>
-                    <Descriptions.Item label="Статус">
-                      <Tag color={STATUS_COLORS[viewingStation.status]}>{viewingStation.status}</Tag>
+                    <Descriptions.Item label={t('fields.stationId')}>{viewingStation.station_id}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.name')}>{viewingStation.name}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.operator')}>{viewingStation.operator?.name}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.status')}>
+                      <Tag color={STATUS_COLORS[viewingStation.status]}>{t(`status.${viewingStation.status}`)}</Tag>
                     </Descriptions.Item>
-                    <Descriptions.Item label="Адреса" span={2}>{viewingStation.address || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="Місто">{viewingStation.city || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="Область">{viewingStation.region || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="Модель">{viewingStation.model || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="Виробник">{viewingStation.manufacturer || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="Прошивка">{viewingStation.firmware_version || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="Дата встановлення">{viewingStation.installation_date || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="Останнє ТО">{viewingStation.last_maintenance_date || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="Координати">
+                    <Descriptions.Item label={t('fields.address')} span={2}>{viewingStation.address || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.city')}>{viewingStation.city || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.region')}>{viewingStation.region || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.model')}>{viewingStation.model || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.manufacturer')}>{viewingStation.manufacturer || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.firmwareVersion')}>{viewingStation.firmware_version || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.installationDate')}>{viewingStation.installation_date || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.lastMaintenance')}>{viewingStation.last_maintenance_date || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.coordinates')}>
                       {viewingStation.latitude && viewingStation.longitude
                         ? `${viewingStation.latitude}, ${viewingStation.longitude}`
                         : '-'}
@@ -572,7 +573,7 @@ export default function StationsList() {
               },
               {
                 key: 'ports',
-                label: `Порти (${viewingStation.ports?.length || 0})`,
+                label: `${t('tabs.ports')} (${viewingStation.ports?.length || 0})`,
                 icon: <ThunderboltOutlined />,
                 children: (
                   <Table
@@ -582,14 +583,14 @@ export default function StationsList() {
                     pagination={false}
                     columns={[
                       { title: '№', dataIndex: 'port_number', key: 'port_number', width: 60 },
-                      { title: 'Тип конектора', dataIndex: 'connector_type', key: 'connector_type' },
-                      { title: 'Потужність (кВт)', dataIndex: 'power_kw', key: 'power_kw' },
+                      { title: t('ports.connectorType'), dataIndex: 'connector_type', key: 'connector_type' },
+                      { title: t('ports.maxPower'), dataIndex: 'power_kw', key: 'power_kw' },
                       {
-                        title: 'Статус',
+                        title: t('fields.status'),
                         dataIndex: 'status',
                         key: 'status',
                         render: (status: string) => (
-                          <Tag color={STATUS_COLORS[status] || 'default'}>{status}</Tag>
+                          <Tag color={STATUS_COLORS[status] || 'default'}>{t(`status.${status}`)}</Tag>
                         ),
                       },
                     ]}

@@ -58,6 +58,7 @@ export interface StationListParams {
   operator_id?: number
   city?: string
   station_status?: string
+  language?: string
 }
 
 export interface CreateStationPort {
@@ -105,8 +106,10 @@ export const stationsApi = {
     return response.data
   },
 
-  get: async (id: number): Promise<Station> => {
-    const response = await client.get<Station>(`/stations/${id}`)
+  get: async (id: number, language?: string): Promise<Station> => {
+    const response = await client.get<Station>(`/stations/${id}`, {
+      params: { language: language || 'uk' }
+    })
     return response.data
   },
 

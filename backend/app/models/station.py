@@ -19,14 +19,18 @@ class Station(Base):
     station_id: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     external_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)  # Operator's station number
     name: Mapped[str] = mapped_column(String(200), nullable=False)
+    name_en: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     operator_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("operators.id"), nullable=False
     )
 
     # Address
     address: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    address_en: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    city_en: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     region: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    region_en: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 

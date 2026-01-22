@@ -24,7 +24,11 @@
     "search": "Search",
     "filter": "Filter",
     "export": "Export",
-    "back": "Back"
+    "back": "Back",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "title": "Actions"
   },
   "language": {
     "uk": "Українська",

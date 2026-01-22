@@ -1,28 +1,56 @@
 {
   "title": "Stations",
   "create": "Add Station",
+  "edit": "Edit Station",
+  "search": "Search...",
   "fields": {
+    "stationId": "Station ID",
     "stationNumber": "Station Number",
+    "name": "Name",
     "operator": "Operator",
     "address": "Address",
     "city": "City",
     "region": "Region",
     "model": "Model",
+    "manufacturer": "Manufacturer",
+    "firmwareVersion": "Firmware Version",
     "portsCount": "Ports Count",
     "status": "Status",
     "installationDate": "Installation Date",
-    "lastMaintenance": "Last Maintenance"
+    "lastMaintenance": "Last Maintenance",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "coordinates": "Coordinates"
+  },
+  "placeholders": {
+    "stationId": "CHG-001",
+    "name": "Charging Station #1",
+    "selectOperator": "Select operator",
+    "model": "ABB Terra 54",
+    "manufacturer": "ABB",
+    "firmwareVersion": "v1.2.3",
+    "address": "123 Main St",
+    "city": "Kyiv",
+    "region": "Kyiv Oblast",
+    "latitude": "50.4501",
+    "longitude": "30.5234"
   },
   "status": {
+    "unknown": "Unknown",
     "active": "Active",
+    "available": "Available",
+    "charging": "Charging",
+    "faulted": "Faulted",
+    "offline": "Offline",
     "maintenance": "Maintenance",
-    "offline": "Offline"
+    "decommissioned": "Decommissioned"
   },
   "ports": {
-    "title": "Ports",
+    "title": "Ports (Connectors)",
     "portNumber": "Port Number",
     "connectorType": "Connector Type",
     "maxPower": "Max Power (kW)",
+    "addPort": "Add Port",
     "status": {
       "available": "Available",
       "charging": "Charging",
@@ -30,6 +58,23 @@
       "offline": "Offline"
     }
   },
+  "tabs": {
+    "info": "Information",
+    "ports": "Ports"
+  },
+  "actions": {
+    "decommission": "Decommission station?"
+  },
+  "messages": {
+    "loadError": "Error loading stations",
+    "stationLoadError": "Error loading station",
+    "created": "Station created successfully",
+    "updated": "Station updated successfully",
+    "decommissioned": "Station decommissioned",
+    "deleteError": "Error deleting station",
+    "saveError": "Save error"
+  },
+  "total": "Total: {{count}}",
   "operators": {
     "title": "Operators",
     "create": "Add Operator",
@@ -39,5 +84,11 @@
     "contactEmail": "Email",
     "contractNumber": "Contract Number",
     "stationsCount": "Stations"
+  },
+  "validation": {
+    "idRequired": "ID is required",
+    "nameRequired": "Name is required",
+    "operatorRequired": "Operator is required",
+    "portNumberRequired": "Port number is required"
   }
 }
