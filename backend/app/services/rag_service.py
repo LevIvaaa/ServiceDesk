@@ -72,7 +72,7 @@ class RAGService:
         embedding = await self.get_embedding(full_text)
 
         # Generate UUID for Qdrant
-        qdrant_id = hashlib.md5(f"article_{article.id}".encode()).hexdigest()
+        qdrant_id = hashlib.md5(f"article_{article.id}_{article.language}".encode()).hexdigest()
 
         # Upsert to Qdrant
         self.qdrant.upsert(
@@ -85,6 +85,7 @@ class RAGService:
                         "article_id": article.id,
                         "title": article.title,
                         "category": article.category,
+                        "language": article.language,
                         "tags": article.tags or [],
                         "content_preview": article.content[:500],
                     },
@@ -92,7 +93,7 @@ class RAGService:
             ],
         )
 
-        logger.info(f"Indexed article {article.id} in Qdrant")
+        logger.info(f"Indexed article {article.id} ({article.language}) in Qdrant")
         return qdrant_id
 
     async def search(
@@ -101,6 +102,7 @@ class RAGService:
         limit: int = 5,
         category: Optional[str] = None,
         tags: Optional[list[str]] = None,
+        language: Optional[str] = None,
     ) -> list[dict]:
         """Search knowledge base using vector similarity."""
         from qdrant_client.models import Filter, FieldCondition, MatchValue, MatchAny
@@ -109,16 +111,22 @@ class RAGService:
 
         # Build filters
         query_filter = None
-        if category or tags:
-            must = []
-            if category:
-                must.append(
-                    FieldCondition(key="category", match=MatchValue(value=category))
-                )
-            if tags:
-                must.append(
-                    FieldCondition(key="tags", match=MatchAny(any=tags))
-                )
+        must = []
+        
+        if language:
+            must.append(
+                FieldCondition(key="language", match=MatchValue(value=language))
+            )
+        if category:
+            must.append(
+                FieldCondition(key="category", match=MatchValue(value=category))
+            )
+        if tags:
+            must.append(
+                FieldCondition(key="tags", match=MatchAny(any=tags))
+            )
+        
+        if must:
             query_filter = Filter(must=must)
 
         results = self.qdrant.search(
@@ -139,11 +147,11 @@ class RAGService:
             for hit in results
         ]
 
-    async def delete_article(self, article_id: int):
+    async def delete_article(self, article_id: int, language: str = "uk"):
         """Remove article from Qdrant."""
-        qdrant_id = hashlib.md5(f"article_{article_id}".encode()).hexdigest()
+        qdrant_id = hashlib.md5(f"article_{article_id}_{language}".encode()).hexdigest()
         self.qdrant.delete(
             collection_name=self.COLLECTION_NAME,
             points_selector=[qdrant_id],
         )
-        logger.info(f"Deleted article {article_id} from Qdrant")
+        logger.info(f"Deleted article {article_id} ({language}) from Qdrant")

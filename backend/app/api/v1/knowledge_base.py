@@ -1,4 +1,5 @@
 from typing import Annotated, Optional
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
@@ -20,6 +21,7 @@ from app.schemas.knowledge_base import (
 )
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def serialize_article(article: KnowledgeArticle) -> dict:
@@ -29,6 +31,7 @@ def serialize_article(article: KnowledgeArticle) -> dict:
         "title": article.title,
         "content": article.content,
         "category": article.category,
+        "language": article.language,
         "tags": article.tags,
         "station_models": article.station_models,
         "error_codes": article.error_codes,
@@ -51,6 +54,7 @@ async def list_articles(
     search: Optional[str] = None,
     category: Optional[str] = None,
     tag: Optional[str] = None,
+    language: Optional[str] = Query(None, pattern="^(uk|en)$"),
     is_published: Optional[bool] = None,
 ):
     """List knowledge base articles with pagination and filters."""
@@ -66,6 +70,8 @@ async def list_articles(
         query = query.where(KnowledgeArticle.category == category)
     if tag:
         query = query.where(KnowledgeArticle.tags.contains([tag]))
+    if language:
+        query = query.where(KnowledgeArticle.language == language)
     if is_published is not None:
         query = query.where(KnowledgeArticle.is_published == is_published)
 
@@ -112,15 +118,6 @@ async def create_article(
         editor_id=current_user.id,
     )
     db.add(version)
-
-    # Index in Qdrant (RAG)
-    try:
-        from app.services.rag_service import RAGService
-        rag_service = RAGService()
-        article.qdrant_id = await rag_service.index_article(article)
-    except Exception:
-        # Qdrant may not be available
-        pass
 
     await db.commit()
     await db.refresh(article)
@@ -203,14 +200,6 @@ async def update_article(
         )
         db.add(version)
 
-        # Re-index in Qdrant
-        try:
-            from app.services.rag_service import RAGService
-            rag_service = RAGService()
-            article.qdrant_id = await rag_service.index_article(article)
-        except Exception:
-            pass
-
     await db.commit()
     await db.refresh(article)
 
@@ -235,17 +224,8 @@ async def delete_article(
             detail="Article not found",
         )
 
-    # Remove from Qdrant
-    try:
-        from app.services.rag_service import RAGService
-        rag_service = RAGService()
-        await rag_service.delete_article(article_id)
-    except Exception:
-        pass
-
     await db.delete(article)
     await db.commit()
-    await db.refresh(article)
 
     return {"message": "Article deleted successfully"}
 
@@ -306,53 +286,45 @@ async def search_knowledge_base(
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("knowledge.view"))],
 ):
-    """Search knowledge base using RAG."""
-    try:
-        from app.services.rag_service import RAGService
-        rag_service = RAGService()
-
-        results = await rag_service.search(
-            query=search_data.query,
-            limit=search_data.limit,
-            category=search_data.category,
-            tags=search_data.tags,
+    """Search knowledge base using text search."""
+    # Simple text search
+    query = (
+        select(KnowledgeArticle)
+        .where(
+            KnowledgeArticle.is_published == True,
         )
+    )
+    
+    # Add search filter
+    search_filter = f"%{search_data.query}%"
+    query = query.where(
+        (KnowledgeArticle.title.ilike(search_filter))
+        | (KnowledgeArticle.content.ilike(search_filter))
+    )
 
-        return KnowledgeSearchResponse(
-            results=[KnowledgeSearchResult(**r) for r in results],
-            query=search_data.query,
-        )
-    except Exception as e:
-        # Fallback to simple text search if RAG is unavailable
-        query = (
-            select(KnowledgeArticle)
-            .where(
-                KnowledgeArticle.is_published == True,
-                (KnowledgeArticle.title.ilike(f"%{search_data.query}%"))
-                | (KnowledgeArticle.content.ilike(f"%{search_data.query}%")),
+    if search_data.language:
+        query = query.where(KnowledgeArticle.language == search_data.language)
+    if search_data.category:
+        query = query.where(KnowledgeArticle.category == search_data.category)
+    
+    query = query.limit(search_data.limit)
+
+    result = await db.execute(query)
+    articles = result.scalars().all()
+
+    return KnowledgeSearchResponse(
+        results=[
+            KnowledgeSearchResult(
+                article_id=a.id,
+                title=a.title,
+                category=a.category,
+                content_preview=a.content[:500],
+                score=1.0,
             )
-            .limit(search_data.limit)
-        )
-
-        if search_data.category:
-            query = query.where(KnowledgeArticle.category == search_data.category)
-
-        result = await db.execute(query)
-        articles = result.scalars().all()
-
-        return KnowledgeSearchResponse(
-            results=[
-                KnowledgeSearchResult(
-                    article_id=a.id,
-                    title=a.title,
-                    category=a.category,
-                    content_preview=a.content[:500],
-                    score=1.0,
-                )
-                for a in articles
-            ],
-            query=search_data.query,
-        )
+            for a in articles
+        ],
+        query=search_data.query,
+    )
 
 
 @router.post("/reindex")
@@ -360,27 +332,5 @@ async def reindex_knowledge_base(
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("knowledge.edit"))],
 ):
-    """Reindex all articles in vector database."""
-    try:
-        from app.services.rag_service import RAGService
-        rag_service = RAGService()
-
-        # Get all published articles
-        result = await db.execute(
-            select(KnowledgeArticle).where(KnowledgeArticle.is_published == True)
-        )
-        articles = result.scalars().all()
-
-        indexed = 0
-        for article in articles:
-            article.qdrant_id = await rag_service.index_article(article)
-            indexed += 1
-
-        await db.commit()
-
-        return {"message": f"Reindexed {indexed} articles"}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"RAG service unavailable: {str(e)}",
-        )
+    """Reindex all articles - not implemented without RAG."""
+    return {"message": "Reindexing not available without RAG service"}

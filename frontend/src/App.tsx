@@ -1,6 +1,9 @@
 import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Spin } from 'antd'
+import { Spin, ConfigProvider } from 'antd'
+import { useTranslation } from 'react-i18next'
+import enUS from 'antd/locale/en_US'
+import ukUA from 'antd/locale/uk_UA'
 import { useAuthStore } from './store/authStore'
 import MainLayout from './components/layout/MainLayout'
 import Login from './pages/Login'
@@ -36,6 +39,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   const { checkAuth, isLoading } = useAuthStore()
+  const { i18n } = useTranslation()
 
   useEffect(() => {
     checkAuth()
@@ -49,32 +53,36 @@ function App() {
     )
   }
 
+  const antdLocale = i18n.language === 'en' ? enUS : ukUA
+
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route
-        path="/*"
-        element={
-          <PrivateRoute>
-            <MainLayout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/tickets" element={<TicketsList />} />
-                <Route path="/tickets/new" element={<CreateTicket />} />
-                <Route path="/tickets/:id" element={<TicketDetail />} />
-                <Route path="/users" element={<UsersList />} />
-                <Route path="/departments" element={<DepartmentsList />} />
-                <Route path="/stations" element={<StationsList />} />
-                <Route path="/operators" element={<OperatorsList />} />
-                <Route path="/knowledge" element={<KnowledgeBase />} />
-                <Route path="/log-analysis" element={<LogAnalysis />} />
-                <Route path="/settings" element={<Settings />} />
-              </Routes>
-            </MainLayout>
-          </PrivateRoute>
-        }
-      />
-    </Routes>
+    <ConfigProvider locale={antdLocale}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/*"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/tickets" element={<TicketsList />} />
+                  <Route path="/tickets/new" element={<CreateTicket />} />
+                  <Route path="/tickets/:id" element={<TicketDetail />} />
+                  <Route path="/users" element={<UsersList />} />
+                  <Route path="/departments" element={<DepartmentsList />} />
+                  <Route path="/stations" element={<StationsList />} />
+                  <Route path="/operators" element={<OperatorsList />} />
+                  <Route path="/knowledge" element={<KnowledgeBase />} />
+                  <Route path="/log-analysis" element={<LogAnalysis />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Routes>
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </ConfigProvider>
   )
 }
 

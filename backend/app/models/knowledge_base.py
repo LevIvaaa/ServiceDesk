@@ -19,6 +19,7 @@ class KnowledgeArticle(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)  # Markdown
     content_html: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     category: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    language: Mapped[str] = mapped_column(String(5), nullable=False, default="uk", index=True)
     tags: Mapped[Optional[list[str]]] = mapped_column(ARRAY(String(50)), nullable=True)
 
     # Relations to station models and error codes

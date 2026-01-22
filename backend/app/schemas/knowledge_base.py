@@ -8,6 +8,7 @@ class KnowledgeArticleBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=300)
     content: str = Field(..., min_length=1)
     category: str = Field(..., pattern="^(troubleshooting|how-to|faq|technical)$")
+    language: str = Field(default="uk", pattern="^(uk|en)$")
     tags: Optional[list[str]] = None
     station_models: Optional[list[str]] = None
     error_codes: Optional[list[str]] = None
@@ -21,6 +22,7 @@ class KnowledgeArticleUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=300)
     content: Optional[str] = Field(None, min_length=1)
     category: Optional[str] = Field(None, pattern="^(troubleshooting|how-to|faq|technical)$")
+    language: Optional[str] = Field(None, pattern="^(uk|en)$")
     tags: Optional[list[str]] = None
     station_models: Optional[list[str]] = None
     error_codes: Optional[list[str]] = None
@@ -41,6 +43,7 @@ class KnowledgeArticleResponse(BaseModel):
     title: str
     content: str
     category: str
+    language: str
     tags: Optional[list[str]]
     station_models: Optional[list[str]]
     error_codes: Optional[list[str]]
@@ -60,6 +63,7 @@ class KnowledgeArticleListResponse(BaseModel):
     id: int
     title: str
     category: str
+    language: str
     tags: Optional[list[str]]
     author: AuthorShort
     is_published: bool
@@ -75,7 +79,8 @@ class KnowledgeSearchRequest(BaseModel):
     query: str = Field(..., min_length=1)
     category: Optional[str] = None
     tags: Optional[list[str]] = None
-    limit: int = Field(default=5, ge=1, le=20)
+    language: Optional[str] = Field(None, pattern="^(uk|en)$")
+    limit: int = Field(default=50, ge=1, le=100)
 
 
 class KnowledgeSearchResult(BaseModel):

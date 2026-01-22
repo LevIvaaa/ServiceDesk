@@ -1,6 +1,7 @@
 {
   "title": "База знань",
   "create": "Створити статтю",
+  "edit": "Редагувати статтю",
   "search": "Пошук в базі знань",
   "searchPlaceholder": "Введіть запит для пошуку...",
   "fields": {
@@ -8,9 +9,16 @@
     "content": "Зміст",
     "category": "Категорія",
     "tags": "Теги",
+    "errorCodes": "Коди помилок",
     "author": "Автор",
     "viewCount": "Переглядів",
-    "helpfulCount": "Корисно"
+    "helpfulCount": "Корисно",
+    "published": "Опубліковано",
+    "draft": "Чернетка"
+  },
+  "placeholders": {
+    "addTags": "Додайте теги",
+    "addErrorCodes": "Додайте коди помилок (наприклад: ERR001)"
   },
   "category": {
     "troubleshooting": "Усунення несправностей",
@@ -21,7 +29,26 @@
   "actions": {
     "publish": "Опублікувати",
     "unpublish": "Зняти з публікації",
-    "markHelpful": "Корисно"
+    "markHelpful": "Корисно",
+    "markNotHelpful": "Не корисно",
+    "close": "Закрити"
+  },
+  "validation": {
+    "titleRequired": "Заголовок обов'язковий",
+    "contentRequired": "Зміст обов'язковий"
+  },
+  "messages": {
+    "articleCreated": "Статтю успішно створено",
+    "articleUpdated": "Статтю успішно оновлено",
+    "articleDeleted": "Статтю успішно видалено",
+    "feedbackThanks": "Дякуємо за відгук!",
+    "saveError": "Помилка збереження",
+    "loadError": "Помилка завантаження статей",
+    "searchError": "Помилка пошуку",
+    "deleteConfirm": "Видалити статтю?",
+    "noResults": "Нічого не знайдено",
+    "resultsFound": "Знайдено результатів: {{count}}",
+    "articlesRange": "{{from}}-{{to}} з {{total}} статей"
   },
   "suggestedArticles": "Можливо, це допоможе"
 }

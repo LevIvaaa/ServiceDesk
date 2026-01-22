@@ -7,6 +7,7 @@ export interface KnowledgeArticle {
   content?: string
   content_html?: string | null
   category: string
+  language: string
   tags?: string[]
   error_codes?: string[]
   station_models?: string[]
@@ -32,6 +33,7 @@ export interface ArticleListParams {
   per_page?: number
   search?: string
   category?: string
+  language?: string
   is_published?: boolean
   tags?: string[]
 }
@@ -40,6 +42,7 @@ export interface CreateArticleData {
   title: string
   content: string
   category: string
+  language?: string
   tags?: string[]
   error_codes?: string[]
   station_models?: string[]
@@ -89,12 +92,13 @@ export const knowledgeBaseApi = {
     await client.delete(`/knowledge/${id}`)
   },
 
-  search: async (query: string, limit?: number, category?: string, tags?: string[]): Promise<SearchResult[]> => {
+  search: async (query: string, limit?: number, category?: string, tags?: string[], language?: string): Promise<SearchResult[]> => {
     const response = await client.post<KnowledgeSearchResponse>('/knowledge/search', {
       query,
-      limit,
+      limit: limit || 50,
       category,
       tags,
+      language,
     })
 
     return response.data.results.map((result) => ({
@@ -102,6 +106,7 @@ export const knowledgeBaseApi = {
         id: result.article_id,
         title: result.title,
         category: result.category,
+        language: language || 'uk',
         content: result.content_preview,
         tags,
         is_published: true,

@@ -1,6 +1,7 @@
 {
   "title": "Knowledge Base",
   "create": "Create Article",
+  "edit": "Edit Article",
   "search": "Search Knowledge Base",
   "searchPlaceholder": "Enter search query...",
   "fields": {
@@ -8,9 +9,16 @@
     "content": "Content",
     "category": "Category",
     "tags": "Tags",
+    "errorCodes": "Error Codes",
     "author": "Author",
     "viewCount": "Views",
-    "helpfulCount": "Helpful"
+    "helpfulCount": "Helpful",
+    "published": "Published",
+    "draft": "Draft"
+  },
+  "placeholders": {
+    "addTags": "Add tags",
+    "addErrorCodes": "Add error codes (e.g., ERR001)"
   },
   "category": {
     "troubleshooting": "Troubleshooting",
@@ -21,7 +29,26 @@
   "actions": {
     "publish": "Publish",
     "unpublish": "Unpublish",
-    "markHelpful": "Helpful"
+    "markHelpful": "Helpful",
+    "markNotHelpful": "Not Helpful",
+    "close": "Close"
+  },
+  "validation": {
+    "titleRequired": "Title is required",
+    "contentRequired": "Content is required"
+  },
+  "messages": {
+    "articleCreated": "Article created successfully",
+    "articleUpdated": "Article updated successfully",
+    "articleDeleted": "Article deleted successfully",
+    "feedbackThanks": "Thank you for your feedback!",
+    "saveError": "Save error",
+    "loadError": "Error loading articles",
+    "searchError": "Search error",
+    "deleteConfirm": "Delete article?",
+    "noResults": "No results found",
+    "resultsFound": "Results found: {{count}}",
+    "articlesRange": "{{from}}-{{to}} of {{total}} articles"
   },
   "suggestedArticles": "Suggested Articles"
 }

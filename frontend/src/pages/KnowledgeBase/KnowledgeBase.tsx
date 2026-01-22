@@ -17,6 +17,8 @@ import {
   Spin,
   List,
   Popconfirm,
+  Pagination,
+  Divider,
 } from 'antd'
 import {
   SearchOutlined,
@@ -33,24 +35,24 @@ import { knowledgeBaseApi, KnowledgeArticle, CreateArticleData, SearchResult } f
 const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
 
-const CATEGORIES = [
-  { value: 'troubleshooting', label: 'Усунення несправностей' },
-  { value: 'how-to', label: 'Інструкції' },
-  { value: 'faq', label: 'FAQ' },
-  { value: 'technical', label: 'Технічна документація' },
-]
-
 export default function KnowledgeBase() {
-  const { t } = useTranslation(['knowledge', 'common'])
+  const { t, i18n } = useTranslation(['knowledge', 'common'])
   const [articles, setArticles] = useState<KnowledgeArticle[]>([])
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+
+  const CATEGORIES = [
+    { value: 'troubleshooting', label: t('category.troubleshooting') },
+    { value: 'how-to', label: t('category.how-to') },
+    { value: 'faq', label: t('category.faq') },
+    { value: 'technical', label: t('category.technical') },
+  ]
   const [searching, setSearching] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>()
-  const [_total, setTotal] = useState(0)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [page, _setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [perPage] = useState(12)
 
   const [modalVisible, setModalVisible] = useState(false)
   const [viewModalVisible, setViewModalVisible] = useState(false)
@@ -61,16 +63,18 @@ export default function KnowledgeBase() {
   const fetchArticles = async () => {
     setLoading(true)
     try {
+      const currentLanguage = i18n.language === 'uk' ? 'uk' : 'en'
       const response = await knowledgeBaseApi.list({
         page,
-        per_page: 12,
+        per_page: perPage,
         category: selectedCategory,
+        language: currentLanguage,
         is_published: true,
       })
       setArticles(response.items)
       setTotal(response.total)
     } catch (error) {
-      message.error('Помилка завантаження статей')
+      message.error(t('messages.loadError'))
     } finally {
       setLoading(false)
     }
@@ -80,21 +84,29 @@ export default function KnowledgeBase() {
     if (!searchQuery) {
       fetchArticles()
     }
-  }, [page, selectedCategory])
+  }, [page, selectedCategory, i18n.language])
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       setSearchResults([])
+      setPage(1)
       fetchArticles()
       return
     }
 
     setSearching(true)
     try {
-      const results = await knowledgeBaseApi.search(searchQuery, 10)
+      const currentLanguage = i18n.language === 'uk' ? 'uk' : 'en'
+      const results = await knowledgeBaseApi.search(
+        searchQuery, 
+        50, 
+        selectedCategory, 
+        undefined, 
+        currentLanguage
+      )
       setSearchResults(results)
     } catch (error) {
-      message.error('Помилка пошуку')
+      message.error(t('messages.searchError'))
     } finally {
       setSearching(false)
     }
@@ -104,10 +116,23 @@ export default function KnowledgeBase() {
     const timeoutId = setTimeout(() => {
       if (searchQuery) {
         handleSearch()
+      } else {
+        setSearchResults([])
+        fetchArticles()
       }
     }, 500)
     return () => clearTimeout(timeoutId)
-  }, [searchQuery])
+  }, [searchQuery, selectedCategory, i18n.language])
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleCategoryChange = (value: string | undefined) => {
+    setSelectedCategory(value)
+    setPage(1)
+  }
 
   const handleCreate = () => {
     setEditingArticle(null)
@@ -131,17 +156,17 @@ export default function KnowledgeBase() {
       setViewingArticle(fullArticle)
       setViewModalVisible(true)
     } catch (error) {
-      message.error('Помилка завантаження статті')
+      message.error(t('messages.loadError'))
     }
   }
 
   const handleDelete = async (id: number) => {
     try {
       await knowledgeBaseApi.delete(id)
-      message.success('Статтю успішно видалено')
+      message.success(t('messages.articleDeleted'))
       fetchArticles()
     } catch (error) {
-      message.error('Помилка видалення статті')
+      message.error(t('messages.saveError'))
     }
   }
 
@@ -149,22 +174,22 @@ export default function KnowledgeBase() {
     try {
       if (editingArticle) {
         await knowledgeBaseApi.update(editingArticle.id, values)
-        message.success('Статтю успішно оновлено')
+        message.success(t('messages.articleUpdated'))
       } else {
         await knowledgeBaseApi.create(values)
-        message.success('Статтю успішно створено')
+        message.success(t('messages.articleCreated'))
       }
       setModalVisible(false)
       fetchArticles()
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Помилка збереження')
+      message.error(error.response?.data?.detail || t('messages.saveError'))
     }
   }
 
   const handleFeedback = async (articleId: number, helpful: boolean) => {
     try {
       await knowledgeBaseApi.markHelpful(articleId, helpful)
-      message.success('Дякуємо за відгук!')
+      message.success(t('messages.feedbackThanks'))
     } catch (error) {
       // Ignore feedback errors
     }
@@ -188,10 +213,10 @@ export default function KnowledgeBase() {
         </Button>,
         <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(article)} />,
         <Popconfirm
-          title="Видалити статтю?"
+          title={t('messages.deleteConfirm')}
           onConfirm={() => handleDelete(article.id)}
-          okText="Так"
-          cancelText="Ні"
+          okText={t('common:actions.yes')}
+          cancelText={t('common:actions.no')}
         >
           <Button type="text" danger icon={<DeleteOutlined />} />
         </Popconfirm>,
@@ -252,7 +277,7 @@ export default function KnowledgeBase() {
               style={{ width: 200 }}
               placeholder="Категорія"
               value={selectedCategory}
-              onChange={setSelectedCategory}
+              onChange={handleCategoryChange}
               allowClear
               options={CATEGORIES}
             />
@@ -262,46 +287,75 @@ export default function KnowledgeBase() {
 
       <Spin spinning={loading || searching}>
         {searchQuery && searchResults.length > 0 ? (
-          <List
-            header={<Text strong>Результати пошуку ({searchResults.length})</Text>}
-            dataSource={searchResults}
-            renderItem={(result) => (
-              <List.Item
-                actions={[
-                  <Button type="link" onClick={() => handleView(result.article)}>
-                    Читати
-                  </Button>,
-                ]}
-              >
-                <List.Item.Meta
-                  avatar={<BookOutlined style={{ fontSize: 24 }} />}
-                  title={result.article.title}
-                  description={
-                    <>
-                      <Tag color="blue">{getCategoryLabel(result.article.category)}</Tag>
-                      <Text type="secondary">{result.snippet}</Text>
-                    </>
-                  }
-                />
-              </List.Item>
-            )}
-          />
+          <>
+            <div style={{ marginBottom: 16 }}>
+              <Text strong>{t('messages.resultsFound', { count: searchResults.length })}</Text>
+            </div>
+            <Row gutter={[16, 16]}>
+              {searchResults.map((result) => (
+                <Col xs={24} sm={12} lg={8} xl={6} key={result.article.id}>
+                  <Card
+                    hoverable
+                    onClick={() => handleView(result.article)}
+                    style={{ height: '100%' }}
+                  >
+                    <Card.Meta
+                      avatar={<BookOutlined style={{ fontSize: 24, color: '#1890ff' }} />}
+                      title={result.article.title}
+                      description={
+                        <>
+                          <Tag color="blue">{getCategoryLabel(result.article.category)}</Tag>
+                          {result.article.tags?.slice(0, 2).map(tag => (
+                            <Tag key={tag}>{tag}</Tag>
+                          ))}
+                          <Paragraph
+                            ellipsis={{ rows: 3 }}
+                            style={{ marginTop: 8, marginBottom: 0 }}
+                          >
+                            {result.snippet}
+                          </Paragraph>
+                        </>
+                      }
+                    />
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </>
         ) : searchQuery && searchResults.length === 0 && !searching ? (
-          <Empty description="Нічого не знайдено" />
+          <Empty description={t('messages.noResults')} />
         ) : (
-          <Row gutter={[16, 16]}>
-            {articles.map(article => (
-              <Col xs={24} sm={12} lg={8} xl={6} key={article.id}>
-                {renderArticleCard(article)}
-              </Col>
-            ))}
-          </Row>
+          <>
+            <Row gutter={[16, 16]}>
+              {articles.map(article => (
+                <Col xs={24} sm={12} lg={8} xl={6} key={article.id}>
+                  {renderArticleCard(article)}
+                </Col>
+              ))}
+            </Row>
+            
+            {!searchQuery && total > perPage && (
+              <>
+                <Divider />
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+                  <Pagination
+                    current={page}
+                    total={total}
+                    pageSize={perPage}
+                    onChange={handlePageChange}
+                    showSizeChanger={false}
+                    showTotal={(total, range) => t('messages.articlesRange', { from: range[0], to: range[1], total })}
+                  />
+                </div>
+              </>
+            )}
+          </>
         )}
       </Spin>
 
       {/* Create/Edit Modal */}
       <Modal
-        title={editingArticle ? 'Редагувати статтю' : t('create')}
+        title={editingArticle ? t('edit') : t('create')}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
@@ -316,7 +370,7 @@ export default function KnowledgeBase() {
           <Form.Item
             name="title"
             label={t('fields.title')}
-            rules={[{ required: true, message: "Заголовок обов'язковий" }]}
+            rules={[{ required: true, message: t('validation.titleRequired') }]}
           >
             <Input />
           </Form.Item>
@@ -332,24 +386,24 @@ export default function KnowledgeBase() {
           <Form.Item
             name="content"
             label={t('fields.content')}
-            rules={[{ required: true, message: "Зміст обов'язковий" }]}
+            rules={[{ required: true, message: t('validation.contentRequired') }]}
           >
             <TextArea rows={10} />
           </Form.Item>
 
           <Form.Item name="tags" label={t('fields.tags')}>
-            <Select mode="tags" placeholder="Додайте теги" />
+            <Select mode="tags" placeholder={t('placeholders.addTags')} />
           </Form.Item>
 
-          <Form.Item name="error_codes" label="Коди помилок">
-            <Select mode="tags" placeholder="Додайте коди помилок (наприклад: ERR001)" />
+          <Form.Item name="error_codes" label={t('fields.errorCodes')}>
+            <Select mode="tags" placeholder={t('placeholders.addErrorCodes')} />
           </Form.Item>
 
           <Form.Item name="is_published" valuePropName="checked">
             <Select
               options={[
-                { value: true, label: 'Опубліковано' },
-                { value: false, label: 'Чернетка' },
+                { value: true, label: t('fields.published') },
+                { value: false, label: t('fields.draft') },
               ]}
             />
           </Form.Item>
@@ -375,13 +429,13 @@ export default function KnowledgeBase() {
         footer={
           <Space>
             <Button icon={<LikeOutlined />} onClick={() => viewingArticle && handleFeedback(viewingArticle.id, true)}>
-              Корисно
+              {t('actions.markHelpful')}
             </Button>
             <Button icon={<DislikeOutlined />} onClick={() => viewingArticle && handleFeedback(viewingArticle.id, false)}>
-              Не корисно
+              {t('actions.markNotHelpful')}
             </Button>
             <Button onClick={() => setViewModalVisible(false)}>
-              Закрити
+              {t('actions.close')}
             </Button>
           </Space>
         }
