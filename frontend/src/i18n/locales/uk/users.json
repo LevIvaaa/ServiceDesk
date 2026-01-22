@@ -92,7 +92,8 @@
       "ticketAssigned": "Призначення тікету",
       "ticketStatusChanged": "Зміна статусу",
       "ticketCommented": "Новий коментар",
-      "ticketSlaWarning": "Попередження SLA"
+      "ticketSlaWarning": "Попередження SLA",
+      "ticketEscalated": "Ескалація тікету"
     }
   }
 }

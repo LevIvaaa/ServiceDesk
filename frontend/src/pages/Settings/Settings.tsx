@@ -127,7 +127,7 @@ export default function Settings() {
       label: (
         <span>
           <UserOutlined />
-          Профіль
+          {t('tabs.profile')}
         </span>
       ),
       children: (
@@ -142,8 +142,8 @@ export default function Settings() {
               <Col span={12}>
                 <Form.Item
                   name="first_name"
-                  label="Ім'я"
-                  rules={[{ required: true, message: "Ім'я обов'язкове" }]}
+                  label={t('profile.firstName')}
+                  rules={[{ required: true, message: t('profile.firstNameRequired') }]}
                 >
                   <Input />
                 </Form.Item>
@@ -151,25 +151,25 @@ export default function Settings() {
               <Col span={12}>
                 <Form.Item
                   name="last_name"
-                  label="Прізвище"
-                  rules={[{ required: true, message: "Прізвище обов'язкове" }]}
+                  label={t('profile.lastName')}
+                  rules={[{ required: true, message: t('profile.lastNameRequired') }]}
                 >
                   <Input />
                 </Form.Item>
               </Col>
             </Row>
 
-            <Form.Item name="email" label="Email">
+            <Form.Item name="email" label={t('profile.email')}>
               <Input disabled />
             </Form.Item>
 
-            <Form.Item name="phone" label="Телефон">
+            <Form.Item name="phone" label={t('profile.phone')}>
               <Input placeholder="+380..." />
             </Form.Item>
 
             <Form.Item>
               <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={loading}>
-                Зберегти
+                {t('profile.save')}
               </Button>
             </Form.Item>
           </Form>
@@ -181,11 +181,11 @@ export default function Settings() {
       label: (
         <span>
           <LockOutlined />
-          Безпека
+          {t('tabs.security')}
         </span>
       ),
       children: (
-        <Card title="Зміна пароля">
+        <Card title={t('security.title')}>
           <Form
             form={passwordForm}
             layout="vertical"
@@ -194,18 +194,18 @@ export default function Settings() {
           >
             <Form.Item
               name="current_password"
-              label="Поточний пароль"
-              rules={[{ required: true, message: "Введіть поточний пароль" }]}
+              label={t('security.currentPassword')}
+              rules={[{ required: true, message: t('security.currentPasswordRequired') }]}
             >
               <Input.Password />
             </Form.Item>
 
             <Form.Item
               name="new_password"
-              label="Новий пароль"
+              label={t('security.newPassword')}
               rules={[
-                { required: true, message: "Введіть новий пароль" },
-                { min: 6, message: 'Мінімум 6 символів' },
+                { required: true, message: t('security.newPasswordRequired') },
+                { min: 6, message: t('security.passwordMinLength') },
               ]}
             >
               <Input.Password />
@@ -213,16 +213,16 @@ export default function Settings() {
 
             <Form.Item
               name="confirm_password"
-              label="Підтвердіть пароль"
+              label={t('security.confirmPassword')}
               dependencies={['new_password']}
               rules={[
-                { required: true, message: "Підтвердіть пароль" },
+                { required: true, message: t('security.confirmPasswordRequired') },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     if (!value || getFieldValue('new_password') === value) {
                       return Promise.resolve()
                     }
-                    return Promise.reject(new Error('Паролі не співпадають'))
+                    return Promise.reject(new Error(t('security.passwordsDoNotMatch')))
                   },
                 }),
               ]}
@@ -232,7 +232,7 @@ export default function Settings() {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={loading}>
-                Змінити пароль
+                {t('security.changePassword')}
               </Button>
             </Form.Item>
           </Form>
@@ -244,7 +244,7 @@ export default function Settings() {
       label: (
         <span>
           <BellOutlined />
-          Сповіщення
+          {t('tabs.notifications')}
         </span>
       ),
       children: (
@@ -255,33 +255,33 @@ export default function Settings() {
             onFinish={handleNotificationUpdate}
             style={{ maxWidth: 500 }}
           >
-            <Title level={5}>Канали сповіщень</Title>
+            <Title level={5}>{t('notifications.channels')}</Title>
 
-            <Form.Item name="email_enabled" label="Email сповіщення" valuePropName="checked">
+            <Form.Item name="email_enabled" label={t('notifications.email')} valuePropName="checked">
               <Switch />
             </Form.Item>
 
-            <Form.Item name="telegram_enabled" label="Telegram сповіщення" valuePropName="checked">
+            <Form.Item name="telegram_enabled" label={t('notifications.telegram')} valuePropName="checked">
               <Switch />
             </Form.Item>
 
             <Form.Item
               name="telegram_chat_id"
-              label="Telegram Chat ID"
-              tooltip="Отримайте Chat ID через @userinfobot"
+              label={t('notifications.telegramChatId')}
+              tooltip={t('notifications.telegramTooltip')}
             >
               <Input placeholder="123456789" />
             </Form.Item>
 
             <Divider />
 
-            <Title level={5}>Події для сповіщень</Title>
+            <Title level={5}>{t('notifications.events')}</Title>
 
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
                   name="notify_ticket_created"
-                  label={t('notifications.events.ticketCreated')}
+                  label={t('users:notifications.events.ticketCreated')}
                   valuePropName="checked"
                 >
                   <Switch />
@@ -290,7 +290,7 @@ export default function Settings() {
               <Col span={12}>
                 <Form.Item
                   name="notify_ticket_assigned"
-                  label={t('notifications.events.ticketAssigned')}
+                  label={t('users:notifications.events.ticketAssigned')}
                   valuePropName="checked"
                 >
                   <Switch />
@@ -302,7 +302,7 @@ export default function Settings() {
               <Col span={12}>
                 <Form.Item
                   name="notify_ticket_status_changed"
-                  label={t('notifications.events.ticketStatusChanged')}
+                  label={t('users:notifications.events.ticketStatusChanged')}
                   valuePropName="checked"
                 >
                   <Switch />
@@ -311,7 +311,7 @@ export default function Settings() {
               <Col span={12}>
                 <Form.Item
                   name="notify_ticket_commented"
-                  label={t('notifications.events.ticketCommented')}
+                  label={t('users:notifications.events.ticketCommented')}
                   valuePropName="checked"
                 >
                   <Switch />
@@ -323,7 +323,7 @@ export default function Settings() {
               <Col span={12}>
                 <Form.Item
                   name="notify_ticket_sla_warning"
-                  label={t('notifications.events.ticketSlaWarning')}
+                  label={t('users:notifications.events.ticketSlaWarning')}
                   valuePropName="checked"
                 >
                   <Switch />
@@ -332,7 +332,7 @@ export default function Settings() {
               <Col span={12}>
                 <Form.Item
                   name="notify_ticket_escalated"
-                  label="Ескалація тікету"
+                  label={t('users:notifications.events.ticketEscalated')}
                   valuePropName="checked"
                 >
                   <Switch />
@@ -342,7 +342,7 @@ export default function Settings() {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={loading}>
-                Зберегти налаштування
+                {t('notifications.save')}
               </Button>
             </Form.Item>
           </Form>
@@ -354,23 +354,23 @@ export default function Settings() {
       label: (
         <span>
           <GlobalOutlined />
-          Мова
+          {t('tabs.language')}
         </span>
       ),
       children: (
-        <Card title="Мова інтерфейсу">
+        <Card title={t('language.title')}>
           <Space direction="vertical" size="large">
             <div>
-              <Text>Поточна мова: </Text>
-              <Text strong>{i18n.language === 'uk' ? 'Українська' : 'English'}</Text>
+              <Text>{t('language.current')}: </Text>
+              <Text strong>{i18n.language === 'uk' ? t('language.ukrainian') : t('language.english')}</Text>
             </div>
             <Select
               value={i18n.language}
               onChange={handleLanguageChange}
               style={{ width: 200 }}
               options={[
-                { value: 'uk', label: '🇺🇦 Українська' },
-                { value: 'en', label: '🇬🇧 English' },
+                { value: 'uk', label: `🇺🇦 ${t('language.ukrainian')}` },
+                { value: 'en', label: `🇬🇧 ${t('language.english')}` },
               ]}
             />
           </Space>

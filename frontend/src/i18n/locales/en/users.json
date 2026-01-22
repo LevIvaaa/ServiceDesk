@@ -92,7 +92,8 @@
       "ticketAssigned": "Ticket Assigned",
       "ticketStatusChanged": "Status Changed",
       "ticketCommented": "New Comment",
-      "ticketSlaWarning": "SLA Warning"
+      "ticketSlaWarning": "SLA Warning",
+      "ticketEscalated": "Ticket Escalated"
     }
   }
 }
