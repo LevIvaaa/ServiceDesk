@@ -126,5 +126,35 @@
     "assignee": "Виконавець",
     "selectDepartment": "Оберіть відділ...",
     "selectAssignee": "Оберіть виконавця..."
+  },
+  "attachments": {
+    "title": "Вкладення",
+    "upload": "Завантажити файли",
+    "hint": "Підтримуються: зображення та відео (макс. 100MB на файл)",
+    "pasteHint": "Можна вставити зображення з буфера обміну або перетягнути файли сюди",
+    "pastedFromClipboard": "Зображення вставлено з буфера обміну",
+    "imagesExtracted": "Зображення додано до вкладень"
+  },
+  "aiAnalysis": {
+    "title": "AI аналіз логу",
+    "analyze": "Проаналізувати лог",
+    "analyzing": "Аналізую...",
+    "summary": "Підсумок",
+    "errorCode": "Код помилки",
+    "possibleCause": "Можлива причина",
+    "recommendation": "Рекомендація",
+    "severity": "Серйозність",
+    "affectedComponents": "Уражені компоненти",
+    "relatedArticles": "Пов'язані статті"
+  },
+  "filters": {
+    "createdBy": "Створив",
+    "assignedTo": "Виконавець",
+    "reset": "Скинути"
+  },
+  "messages": {
+    "deleted": "Тікет видалено",
+    "deleteError": "Помилка видалення",
+    "deleteConfirm": "Видалити цей тікет?"
   }
 }

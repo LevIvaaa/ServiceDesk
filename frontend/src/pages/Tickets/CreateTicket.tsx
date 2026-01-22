@@ -169,7 +169,7 @@ export default function CreateTicket() {
   const loadInitialStations = async () => {
     try {
       setStationSearchLoading(true)
-      const stations = await stationsApi.search('', 20)
+      const stations = await stationsApi.search('', 20, i18n.language)
       const options = stations.map((station) => ({
         value: station.id,
         label: formatStationLabel(station),
@@ -188,7 +188,7 @@ export default function CreateTicket() {
     loadDepartments()
     loadUsers()
     loadOperators()
-  }, [])
+  }, [i18n.language])
 
   const handleStationSearch = async (searchValue: string) => {
     if (searchTimeout.current) {
@@ -198,7 +198,7 @@ export default function CreateTicket() {
     searchTimeout.current = setTimeout(async () => {
       try {
         setStationSearchLoading(true)
-        const stations = await stationsApi.search(searchValue || '', 20)
+        const stations = await stationsApi.search(searchValue || '', 20, i18n.language)
         const options = stations.map((station) => ({
           value: station.id,
           label: formatStationLabel(station),

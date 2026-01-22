@@ -94,6 +94,7 @@ async def search_stations(
     current_user: Annotated[User, Depends(PermissionRequired("stations.view"))],
     q: str = Query("", min_length=0),
     limit: int = Query(10, ge=1, le=50),
+    language: str = Query("uk", regex="^(uk|en)$"),
 ):
     """Search stations by ID or name (for autocomplete). Empty query returns all stations up to limit."""
     query = select(Station).options(selectinload(Station.operator), selectinload(Station.ports))
@@ -108,7 +109,35 @@ async def search_stations(
     query = query.order_by(Station.station_id).limit(limit)
     result = await db.execute(query)
     stations = result.scalars().all()
-    return [StationResponse.model_validate(s) for s in stations]
+    
+    # Apply translations
+    items = []
+    for station in stations:
+        station_dict = {
+            "id": station.id,
+            "station_id": station.station_id,
+            "external_id": station.external_id,
+            "name": station.name_en if language == "en" and station.name_en else station.name,
+            "operator_id": station.operator_id,
+            "operator": station.operator,
+            "address": station.address_en if language == "en" and station.address_en else station.address,
+            "city": station.city_en if language == "en" and station.city_en else station.city,
+            "region": station.region_en if language == "en" and station.region_en else station.region,
+            "latitude": station.latitude,
+            "longitude": station.longitude,
+            "model": station.model,
+            "manufacturer": station.manufacturer,
+            "firmware_version": station.firmware_version,
+            "installation_date": station.installation_date,
+            "last_maintenance_date": station.last_maintenance_date,
+            "status": station.status,
+            "ports": station.ports,
+            "created_at": station.created_at,
+            "updated_at": station.updated_at,
+        }
+        items.append(StationResponse(**station_dict))
+    
+    return items
 
 
 @router.post("", response_model=StationResponse, status_code=status.HTTP_201_CREATED)

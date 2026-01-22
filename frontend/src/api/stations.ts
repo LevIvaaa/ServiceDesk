@@ -127,9 +127,9 @@ export const stationsApi = {
     await client.delete(`/stations/${id}`)
   },
 
-  search: async (q: string, limit?: number): Promise<Station[]> => {
+  search: async (q: string, limit?: number, language?: string): Promise<Station[]> => {
     const response = await client.get<Station[]>('/stations/search', {
-      params: { q, limit },
+      params: { q, limit, language: language || 'uk' },
     })
     return response.data
   },

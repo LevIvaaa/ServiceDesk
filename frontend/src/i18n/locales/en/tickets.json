@@ -2,6 +2,30 @@
   "title": "Tickets",
   "create": "Create Ticket",
   "ticketNumber": "Ticket Number",
+  "incidentInfo": "Incident Information",
+  "station": {
+    "title": "Station",
+    "select": "Select Station",
+    "searchPlaceholder": "Search by station ID or name...",
+    "operator": "Operator",
+    "address": "Address",
+    "model": "Model",
+    "selectPort": "Select Port (optional)",
+    "portPlaceholder": "Select port..."
+  },
+  "logs": {
+    "title": "Station Logs",
+    "upload": "Upload Logs",
+    "hint": "Supported formats: .log, .txt, .zip, .gz, .tar, .json, .xml, .csv (max 50MB per file)",
+    "textLogTitle": "Paste Log Text",
+    "textLogPlaceholder": "Paste OCPP logs, station output or other text logs here...",
+    "textLogHint": "You can paste OCPP messages, station diagnostics or any text output",
+    "orUploadFile": "or upload files",
+    "textLogUploadError": "Failed to save text log",
+    "emptyLog": "Enter log for analysis",
+    "analysisSuccess": "Log analyzed successfully",
+    "analysisError": "Log analysis error"
+  },
   "status": {
     "label": "Status",
     "new": "New",
@@ -28,7 +52,9 @@
   },
   "fields": {
     "title": "Title",
+    "titlePlaceholder": "Brief description of the issue",
     "description": "Description",
+    "descriptionPlaceholder": "Detailed description of the issue",
     "station": "Station",
     "port": "Port",
     "assignedUser": "Assigned To",
@@ -42,6 +68,7 @@
   "reporter": {
     "title": "Reporter",
     "name": "Name",
+    "namePlaceholder": "Customer name",
     "phone": "Phone",
     "email": "Email"
   },
@@ -59,5 +86,79 @@
     "delegate": "Delegate",
     "changeStatus": "Change Status",
     "collectLogs": "Collect Logs"
+  },
+  "parseMessage": {
+    "title": "Customer Message",
+    "parse": "Parse with AI",
+    "placeholder": "Paste customer message here (email, chat, etc.) and click 'Parse with AI' to automatically fill form fields...",
+    "hint": "AI will extract: title, description, category, priority, station ID, port number, and reporter contacts",
+    "imageHint": "If you paste images, they will be automatically added to attachments",
+    "emptyMessage": "Please enter a message to parse",
+    "success": "Message parsed successfully!",
+    "error": "Failed to parse message",
+    "missingEntities": "Data not found in database",
+    "missingEntitiesDesc": "The following data was not found in the database:",
+    "operator": "Operator",
+    "station": "Station",
+    "createOperator": "Create",
+    "createStation": "Create",
+    "skipAndContinue": "Skip and continue without adding",
+    "createOperatorTitle": "Create New Operator",
+    "createStationTitle": "Create New Station",
+    "operatorName": "Operator Name",
+    "operatorCode": "Code",
+    "operatorPhone": "Phone",
+    "operatorEmail": "Email",
+    "stationId": "Station ID",
+    "stationName": "Station Name",
+    "stationAddress": "Address",
+    "stationCity": "City",
+    "operatorId": "Operator",
+    "selectOperator": "Select operator",
+    "operatorCreated": "Operator created!",
+    "stationCreated": "Station created!"
+  },
+  "quickCreate": {
+    "operator": "Add Operator",
+    "station": "Add Station",
+    "operatorTitle": "Add New Operator",
+    "stationTitle": "Add New Station"
+  },
+  "assignment": {
+    "title": "Assignment",
+    "department": "Department",
+    "assignee": "Assignee",
+    "selectDepartment": "Select department...",
+    "selectAssignee": "Select assignee..."
+  },
+  "attachments": {
+    "title": "Attachments",
+    "upload": "Upload Files",
+    "hint": "Supported: images and videos (max 100MB per file)",
+    "pasteHint": "You can paste images from clipboard or drag & drop files here",
+    "pastedFromClipboard": "Image pasted from clipboard",
+    "imagesExtracted": "Images extracted to attachments"
+  },
+  "aiAnalysis": {
+    "title": "AI Log Analysis",
+    "analyze": "Analyze Log",
+    "analyzing": "Analyzing...",
+    "summary": "Summary",
+    "errorCode": "Error Code",
+    "possibleCause": "Possible Cause",
+    "recommendation": "Recommendation",
+    "severity": "Severity",
+    "affectedComponents": "Affected Components",
+    "relatedArticles": "Related Articles"
+  },
+  "filters": {
+    "createdBy": "Created By",
+    "assignedTo": "Assigned To",
+    "reset": "Reset"
+  },
+  "messages": {
+    "deleted": "Ticket deleted",
+    "deleteError": "Delete error",
+    "deleteConfirm": "Delete this ticket?"
   }
 }

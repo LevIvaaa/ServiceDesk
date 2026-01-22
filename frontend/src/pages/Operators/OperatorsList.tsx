@@ -46,7 +46,7 @@ export default function OperatorsList() {
       setOperators(response.items)
       setTotal(response.total)
     } catch (error) {
-      message.error('Помилка завантаження операторів')
+      message.error(t('operators.loadError'))
     } finally {
       setLoading(false)
     }
@@ -71,10 +71,10 @@ export default function OperatorsList() {
   const handleDelete = async (id: number) => {
     try {
       await operatorsApi.delete(id)
-      message.success('Оператора успішно видалено')
+      message.success(t('operators.deleted'))
       fetchOperators()
     } catch (error) {
-      message.error('Помилка видалення оператора')
+      message.error(t('operators.deleteError'))
     }
   }
 
@@ -82,15 +82,15 @@ export default function OperatorsList() {
     try {
       if (editingOperator) {
         await operatorsApi.update(editingOperator.id, values)
-        message.success('Оператора успішно оновлено')
+        message.success(t('operators.updated'))
       } else {
         await operatorsApi.create(values)
-        message.success('Оператора успішно створено')
+        message.success(t('operators.created'))
       }
       setModalVisible(false)
       fetchOperators()
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Помилка збереження')
+      message.error(error.response?.data?.detail || t('operators.saveError'))
     }
   }
 
@@ -102,7 +102,7 @@ export default function OperatorsList() {
       sorter: true,
     },
     {
-      title: 'Код',
+      title: t('operators.code'),
       dataIndex: 'code',
       key: 'code',
       width: 120,
@@ -125,13 +125,13 @@ export default function OperatorsList() {
       align: 'center' as const,
     },
     {
-      title: 'Статус',
+      title: t('operators.status'),
       dataIndex: 'is_active',
       key: 'is_active',
       width: 100,
       render: (isActive: boolean) => (
         <Tag color={isActive ? 'green' : 'red'}>
-          {isActive ? 'Активний' : 'Неактивний'}
+          {isActive ? t('operators.active') : t('operators.inactive')}
         </Tag>
       ),
     },
@@ -147,11 +147,11 @@ export default function OperatorsList() {
             onClick={() => handleEdit(record)}
           />
           <Popconfirm
-            title="Видалити оператора?"
-            description="Ця дія незворотна"
+            title={t('operators.deleteConfirm')}
+            description={t('operators.deleteDescription')}
             onConfirm={() => handleDelete(record.id)}
-            okText="Так"
-            cancelText="Ні"
+            okText={t('common:actions.yes')}
+            cancelText={t('common:actions.no')}
           >
             <Button type="text" danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -190,7 +190,7 @@ export default function OperatorsList() {
           pageSize,
           total,
           showSizeChanger: true,
-          showTotal: (total) => `Всього: ${total}`,
+          showTotal: (total) => t('common:table.total', { total }),
           onChange: (p, ps) => {
             setPage(p)
             setPageSize(ps)
@@ -199,7 +199,7 @@ export default function OperatorsList() {
       />
 
       <Modal
-        title={editingOperator ? 'Редагувати оператора' : t('operators.create')}
+        title={editingOperator ? t('operators.edit') : t('operators.create')}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
@@ -214,15 +214,15 @@ export default function OperatorsList() {
           <Form.Item
             name="name"
             label={t('operators.name')}
-            rules={[{ required: true, message: "Назва обов'язкова" }]}
+            rules={[{ required: true, message: t('operators.nameRequired') }]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
             name="code"
-            label="Код"
-            rules={[{ required: true, message: "Код обов'язковий" }]}
+            label={t('operators.code')}
+            rules={[{ required: true, message: t('operators.codeRequired') }]}
           >
             <Input disabled={!!editingOperator} />
           </Form.Item>
@@ -235,11 +235,11 @@ export default function OperatorsList() {
             <Input />
           </Form.Item>
 
-          <Form.Item name="api_endpoint" label="API Endpoint">
+          <Form.Item name="api_endpoint" label={t('operators.apiEndpoint')}>
             <Input />
           </Form.Item>
 
-          <Form.Item name="notes" label="Нотатки">
+          <Form.Item name="notes" label={t('operators.notes')}>
             <Input.TextArea rows={3} />
           </Form.Item>
 
