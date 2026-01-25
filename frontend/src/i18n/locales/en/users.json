@@ -80,6 +80,7 @@
   "roles": {
     "title": "Roles",
     "operator": "User",
+    "ticket_handler": "Ticket Handler",
     "technician": "Technician",
     "manager": "Manager"
   },

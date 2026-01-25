@@ -80,6 +80,7 @@
   "roles": {
     "title": "Ролі",
     "operator": "Користувач",
+    "ticket_handler": "Обробник тікетів",
     "technician": "Технічний спеціаліст",
     "manager": "Керівник"
   },

@@ -275,7 +275,7 @@ export default function KnowledgeBase() {
             <Select
               size="large"
               style={{ width: 200 }}
-              placeholder="Категорія"
+              placeholder={i18n.language === 'en' ? 'Category' : 'Категорія'}
               value={selectedCategory}
               onChange={handleCategoryChange}
               allowClear

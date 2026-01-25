@@ -168,5 +168,14 @@
     "deleted": "Ticket deleted",
     "deleteError": "Delete error",
     "deleteConfirm": "Delete this ticket?"
+  },
+  "dashboard": {
+    "openTickets": "Open Tickets",
+    "createdToday": "Created Today",
+    "resolvedToday": "Resolved Today",
+    "slaBreached": "SLA Breached",
+    "ticketsByStatus": "Tickets by Status",
+    "ticketsByPriority": "Tickets by Priority",
+    "myTickets": "My Tickets"
   }
 }

@@ -908,7 +908,7 @@ export default function TicketDetail() {
   return (
     <div>
       <Space style={{ marginBottom: 16 }}>
-        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/tickets')}>
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
           {t('common:actions.back')}
         </Button>
         {hasPermission('tickets.edit') && (

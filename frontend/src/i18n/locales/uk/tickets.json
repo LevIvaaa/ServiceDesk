@@ -167,5 +167,14 @@
     "deleted": "Тікет видалено",
     "deleteError": "Помилка видалення",
     "deleteConfirm": "Видалити цей тікет?"
+  },
+  "dashboard": {
+    "openTickets": "Відкриті тікети",
+    "createdToday": "Створено сьогодні",
+    "resolvedToday": "Вирішено сьогодні",
+    "slaBreached": "Порушення SLA",
+    "ticketsByStatus": "Тікети за статусом",
+    "ticketsByPriority": "Тікети за пріоритетом",
+    "myTickets": "Мої тікети"
   }
 }

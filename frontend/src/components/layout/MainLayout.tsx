@@ -91,10 +91,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
         const count = await notificationsApi.getCount()
         const newUnreadCount = count.unread
 
-        // Play sound if new notifications arrived (not on first load)
-        if (!isFirstLoadRef.current && newUnreadCount > prevUnreadCountRef.current) {
-          playNotificationSound()
-        }
+        // Sound disabled
+        // if (!isFirstLoadRef.current && newUnreadCount > prevUnreadCountRef.current) {
+        //   playNotificationSound()
+        // }
 
         prevUnreadCountRef.current = newUnreadCount
         isFirstLoadRef.current = false
@@ -105,7 +105,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }
 
     fetchCount()
-    const interval = setInterval(fetchCount, 30000) // Every 30 seconds
+    const interval = setInterval(fetchCount, 5000) // Every 5 seconds
     return () => clearInterval(interval)
   }, [])
 
@@ -149,9 +149,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/',
       icon: <DashboardOutlined />,
       label: t('menu.dashboard'),
+      visible: hasPermission('tickets.create'), // Hide for ticket handlers
     },
     {
-      key: '/tickets',
+      key: hasPermission('tickets.assign') && !hasPermission('tickets.create') ? '/tickets/queue' : '/tickets',
       icon: <FileTextOutlined />,
       label: t('menu.tickets'),
     },
@@ -159,13 +160,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/stations',
       icon: <ThunderboltOutlined />,
       label: t('menu.stations'),
-      visible: hasPermission('stations.view'),
+      visible: hasPermission('stations.view') && hasPermission('tickets.create'), // Hide for ticket handlers
     },
     {
       key: '/operators',
       icon: <TeamOutlined />,
       label: t('menu.operators'),
-      visible: hasPermission('operators.view'),
+      visible: hasPermission('operators.view') && hasPermission('tickets.create'), // Hide for ticket handlers
     },
     {
       key: '/knowledge',

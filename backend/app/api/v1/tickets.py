@@ -90,7 +90,12 @@ async def list_tickets(
             )
         )
     if status:
-        query = query.where(Ticket.status == status)
+        # Support multiple statuses separated by comma
+        if ',' in status:
+            statuses = [s.strip() for s in status.split(',')]
+            query = query.where(Ticket.status.in_(statuses))
+        else:
+            query = query.where(Ticket.status == status)
     if priority:
         query = query.where(Ticket.priority == priority)
     if category:
@@ -185,6 +190,11 @@ async def create_ticket(
         .where(Ticket.id == ticket.id)
     )
     ticket = result.scalar_one()
+
+    # Send notification about new ticket
+    from app.services.notification_service import NotificationService
+    notification_service = NotificationService(db)
+    await notification_service.notify_ticket_created(ticket)
 
     return await _build_ticket_response(ticket, db)
 
@@ -365,6 +375,14 @@ async def update_ticket_status(
         db.add(comment)
 
     await db.commit()
+
+    # Send notification if status changed to resolved or closed
+    if status_data.status in ["resolved", "closed"] and old_status != status_data.status:
+        from app.services.notification_service import NotificationService
+        notification_service = NotificationService(db)
+        await notification_service.notify_ticket_status_changed(
+            ticket, old_status, status_data.status, current_user
+        )
 
     # Reload ticket with all relationships properly loaded (including Station.operator)
     result = await db.execute(

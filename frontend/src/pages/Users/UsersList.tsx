@@ -27,11 +27,13 @@ import {
 import { usersApi, User, CreateUserData, UpdateUserData } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
 import { rolesApi, Role } from '../../api/roles'
+import { useAuthStore } from '../../store/authStore'
 
 const { Title } = Typography
 
 export default function UsersList() {
   const { t, i18n } = useTranslation(['users', 'common'])
+  const { user: currentUser, hasPermission } = useAuthStore()
   const [users, setUsers] = useState<User[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [roles, setRoles] = useState<Role[]>([])
@@ -48,14 +50,23 @@ export default function UsersList() {
   const [form] = Form.useForm()
   const [passwordForm] = Form.useForm()
 
+  // Check if user is ticket handler (has assign but not create permission)
+  const isTicketHandler = hasPermission('tickets.assign') && !hasPermission('tickets.create')
+
   const fetchUsers = async () => {
     setLoading(true)
     try {
+      // For ticket handlers, filter by their department
+      const departmentFilter = isTicketHandler && currentUser?.department_id 
+        ? currentUser.department_id 
+        : filterDepartment
+
       const response = await usersApi.list({
         page,
         per_page: pageSize,
         search: search || undefined,
-        department_id: filterDepartment,
+        department_id: departmentFilter,
+        is_active: true, // Only show active users
         lang: i18n.language,
       })
       setUsers(response.items)
@@ -222,28 +233,30 @@ export default function UsersList() {
       key: 'actions',
       width: 150,
       render: (_: any, record: User) => (
-        <Space>
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          />
-          <Button
-            type="text"
-            icon={<KeyOutlined />}
-            onClick={() => handleResetPassword(record.id)}
-            title={t('actions.resetPassword')}
-          />
-          <Popconfirm
-            title={t('messages.deleteConfirm')}
-            description={t('messages.deleteDescription')}
-            onConfirm={() => handleDelete(record.id)}
-            okText={t('common:actions.yes')}
-            cancelText={t('common:actions.no')}
-          >
-            <Button type="text" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </Space>
+        !isTicketHandler ? (
+          <Space>
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+            />
+            <Button
+              type="text"
+              icon={<KeyOutlined />}
+              onClick={() => handleResetPassword(record.id)}
+              title={t('actions.resetPassword')}
+            />
+            <Popconfirm
+              title={t('messages.deleteConfirm')}
+              description={t('messages.deleteDescription')}
+              onConfirm={() => handleDelete(record.id)}
+              okText={t('common:actions.yes')}
+              cancelText={t('common:actions.no')}
+            >
+              <Button type="text" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          </Space>
+        ) : null
       ),
     },
   ]
@@ -252,9 +265,11 @@ export default function UsersList() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <Title level={2}>{t('title')}</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          {t('create')}
-        </Button>
+        {!isTicketHandler && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+            {t('create')}
+          </Button>
+        )}
       </div>
 
       <Card style={{ marginBottom: 16 }}>
@@ -269,16 +284,18 @@ export default function UsersList() {
               allowClear
             />
           </Col>
-          <Col>
-            <Select
-              placeholder={t('fields.department')}
-              value={filterDepartment}
-              onChange={setFilterDepartment}
-              style={{ width: 200 }}
-              allowClear
-              options={departments.map(d => ({ value: d.id, label: d.name }))}
-            />
-          </Col>
+          {!isTicketHandler && (
+            <Col>
+              <Select
+                placeholder={t('fields.department')}
+                value={filterDepartment}
+                onChange={setFilterDepartment}
+                style={{ width: 200 }}
+                allowClear
+                options={departments.map(d => ({ value: d.id, label: d.name }))}
+              />
+            </Col>
+          )}
         </Row>
       </Card>
 

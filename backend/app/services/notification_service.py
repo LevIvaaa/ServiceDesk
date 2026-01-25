@@ -26,6 +26,52 @@ class NotificationService:
 
     async def notify_ticket_created(self, ticket: Ticket):
         """Notify about new ticket creation."""
+        # Get all users with tickets.assign permission (ticket handlers)
+        from app.models.role import Permission, RolePermission
+        from app.models.user import UserRole
+        
+        # Find permission ID for tickets.assign
+        perm_result = await self.db.execute(
+            select(Permission).where(Permission.name == "tickets.assign")
+        )
+        assign_permission = perm_result.scalar_one_or_none()
+        
+        if assign_permission:
+            # Find all roles with this permission
+            role_perm_result = await self.db.execute(
+                select(RolePermission.role_id).where(
+                    RolePermission.permission_id == assign_permission.id
+                )
+            )
+            role_ids = [row[0] for row in role_perm_result.fetchall()]
+            
+            # Find all users with these roles
+            if role_ids:
+                user_role_result = await self.db.execute(
+                    select(UserRole.user_id).where(UserRole.role_id.in_(role_ids)).distinct()
+                )
+                user_ids = [row[0] for row in user_role_result.fetchall()]
+                
+                # Create notifications for ticket handlers
+                for user_id in user_ids:
+                    # Don't notify the creator
+                    if user_id == ticket.created_by_id:
+                        continue
+                        
+                    user_settings = await self._get_user_notification_settings(user_id)
+                    if user_settings and user_settings.notify_ticket_created:
+                        notification = Notification(
+                            user_id=user_id,
+                            ticket_id=ticket.id,
+                            type="ticket_created",
+                            title=f"Новий тікет #{ticket.ticket_number}",
+                            message=f"Створено новий тікет \"{ticket.title}\" (пріоритет: {self._translate_priority(ticket.priority)})",
+                        )
+                        self.db.add(notification)
+        
+        await self.db.commit()
+
+        # Also send to standard recipients (assigned user, department head)
         recipients = await self._get_recipients(ticket, NotificationEvent.TICKET_CREATED)
 
         template_data = {
@@ -33,7 +79,7 @@ class NotificationService:
             "title": ticket.title,
             "priority": ticket.priority,
             "category": ticket.category,
-            "station": ticket.station.station_number if ticket.station else None,
+            "station": ticket.station.station_id if ticket.station else None,
             "created_by": f"{ticket.created_by.first_name} {ticket.created_by.last_name}",
             "url": f"{settings.FRONTEND_URL}/tickets/{ticket.id}",
             "subject": f"Новий тікет #{ticket.ticket_number}",
@@ -83,6 +129,19 @@ class NotificationService:
     ):
         """Notify about ticket status change."""
         recipients = await self._get_recipients(ticket, NotificationEvent.TICKET_STATUS_CHANGED)
+
+        # Save notification to database for each recipient
+        for user, user_settings in recipients:
+            notification = Notification(
+                user_id=user.id,
+                ticket_id=ticket.id,
+                type="ticket_status_changed",
+                title=f"Статус тікету #{ticket.ticket_number} змінено",
+                message=f"Статус тікету \"{ticket.title}\" змінено з \"{self._translate_status(old_status)}\" на \"{self._translate_status(new_status)}\"",
+            )
+            self.db.add(notification)
+        
+        await self.db.commit()
 
         template_data = {
             "ticket_number": ticket.ticket_number,

@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard'
 import TicketsList from './pages/Tickets/TicketsList'
 import TicketDetail from './pages/Tickets/TicketDetail'
 import CreateTicket from './pages/Tickets/CreateTicket'
+import IncomingQueue from './pages/Tickets/IncomingQueue'
 import UsersList from './pages/Users/UsersList'
 import DepartmentsList from './pages/Departments/DepartmentsList'
 import StationsList from './pages/Stations/StationsList'
@@ -56,7 +57,7 @@ function App() {
   const antdLocale = i18n.language === 'en' ? enUS : ukUA
 
   return (
-    <ConfigProvider locale={antdLocale}>
+    <ConfigProvider locale={antdLocale} key={i18n.language}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
@@ -67,6 +68,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/tickets" element={<TicketsList />} />
+                  <Route path="/tickets/queue" element={<IncomingQueue />} />
                   <Route path="/tickets/new" element={<CreateTicket />} />
                   <Route path="/tickets/:id" element={<TicketDetail />} />
                   <Route path="/users" element={<UsersList />} />

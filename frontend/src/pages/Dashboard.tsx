@@ -9,6 +9,7 @@ import {
   WarningOutlined,
 } from '@ant-design/icons'
 import client from '../api/client'
+import { useAuthStore } from '../store/authStore'
 
 const { Title } = Typography
 
@@ -40,6 +41,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const { t } = useTranslation('tickets')
+  const { hasPermission } = useAuthStore()
+
+  // Redirect ticket handlers to queue page
+  useEffect(() => {
+    if (hasPermission('tickets.assign') && !hasPermission('tickets.create')) {
+      navigate('/tickets/queue', { replace: true })
+    }
+  }, [hasPermission, navigate])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,6 +67,9 @@ export default function Dashboard() {
     }
 
     fetchData()
+    // Auto-refresh every 5 seconds
+    const interval = setInterval(fetchData, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   const priorityColors: Record<string, string> = {
@@ -136,7 +148,7 @@ export default function Dashboard() {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Open Tickets"
+              title={t('dashboard.openTickets')}
               value={stats?.open_tickets || 0}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#1890ff' }}
@@ -146,7 +158,7 @@ export default function Dashboard() {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Created Today"
+              title={t('dashboard.createdToday')}
               value={stats?.created_today || 0}
               prefix={<ClockCircleOutlined />}
             />
@@ -155,7 +167,7 @@ export default function Dashboard() {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Resolved Today"
+              title={t('dashboard.resolvedToday')}
               value={stats?.resolved_today || 0}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
@@ -165,7 +177,7 @@ export default function Dashboard() {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="SLA Breached"
+              title={t('dashboard.slaBreached')}
               value={stats?.sla_breached || 0}
               prefix={<WarningOutlined />}
               valueStyle={{ color: stats?.sla_breached ? '#ff4d4f' : undefined }}
@@ -176,7 +188,7 @@ export default function Dashboard() {
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
-          <Card title="Tickets by Status">
+          <Card title={t('dashboard.ticketsByStatus')}>
             <Row gutter={[8, 8]}>
               {stats &&
                 Object.entries(stats.tickets_by_status).map(([status, count]) => (
@@ -192,7 +204,7 @@ export default function Dashboard() {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Tickets by Priority">
+          <Card title={t('dashboard.ticketsByPriority')}>
             <Row gutter={[8, 8]}>
               {stats &&
                 Object.entries(stats.tickets_by_priority).map(([priority, count]) => (
@@ -213,7 +225,7 @@ export default function Dashboard() {
         </Col>
       </Row>
 
-      <Card title="My Tickets" style={{ marginTop: 24 }}>
+      <Card title={t('dashboard.myTickets')} style={{ marginTop: 24 }}>
         <Table
           columns={columns}
           dataSource={myTickets}
