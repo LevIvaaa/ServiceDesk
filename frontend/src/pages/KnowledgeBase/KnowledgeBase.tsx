@@ -15,7 +15,6 @@ import {
   message,
   Empty,
   Spin,
-  List,
   Popconfirm,
   Pagination,
   Divider,
@@ -451,7 +450,7 @@ export default function KnowledgeBase() {
             </Space>
             <div style={{ marginBottom: 16 }}>
               <Text type="secondary">
-                Автор: {viewingArticle.author.first_name} {viewingArticle.author.last_name} |
+                Автор: {viewingArticle.author?.first_name} {viewingArticle.author?.last_name} |
                 Переглядів: {viewingArticle.view_count} |
                 Корисно: {viewingArticle.helpful_count}
               </Text>

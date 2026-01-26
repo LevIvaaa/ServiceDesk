@@ -37,7 +37,14 @@ celery_app.conf.update(
 @celery_app.task
 def check_sla_warnings():
     """Check for tickets approaching SLA breach and send warnings."""
-    asyncio.run(_check_sla_warnings_async())
+    import asyncio
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
+    loop.run_until_complete(_check_sla_warnings_async())
 
 
 async def _check_sla_warnings_async():

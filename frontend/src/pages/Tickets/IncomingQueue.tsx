@@ -98,13 +98,11 @@ export default function IncomingQueue() {
         setStats({ new: newCount, unassigned: unassignedCount, urgent: urgentCount, total: response.total, inProgress: 0 })
       } else if (activeTab === 'inProgress') {
         const inProgressCount = response.items.filter(t => t.status === 'in_progress').length
-        const pendingCount = response.items.filter(t => t.status === 'pending').length
         const urgentCount = response.items.filter(t => t.priority === 'high' || t.priority === 'critical').length
         setStats({ new: 0, unassigned: 0, urgent: urgentCount, total: response.total, inProgress: inProgressCount })
       } else {
         // Completed tab
         const resolvedCount = response.items.filter(t => t.status === 'resolved').length
-        const closedCount = response.items.filter(t => t.status === 'closed').length
         setStats({ new: 0, unassigned: 0, urgent: 0, total: response.total, inProgress: resolvedCount })
       }
     } catch (error) {

@@ -5,8 +5,16 @@ const getApiUrl = (): string => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL
   }
-  // Use the same host as the frontend but with port 8000
-  const { protocol, hostname } = window.location
+  
+  const { protocol, hostname, port } = window.location
+  
+  // If accessing through Cloudflare or standard ports, use relative path
+  if (hostname.includes('trycloudflare.com') || hostname.includes('ngrok') || 
+      port === '' || port === '80' || port === '443') {
+    return '/api/v1'
+  }
+  
+  // Otherwise use localhost with port 8000 (local development)
   return `${protocol}//${hostname}:8000/api/v1`
 }
 
