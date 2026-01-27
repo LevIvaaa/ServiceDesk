@@ -15,6 +15,7 @@ const disableHostCheckPlugin = () => ({
 
 export default defineConfig({
   plugins: [react(), disableHostCheckPlugin()],
+  base: process.env.VITE_BASE_URL || '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -41,5 +42,18 @@ export default defineConfig({
   preview: {
     host: '0.0.0.0',
     port: 3000,
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'antd-vendor': ['antd', '@ant-design/icons'],
+          'i18n-vendor': ['i18next', 'react-i18next'],
+        },
+      },
+    },
   },
 })

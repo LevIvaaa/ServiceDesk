@@ -136,7 +136,11 @@ export default function CreateTicket() {
   const loadDepartments = async () => {
     try {
       setDepartmentsLoading(true)
-      const response = await departmentsApi.list({ is_active: true, per_page: 100 })
+      const response = await departmentsApi.list({ 
+        is_active: true, 
+        per_page: 100,
+        lang: i18n.language 
+      })
       setDepartments(response.items)
     } catch (error) {
       console.error('Failed to load departments:', error)
