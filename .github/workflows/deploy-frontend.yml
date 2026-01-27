@@ -43,6 +43,11 @@ jobs:
         working-directory: ./frontend
         run: npm run build
       
+      # Шаг 4.5: Добавить .nojekyll для GitHub Pages
+      - name: Add .nojekyll file
+        working-directory: ./frontend/dist
+        run: touch .nojekyll
+      
       # Шаг 5: Настроить GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v4
