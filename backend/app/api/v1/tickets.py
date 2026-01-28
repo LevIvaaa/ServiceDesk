@@ -46,14 +46,43 @@ router = APIRouter()
 
 
 async def generate_ticket_number(db: AsyncSession) -> str:
-    """Generate unique ticket number: SKAI-YYYY-NNNNNN"""
+    """Generate unique ticket number: SKAI-YYYY-NNNNNN with retry logic"""
     year = datetime.utcnow().year
-    result = await db.execute(
-        select(func.count())
-        .where(Ticket.ticket_number.like(f"SKAI-{year}-%"))
-    )
-    count = result.scalar() + 1
-    return f"SKAI-{year}-{count:06d}"
+    max_retries = 5
+    
+    for attempt in range(max_retries):
+        # Get the maximum ticket number for this year
+        result = await db.execute(
+            select(func.max(Ticket.ticket_number))
+            .where(Ticket.ticket_number.like(f"SKAI-{year}-%"))
+        )
+        max_number = result.scalar()
+        
+        if max_number:
+            # Extract counter from last ticket number
+            try:
+                counter = int(max_number.split('-')[-1]) + 1
+            except (ValueError, IndexError):
+                counter = 1
+        else:
+            counter = 1
+        
+        ticket_number = f"SKAI-{year}-{counter:06d}"
+        
+        # Check if this number already exists
+        check_result = await db.execute(
+            select(Ticket.id).where(Ticket.ticket_number == ticket_number)
+        )
+        if not check_result.scalar():
+            return ticket_number
+        
+        # If exists, try next number
+        counter += 1
+    
+    # Fallback: use timestamp-based unique number
+    import time
+    timestamp = int(time.time() * 1000) % 1000000
+    return f"SKAI-{year}-{timestamp:06d}"
 
 
 @router.get("", response_model=PaginatedResponse[TicketListResponse])

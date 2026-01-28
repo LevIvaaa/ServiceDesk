@@ -44,5 +44,11 @@
     "required": "This field is required",
     "email": "Enter a valid email",
     "minLength": "Minimum length: {min} characters"
+  },
+  "messages": {
+    "error": "An error occurred",
+    "success": "Success",
+    "loadError": "Failed to load data",
+    "saveError": "Failed to save"
   }
 }
