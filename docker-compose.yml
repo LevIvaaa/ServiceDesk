@@ -3,24 +3,24 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: skai_postgres
+    container_name: ecofactor_postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-skai_servicedesk}
-      POSTGRES_USER: ${POSTGRES_USER:-skai}
+      POSTGRES_DB: ${POSTGRES_DB:-ecofactor_servicedesk}
+      POSTGRES_USER: ${POSTGRES_USER:-ecofactor}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-skai}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecofactor}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: skai_qdrant
+    container_name: ecofactor_qdrant
     volumes:
       - qdrant_data:/qdrant/storage
     ports:
@@ -31,7 +31,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: skai_redis
+    container_name: ecofactor_redis
     volumes:
       - redis_data:/data
     ports:
@@ -41,11 +41,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: skai_backend
+    container_name: ecofactor_backend
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-skai}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-skai_servicedesk}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ecofactor}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-ecofactor_servicedesk}
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
       REDIS_URL: redis://redis:6379/0
@@ -68,7 +68,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: skai_frontend
+    container_name: ecofactor_frontend
     environment:
       - DANGEROUSLY_DISABLE_HOST_CHECK=true
       - VITE_HMR_HOST=buffalo-florist-apt-lyric.trycloudflare.com
@@ -87,11 +87,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: skai_celery_worker
+    container_name: ecofactor_celery_worker
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-skai}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-skai_servicedesk}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ecofactor}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-ecofactor_servicedesk}
       REDIS_URL: redis://redis:6379/0
     volumes:
       - ./backend/app:/app/app
@@ -104,11 +104,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: skai_celery_beat
+    container_name: ecofactor_celery_beat
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-skai}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-skai_servicedesk}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ecofactor}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-ecofactor_servicedesk}
       REDIS_URL: redis://redis:6379/0
     volumes:
       - ./backend/app:/app/app

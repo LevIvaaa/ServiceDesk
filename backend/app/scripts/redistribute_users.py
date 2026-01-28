@@ -31,7 +31,7 @@ async def redistribute_users(db: AsyncSession):
     # Get all users except admin and ticket handler
     users_result = await db.execute(
         select(User).where(
-            User.email.notin_(['admin@skai.ua', 'tickets@gmail.com'])
+            User.email.notin_(['admin@ecofactor.ua', 'tickets@gmail.com'])
         ).order_by(User.id)
     )
     users = list(users_result.scalars().all())

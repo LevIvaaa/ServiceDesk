@@ -18,7 +18,7 @@ async def seed_operators(db: AsyncSession):
     logger.info("Seeding operators...")
     
     operators_data = [
-        ("SK.AI Charging Network", "SKAI", "support@skai.ua", "+380443334455"),
+        ("Ecofactor Charging Network", "ECOFCTR", "support@ecofactor.ua", "+380443334455"),
         ("EcoCharge Ukraine", "ECOCHG", "info@ecocharge.ua", "+380445556677"),
         ("PowerGrid Solutions", "PWRGRID", "contact@powergrid.ua", "+380447778899"),
         ("GreenEnergy Stations", "GREENENRG", "support@greenenergy.ua", "+380449990011"),

@@ -1,4 +1,4 @@
-# Развёртывание SKAI Service Desk на VPS
+# Развёртывание Ecofactor Service Desk на VPS
 
 ## Информация о сервере
 - **VPS**: vps-0b86ca29.vps.ovh.net
@@ -46,10 +46,10 @@ cd ServiceDesk
 # Создать .env файл
 cat > .env << 'EOF'
 # Database
-POSTGRES_USER=skai_user
-POSTGRES_PASSWORD=skai_password_prod_2026
-POSTGRES_DB=skai_db
-DATABASE_URL=postgresql+asyncpg://skai_user:skai_password_prod_2026@postgres:5432/skai_db
+POSTGRES_USER=ecofactor_user
+POSTGRES_PASSWORD=ecofactor_password_prod_2026
+POSTGRES_DB=ecofactor_db
+DATABASE_URL=postgresql+asyncpg://ecofactor_user:ecofactor_password_prod_2026@postgres:5432/ecofactor_db
 
 # Redis
 REDIS_URL=redis://redis:6379/0
@@ -72,7 +72,7 @@ EOF
 
 ### 5. Настройка Nginx как reverse proxy
 ```bash
-sudo nano /etc/nginx/sites-available/skai
+sudo nano /etc/nginx/sites-available/ecofactor
 ```
 
 Добавить конфигурацию:
@@ -114,7 +114,7 @@ server {
 
 Активировать конфигурацию:
 ```bash
-sudo ln -s /etc/nginx/sites-available/skai /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/ecofactor /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -173,7 +173,7 @@ docker-compose logs -f
 - **API Docs**: http://57.128.250.75:8000/docs
 
 ### 10. Учётные данные
-- **Admin**: admin@skai.ua / admin123
+- **Admin**: admin@ecofactor.ua / admin123
 - **Ticket Handler**: tickets@gmail.com / lagger2099
 
 ## Статус развёртывания
@@ -182,14 +182,16 @@ docker-compose logs -f
 
 Дата: 28 января 2026
 
+**Ребрендинг на Ecofactor завершён!**
+
 Все сервисы запущены и работают:
-- ✅ PostgreSQL (база данных)
-- ✅ Redis (кэш и очереди)
-- ✅ Qdrant (векторная БД для RAG)
-- ✅ Backend API (FastAPI)
-- ✅ Frontend (React + Vite)
-- ✅ Celery Worker (фоновые задачи)
-- ✅ Celery Beat (планировщик)
+- ✅ PostgreSQL (база данных) - ecofactor_postgres
+- ✅ Redis (кэш и очереди) - ecofactor_redis
+- ✅ Qdrant (векторная БД для RAG) - ecofactor_qdrant
+- ✅ Backend API (FastAPI) - ecofactor_backend
+- ✅ Frontend (React + Vite) - ecofactor_frontend
+- ✅ Celery Worker (фоновые задачи) - ecofactor_celery_worker
+- ✅ Celery Beat (планировщик) - ecofactor_celery_beat
 
 Загружены начальные данные:
 - ✅ 7 отделов (departments)
@@ -198,6 +200,13 @@ docker-compose logs -f
 - ✅ 34 пользователя + 1 admin + 1 ticket handler
 - ✅ Роли и права доступа
 - ✅ Транслитерация имён и станций
+
+**Изменения брендинга:**
+- Название: Ecofactor Service Desk
+- Email домен: @ecofactor.ua
+- Номера тикетов: EF-2026-NNNNNN
+- Логотип: EF / Ecofactor
+- Оператор по умолчанию: Ecofactor Charging Network (ECOFCTR)
 
 ## Автозапуск при перезагрузке
 ```bash
@@ -230,8 +239,8 @@ docker stats
 ## Резервное копирование
 ```bash
 # Бэкап базы данных
-docker-compose exec postgres pg_dump -U skai_user skai_db > backup_$(date +%Y%m%d).sql
+docker-compose exec postgres pg_dump -U ecofactor_user ecofactor_db > backup_$(date +%Y%m%d).sql
 
 # Восстановление
-docker-compose exec -T postgres psql -U skai_user skai_db < backup_20260128.sql
+docker-compose exec -T postgres psql -U ecofactor_user ecofactor_db < backup_20260128.sql
 ```

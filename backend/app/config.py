@@ -4,12 +4,12 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # Application
-    APP_NAME: str = "SK.AI Service Desk"
+    APP_NAME: str = "Ecofactor Service Desk"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://skai:changeme@localhost:5432/skai_servicedesk"
+    DATABASE_URL: str = "postgresql+asyncpg://ecofactor:changeme@localhost:5432/ecofactor_servicedesk"
 
     # Security
     SECRET_KEY: str = "your-secret-key-change-in-production"
@@ -37,8 +37,8 @@ class Settings(BaseSettings):
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
-    EMAIL_FROM: str = "noreply@skai.ua"
-    EMAIL_FROM_NAME: str = "SK.AI Service Desk"
+    EMAIL_FROM: str = "noreply@ecofactor.ua"
+    EMAIL_FROM_NAME: str = "Ecofactor Service Desk"
 
     # Telegram
     TELEGRAM_BOT_TOKEN: str = ""

@@ -222,7 +222,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         onBreakpoint={(broken) => setCollapsed(broken)}
       >
         <div className="logo">
-          {collapsed ? 'SK' : 'SK.AI'}
+          {collapsed ? 'EF' : 'Ecofactor'}
         </div>
         <Menu
           theme="dark"

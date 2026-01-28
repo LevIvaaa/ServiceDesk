@@ -82,7 +82,7 @@ async def main():
         
         # Get all users except admin
         result = await session.execute(
-            select(User).where(User.email != "admin@skai.ua")
+            select(User).where(User.email != "admin@ecofactor.ua")
         )
         users = result.scalars().all()
         

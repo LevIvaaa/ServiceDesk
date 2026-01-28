@@ -868,7 +868,7 @@ async def seed_knowledge_base():
         try:
             # Get admin user
             result = await db.execute(
-                select(User).where(User.email == "admin@skai.ua")
+                select(User).where(User.email == "admin@ecofactor.ua")
             )
             admin = result.scalar_one_or_none()
 

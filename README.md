@@ -1,4 +1,4 @@
-# SK.AI Service Desk
+# Ecofactor Service Desk
 
 Система управління інцидентами для зарядних станцій електромобілів.
 
@@ -76,8 +76,8 @@ cd ServiceDesk
 
 ```env
 # Database
-POSTGRES_DB=skai_servicedesk
-POSTGRES_USER=skai
+POSTGRES_DB=ecofactor_servicedesk
+POSTGRES_USER=ecofactor
 POSTGRES_PASSWORD=changeme_strong_password
 
 # Backend
@@ -105,8 +105,8 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
-EMAIL_FROM=noreply@skai.ua
-EMAIL_FROM_NAME=SK.AI Service Desk
+EMAIL_FROM=noreply@ecofactor.ua
+EMAIL_FROM_NAME=Ecofactor Service Desk
 
 # Telegram - опціонально
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
@@ -146,7 +146,7 @@ docker-compose exec backend python -m app.db.seeds
 
 ### Облікові дані за замовчуванням
 
-- **Email**: admin@skai.ua
+- **Email**: admin@ecofactor.ua
 - **Password**: admin123
 
 > ⚠️ Змініть пароль після першого входу!
@@ -154,7 +154,7 @@ docker-compose exec backend python -m app.db.seeds
 ## Структура проекту
 
 ```
-skai-servicedesk/
+ecofactor-servicedesk/
 ├── docker-compose.yml
 ├── .env.example
 ├── backend/
@@ -312,10 +312,10 @@ alembic upgrade head
 
 ```bash
 # Скопіюйте CSV файл в контейнер
-docker cp chargePoints.csv skai_backend:/app/
+docker cp chargePoints.csv ecofactor_backend:/app/
 
 # Запустіть імпорт
-docker exec skai_backend python -m app.scripts.import_stations /app/chargePoints.csv
+docker exec ecofactor_backend python -m app.scripts.import_stations /app/chargePoints.csv
 ```
 
 Формат CSV:
@@ -345,7 +345,7 @@ docker exec skai_backend python -m app.scripts.import_stations /app/chargePoints
 
 **Backend не запускається**
 - Перевірте, що PostgreSQL запущений: `docker ps | grep postgres`
-- Перегляньте логи: `docker logs skai_backend`
+- Перегляньте логи: `docker logs ecofactor_backend`
 - Перевірте підключення до БД в `.env`
 
 **Frontend показує помилки API**
@@ -356,14 +356,14 @@ docker exec skai_backend python -m app.scripts.import_stations /app/chargePoints
 **Проблеми з RAG/AI**
 - Перевірте OPENAI_API_KEY
 - Переконайтеся, що Qdrant запущений: `docker ps | grep qdrant`
-- Перегляньте логи векторної БД: `docker logs skai_qdrant`
+- Перегляньте логи векторної БД: `docker logs ecofactor_qdrant`
 
 ## Контакти
 
-**Команда розробки**: SK.AI R&D
+**Команда розробки**: Ecofactor R&D
 **Проект**: Service Desk for EV Charging Stations
 
 ## Ліцензія
 
-Proprietary - SK.AI R&D
-⚠️ Це закритий проект. Використання тільки для внутрішніх потреб SK.AI.
+Proprietary - Ecofactor R&D
+⚠️ Це закритий проект. Використання тільки для внутрішніх потреб Ecofactor.

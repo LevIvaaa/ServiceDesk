@@ -17,14 +17,14 @@ logger = logging.getLogger(__name__)
 
 async def seed_operator(db: AsyncSession) -> Operator:
     """Create or get default operator."""
-    result = await db.execute(select(Operator).where(Operator.code == "SKAI"))
+    result = await db.execute(select(Operator).where(Operator.code == "ECOFCTR"))
     operator = result.scalar_one_or_none()
     
     if not operator:
         operator = Operator(
-            name="SK.AI Charging Network",
-            code="SKAI",
-            contact_email="support@skai.ua",
+            name="Ecofactor Charging Network",
+            code="ECOFCTR",
+            contact_email="support@ecofactor.ua",
             contact_phone="+380443334455",
             is_active=True,
         )

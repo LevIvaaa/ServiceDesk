@@ -104,17 +104,17 @@ async def seed_admin_user(db: AsyncSession):
 
     # Check if admin already exists
     existing = await db.execute(
-        select(User).where(User.email == "admin@skai.ua")
+        select(User).where(User.email == "admin@ecofactor.ua")
     )
     if existing.scalar_one_or_none():
         logger.info("Admin user already exists")
         return
 
     admin = User(
-        email="admin@skai.ua",
+        email="admin@ecofactor.ua",
         password_hash=get_password_hash("admin123"),  # Change in production!
         first_name="Admin",
-        last_name="SKAI",
+        last_name="Ecofactor",
         is_admin=True,
         is_active=True,
     )
@@ -126,7 +126,7 @@ async def seed_admin_user(db: AsyncSession):
     db.add(settings)
 
     await db.flush()
-    logger.info("Created admin user (email: admin@skai.ua, password: admin123)")
+    logger.info("Created admin user (email: admin@ecofactor.ua, password: admin123)")
 
 
 async def seed_department(db: AsyncSession):
