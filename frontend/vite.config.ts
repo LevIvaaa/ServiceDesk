@@ -15,7 +15,7 @@ const disableHostCheckPlugin = () => ({
 
 export default defineConfig({
   plugins: [react(), disableHostCheckPlugin()],
-  base: '/ServiceDesk/',
+  base: process.env.VITE_BASE_PATH || '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
