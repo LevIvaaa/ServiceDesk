@@ -168,13 +168,36 @@ docker-compose logs -f
 ```
 
 ### 9. Доступ к приложению
-- **Frontend**: http://57.128.250.75
+- **Frontend**: http://57.128.250.75:3000
 - **Backend API**: http://57.128.250.75:8000
 - **API Docs**: http://57.128.250.75:8000/docs
 
 ### 10. Учётные данные
 - **Admin**: admin@skai.ua / admin123
 - **Ticket Handler**: tickets@gmail.com / lagger2099
+
+## Статус развёртывания
+
+✅ **Развёртывание завершено успешно!**
+
+Дата: 28 января 2026
+
+Все сервисы запущены и работают:
+- ✅ PostgreSQL (база данных)
+- ✅ Redis (кэш и очереди)
+- ✅ Qdrant (векторная БД для RAG)
+- ✅ Backend API (FastAPI)
+- ✅ Frontend (React + Vite)
+- ✅ Celery Worker (фоновые задачи)
+- ✅ Celery Beat (планировщик)
+
+Загружены начальные данные:
+- ✅ 7 отделов (departments)
+- ✅ 35 операторов (operators)
+- ✅ 35 зарядных станций (stations)
+- ✅ 34 пользователя + 1 admin + 1 ticket handler
+- ✅ Роли и права доступа
+- ✅ Транслитерация имён и станций
 
 ## Автозапуск при перезагрузке
 ```bash
