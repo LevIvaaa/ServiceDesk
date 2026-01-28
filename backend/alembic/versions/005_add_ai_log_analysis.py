@@ -1,7 +1,7 @@
 """add ai_log_analysis to tickets
 
 Revision ID: 005
-Revises: 04286f092984
+Revises: 004_add_user_name_translations
 Create Date: 2026-01-25
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '005'
-down_revision = '04286f092984'
+down_revision = '004_add_user_name_translations'
 branch_labels = None
 depends_on = None
 
