@@ -14,11 +14,14 @@ import {
   Space,
   Popconfirm,
   message,
+  Modal,
 } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ClearOutlined } from '@ant-design/icons'
 import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
+import { departmentsApi, Department } from '../../api/departments'
 import { useAuthStore } from '../../store/authStore'
+import CreateTicketNew from './CreateTicketNew'
 import dayjs from 'dayjs'
 
 const { Title } = Typography
@@ -55,6 +58,8 @@ export default function TicketsList() {
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState<TicketListParams>(loadSavedFilters)
   const [users, setUsers] = useState<User[]>([])
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [createModalOpen, setCreateModalOpen] = useState(false)
   const navigate = useNavigate()
   const { t } = useTranslation('tickets')
   const { hasPermission } = useAuthStore()
@@ -75,6 +80,19 @@ export default function TicketsList() {
       }
     }
     loadUsers()
+  }, [])
+
+  // Load departments for filters
+  useEffect(() => {
+    const loadDepartments = async () => {
+      try {
+        const response = await departmentsApi.list({ is_active: true, per_page: 100 })
+        setDepartments(response.items)
+      } catch (error) {
+        console.error('Failed to load departments:', error)
+      }
+    }
+    loadDepartments()
   }, [])
 
   const fetchTickets = async (params?: TicketListParams) => {
@@ -125,6 +143,11 @@ export default function TicketsList() {
     setPage(1)
   }
 
+  const handleTicketCreated = () => {
+    setCreateModalOpen(false)
+    fetchTickets(filters)
+  }
+
   const hasActiveFilters = Object.values(filters).some(v => v !== undefined && v !== '')
 
   const columns = [
@@ -144,7 +167,7 @@ export default function TicketsList() {
       ellipsis: true,
     },
     {
-      title: t('priority.label'),
+      title: <span style={{ whiteSpace: 'nowrap' }}>{t('priority.label')}</span>,
       dataIndex: 'priority',
       key: 'priority',
       render: (priority: string) => (
@@ -248,7 +271,7 @@ export default function TicketsList() {
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => navigate('/tickets/new')}
+              onClick={() => setCreateModalOpen(true)}
             >
               {t('create')}
             </Button>
@@ -337,7 +360,24 @@ export default function TicketsList() {
           </Col>
           <Col xs={24} sm={12} lg={4}>
             <Select
-              placeholder={t('filters.assignedTo', 'Виконавець')}
+              placeholder={t('filters.department', 'Відділ')}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              style={{ width: '100%' }}
+              value={filters.assigned_department_id}
+              onChange={(value) => setFilters({ ...filters, assigned_department_id: value })}
+            >
+              {departments.map((dept) => (
+                <Option key={dept.id} value={dept.id}>
+                  {dept.name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              placeholder={t('filters.assignedTo', 'Відповідальний')}
               allowClear
               showSearch
               optionFilterProp="children"
@@ -380,6 +420,44 @@ export default function TicketsList() {
         }}
         scroll={{ x: 1200 }}
       />
+
+      {/* Create Ticket Modal */}
+      <Modal
+        open={createModalOpen}
+        onCancel={() => setCreateModalOpen(false)}
+        footer={null}
+        width={700}
+        style={{ top: 20 }}
+        styles={{ 
+          body: { 
+            maxHeight: 'calc(100vh - 100px)', 
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: '0 !important',
+            borderRadius: 0,
+            // Hide scrollbar
+            scrollbarWidth: 'none', // Firefox
+            msOverflowStyle: 'none', // IE and Edge
+          },
+          content: {
+            borderRadius: '15px',
+            overflow: 'hidden',
+            padding: 0,
+          }
+        }}
+        destroyOnClose
+        centered={false}
+      >
+        <style>{`
+          .ant-modal-body::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+          }
+          .ant-modal-body {
+            padding: 0 !important;
+          }
+        `}</style>
+        <CreateTicketNew onSuccess={handleTicketCreated} isModal={true} />
+      </Modal>
     </div>
   )
 }

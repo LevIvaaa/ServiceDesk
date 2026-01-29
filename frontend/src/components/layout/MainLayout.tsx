@@ -220,6 +220,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
         collapsed={collapsed}
         breakpoint="lg"
         onBreakpoint={(broken) => setCollapsed(broken)}
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+        }}
       >
         <div className="logo">
           {collapsed ? 'EF' : 'Ecofactor'}
@@ -232,7 +240,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           onClick={({ key }) => handleMenuClick(key)}
         />
       </Sider>
-      <Layout>
+      <Layout style={{ marginLeft: collapsed ? 80 : 200, transition: 'margin-left 0.2s' }}>
         <Header
           style={{
             padding: '0 16px',
@@ -240,6 +248,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
           }}
         >
           <Button

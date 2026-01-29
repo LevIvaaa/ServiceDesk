@@ -188,6 +188,7 @@
   "filters": {
     "createdBy": "Created By",
     "assignedTo": "Assigned To",
+    "department": "Department",
     "reset": "Reset"
   },
   "messages": {
