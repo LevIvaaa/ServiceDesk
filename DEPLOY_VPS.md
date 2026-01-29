@@ -182,7 +182,7 @@ docker-compose logs -f
 
 Дата: 28 января 2026
 
-**Ребрендинг на Ecofactor завершён!**
+
 
 Все сервисы запущены и работают:
 - ✅ PostgreSQL (база данных) - ecofactor_postgres
@@ -200,13 +200,6 @@ docker-compose logs -f
 - ✅ 34 пользователя + 1 admin + 1 ticket handler
 - ✅ Роли и права доступа
 - ✅ Транслитерация имён и станций
-
-**Изменения брендинга:**
-- Название: Ecofactor Service Desk
-- Email домен: @ecofactor.ua
-- Номера тикетов: EF-2026-NNNNNN
-- Логотип: EF / Ecofactor
-- Оператор по умолчанию: Ecofactor Charging Network (ECOFCTR)
 
 ## Автозапуск при перезагрузке
 ```bash
