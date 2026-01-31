@@ -24,7 +24,7 @@ import {
   FileTextOutlined,
 } from '@ant-design/icons'
 import { ticketsApi } from '../../api/tickets'
-import { stationsApi, Station } from '../../api/stations'
+import { stationsApi, StationListItem } from '../../api/stations'
 import { departmentsApi, Department } from '../../api/departments'
 
 const { Text } = Typography
@@ -68,7 +68,7 @@ const CONTACT_SOURCES = [
 interface StationOption {
   value: number
   label: string
-  station: Station
+  station: StationListItem
 }
 
 interface CreateTicketNewProps {
@@ -81,7 +81,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   const [loading, setLoading] = useState(false)
   const [stationSearchLoading, setStationSearchLoading] = useState(false)
   const [stationOptions, setStationOptions] = useState<StationOption[]>([])
-  const [selectedStation, setSelectedStation] = useState<Station | null>(null)
+  const [selectedStation, setSelectedStation] = useState<StationListItem | null>(null)
   const [attachmentFiles, setAttachmentFiles] = useState<UploadFile[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [departmentsLoading, setDepartmentsLoading] = useState(false)

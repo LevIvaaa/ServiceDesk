@@ -35,7 +35,7 @@ import {
   EditOutlined,
   CodeOutlined,
 } from '@ant-design/icons'
-import { ticketsApi, Ticket, TicketComment, TicketHistory, TicketAttachment, TicketLog } from '../../api/tickets'
+import { ticketsApi, Ticket, TicketComment, TicketHistory, TicketAttachment } from '../../api/tickets'
 import { stationsApi, Station } from '../../api/stations'
 import { usersApi, User } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
@@ -66,7 +66,6 @@ export default function TicketDetail() {
   const [stationOptions, setStationOptions] = useState<Station[]>([])
   const [stationSearchLoading, setStationSearchLoading] = useState(false)
   const [selectedStation, setSelectedStation] = useState<Station | null>(null)
-  const [ticketStation, setTicketStation] = useState<Station | null>(null) // Full station data with ports
   // Assignment state
   const [assignModalVisible, setAssignModalVisible] = useState(false)
   const [departments, setDepartments] = useState<Department[]>([])
@@ -75,11 +74,6 @@ export default function TicketDetail() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
   const [assignComment, setAssignComment] = useState('')
   const [usersLoading, setUsersLoading] = useState(false)
-  // Logs state
-  const [logs, setLogs] = useState<TicketLog[]>([])
-  const [logPreviewVisible, setLogPreviewVisible] = useState(false)
-  const [logPreviewContent, setLogPreviewContent] = useState<string>('')
-  const [logPreviewTitle, setLogPreviewTitle] = useState<string>('')
   const navigate = useNavigate()
   const { t } = useTranslation('tickets')
   const { hasPermission } = useAuthStore()
@@ -127,24 +121,6 @@ export default function TicketDetail() {
       setAttachments(attachmentsList)
       // Load attachment blob URLs for preview
       loadAttachmentUrls(attachmentsList, parseInt(id!))
-      // Load full station data with ports for display
-      if (data.station_id) {
-        try {
-          const fullStation = await stationsApi.get(data.station_id)
-          setTicketStation(fullStation)
-        } catch (e) {
-          console.error('Failed to load station details:', e)
-        }
-      } else {
-        setTicketStation(null)
-      }
-      // Load logs
-      try {
-        const ticketLogs = await ticketsApi.getLogs(parseInt(id))
-        setLogs(ticketLogs)
-      } catch (e) {
-        console.error('Failed to load logs:', e)
-      }
     } catch (error) {
       message.error('Failed to load ticket')
       navigate('/tickets')
@@ -1228,41 +1204,6 @@ export default function TicketDetail() {
             />
           </div>
         </Space>
-      </Modal>
-
-      {/* Log Preview Modal */}
-      <Modal
-        open={logPreviewVisible}
-        onCancel={() => {
-          setLogPreviewVisible(false)
-          setLogPreviewContent('')
-          setLogPreviewTitle('')
-        }}
-        title={logPreviewTitle}
-        footer={[
-          <Button key="close" onClick={() => setLogPreviewVisible(false)}>
-            {t('common:actions.close', 'Закрити')}
-          </Button>,
-        ]}
-        width="80%"
-        style={{ top: 20 }}
-      >
-        <pre
-          style={{
-            maxHeight: '70vh',
-            overflow: 'auto',
-            backgroundColor: '#1e1e1e',
-            color: '#d4d4d4',
-            padding: 16,
-            borderRadius: 8,
-            fontFamily: 'monospace',
-            fontSize: 12,
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-all',
-          }}
-        >
-          {logPreviewContent}
-        </pre>
       </Modal>
     </div>
   )
