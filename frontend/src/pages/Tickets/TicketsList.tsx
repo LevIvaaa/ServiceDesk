@@ -110,6 +110,11 @@ export default function TicketsList() {
 
   useEffect(() => {
     fetchTickets(filters)
+    // Auto-refresh every 2 seconds for near real-time updates
+    const interval = setInterval(() => {
+      fetchTickets(filters)
+    }, 2000)
+    return () => clearInterval(interval)
   }, [page, filters])
 
   const priorityColors: Record<string, string> = {
