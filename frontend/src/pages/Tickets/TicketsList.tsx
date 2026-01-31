@@ -158,13 +158,14 @@ export default function TicketsList() {
       render: (text: string, record: Ticket) => (
         <a onClick={() => navigate(`/tickets/${record.id}`)}>{text}</a>
       ),
-      width: 150,
+      width: 130,
     },
     {
       title: t('fields.title'),
       dataIndex: 'title',
       key: 'title',
       ellipsis: true,
+      width: 200,
     },
     {
       title: <span style={{ whiteSpace: 'nowrap' }}>{t('priority.label')}</span>,
@@ -173,7 +174,7 @@ export default function TicketsList() {
       render: (priority: string) => (
         <Tag color={priorityColors[priority]}>{t(`priority.${priority}`)}</Tag>
       ),
-      width: 100,
+      width: 110,
     },
     {
       title: t('status.label'),
@@ -182,14 +183,14 @@ export default function TicketsList() {
       render: (status: string) => (
         <Tag color={statusColors[status]}>{t(`status.${status}`)}</Tag>
       ),
-      width: 120,
+      width: 110,
     },
     {
       title: t('category.label'),
       dataIndex: 'category',
       key: 'category',
       render: (category: string) => t(`category.${category}`),
-      width: 150,
+      width: 130,
     },
     {
       title: t('fields.station'),
@@ -197,7 +198,7 @@ export default function TicketsList() {
       key: 'station',
       render: (station: Ticket['station']) =>
         station ? station.station_id : '-',
-      width: 120,
+      width: 100,
     },
     {
       title: t('fields.assignedUser'),
@@ -205,22 +206,23 @@ export default function TicketsList() {
       key: 'assigned_user',
       render: (user: Ticket['assigned_user']) =>
         user ? `${user.first_name} ${user.last_name}` : '-',
-      width: 150,
+      width: 140,
+      ellipsis: true,
     },
     {
       title: t('fields.createdAt'),
       dataIndex: 'created_at',
       key: 'created_at',
       render: (date: string) => dayjs(date).format('DD.MM.YYYY HH:mm'),
-      width: 150,
+      width: 140,
     },
     {
       title: '',
       key: 'actions',
-      width: 100,
+      width: 80,
       fixed: 'right' as const,
       render: (_: any, record: Ticket) => (
-        <Space size="small">
+        <Space size="small" direction="vertical" style={{ width: '100%' }}>
           {hasPermission('tickets.edit') && (
             <Button
               type="text"
@@ -231,9 +233,10 @@ export default function TicketsList() {
                 navigate(`/tickets/${record.id}`)
               }}
               title={t('common:actions.edit', 'Редагувати')}
+              style={{ width: '100%', padding: '0 4px' }}
             />
           )}
-          {hasPermission('tickets.delete') && (
+          {hasPermission('tickets.delete') && (record.status === 'new' || record.status === 'closed') && (
             <Popconfirm
               title={t('messages.deleteConfirm', 'Видалити цей тікет?')}
               onConfirm={(e) => {
@@ -252,6 +255,7 @@ export default function TicketsList() {
                 icon={<DeleteOutlined />}
                 onClick={(e) => e.stopPropagation()}
                 title={t('common:actions.delete', 'Видалити')}
+                style={{ width: '100%', padding: '0 4px' }}
               />
             </Popconfirm>
           )}
@@ -416,9 +420,8 @@ export default function TicketsList() {
           total,
           pageSize: 20,
           onChange: setPage,
-          showTotal: (total) => t('common:table.total', { total }),
         }}
-        scroll={{ x: 1200 }}
+        scroll={{ x: 1050 }}
       />
 
       {/* Create Ticket Modal */}
@@ -445,7 +448,7 @@ export default function TicketsList() {
             padding: 0,
           }
         }}
-        destroyOnClose
+        destroyOnHidden
         centered={false}
       >
         <style>{`

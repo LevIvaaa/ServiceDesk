@@ -72,11 +72,11 @@ export default function IncomingQueue() {
       
       let statusFilter = ''
       if (activeTab === 'incoming') {
-        // Incoming: new and open tickets
+        // Incoming: new and open tickets (призначені але ще не прийняті в роботу)
         statusFilter = 'new,open'
       } else if (activeTab === 'inProgress') {
-        // In progress: open, in_progress, pending
-        statusFilter = 'open,in_progress,pending'
+        // In progress: in_progress and pending (прийняті в роботу)
+        statusFilter = 'in_progress,pending'
       } else {
         // Completed: resolved and closed
         statusFilter = 'resolved,closed'
@@ -114,7 +114,7 @@ export default function IncomingQueue() {
 
   useEffect(() => {
     fetchTickets()
-    const interval = setInterval(fetchTickets, 5000) // Every 5 seconds
+    const interval = setInterval(fetchTickets, 2000) // Every 2 seconds for near real-time
     return () => clearInterval(interval)
   }, [page, activeTab])
 
@@ -193,7 +193,9 @@ export default function IncomingQueue() {
   const handleQuickAccept = async (ticket: Ticket) => {
     try {
       await ticketsApi.updateStatus(ticket.id, 'in_progress', 'Прийнято в роботу')
-      message.success(t('messages.statusUpdated'))
+      message.success(i18n.language === 'en' 
+        ? 'Ticket accepted and moved to "In Progress"' 
+        : 'Тікет прийнято і переміщено у "В роботі"')
       fetchTickets()
     } catch (error) {
       message.error(t('messages.statusError'))
@@ -255,13 +257,13 @@ export default function IncomingQueue() {
       ),
     },
     {
-      title: t('priority.label'),
+      title: <span style={{ whiteSpace: 'nowrap' }}>{t('priority.label')}</span>,
       dataIndex: 'priority',
       key: 'priority',
       render: (priority: string) => (
         <Tag color={priorityColors[priority]}>{t(`priority.${priority}`)}</Tag>
       ),
-      width: 100,
+      width: 110,
     },
     {
       title: t('category.label'),
@@ -325,7 +327,7 @@ export default function IncomingQueue() {
               >
                 {i18n.language === 'en' ? 'Assign' : 'Призначити'}
               </Button>
-              {record.status === 'new' && (
+              {(record.status === 'new' || record.status === 'open') && (
                 <Button
                   type="default"
                   size="small"
@@ -359,131 +361,133 @@ export default function IncomingQueue() {
           setPage(1)
         }}
         style={{ marginBottom: 16 }}
-      >
-        <Tabs.TabPane 
-          tab={i18n.language === 'en' ? 'Incoming' : 'Вхідні'} 
-          key="incoming"
-        >
-          <Row gutter={16} style={{ marginBottom: 16 }}>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'Total Incoming' : 'Всього вхідних'}
-                  value={stats.total}
-                  prefix={<InboxOutlined />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'New Tickets' : 'Нові тікети'}
-                  value={stats.new}
-                  prefix={<Badge status="processing" />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'Unassigned' : 'Не призначені'}
-                  value={stats.unassigned}
-                  prefix={<ClockCircleOutlined />}
-                  valueStyle={{ color: '#faad14' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'Urgent' : 'Термінові'}
-                  value={stats.urgent}
-                  prefix={<WarningOutlined />}
-                  valueStyle={{ color: '#ff4d4f' }}
-                />
-              </Card>
-            </Col>
-          </Row>
-        </Tabs.TabPane>
-
-        <Tabs.TabPane 
-          tab={i18n.language === 'en' ? 'In Progress' : 'В роботі'} 
-          key="inProgress"
-        >
-          <Row gutter={16} style={{ marginBottom: 16 }}>
-            <Col xs={24} sm={12} md={8}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'Total In Progress' : 'Всього в роботі'}
-                  value={stats.total}
-                  prefix={<CheckCircleOutlined />}
-                  valueStyle={{ color: '#52c41a' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'In Progress' : 'В процесі'}
-                  value={stats.inProgress}
-                  prefix={<ClockCircleOutlined />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'Urgent' : 'Термінові'}
-                  value={stats.urgent}
-                  prefix={<WarningOutlined />}
-                  valueStyle={{ color: '#ff4d4f' }}
-                />
-              </Card>
-            </Col>
-          </Row>
-        </Tabs.TabPane>
-
-        <Tabs.TabPane 
-          tab={i18n.language === 'en' ? 'Completed' : 'Завершені'} 
-          key="completed"
-        >
-          <Row gutter={16} style={{ marginBottom: 16 }}>
-            <Col xs={24} sm={12} md={8}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'Total Completed' : 'Всього завершених'}
-                  value={stats.total}
-                  prefix={<CheckCircleOutlined />}
-                  valueStyle={{ color: '#52c41a' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'Resolved' : 'Вирішено'}
-                  value={stats.inProgress}
-                  prefix={<CheckCircleOutlined />}
-                  valueStyle={{ color: '#52c41a' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Card>
-                <Statistic
-                  title={i18n.language === 'en' ? 'Closed' : 'Закрито'}
-                  value={stats.total - stats.inProgress}
-                  prefix={<CheckCircleOutlined />}
-                  valueStyle={{ color: '#8c8c8c' }}
-                />
-              </Card>
-            </Col>
-          </Row>
-        </Tabs.TabPane>
-      </Tabs>
+        items={[
+          {
+            key: 'incoming',
+            label: i18n.language === 'en' ? 'Incoming' : 'Вхідні',
+            children: (
+              <Row gutter={16} style={{ marginBottom: 16 }}>
+                <Col xs={24} sm={12} md={6}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Total Incoming' : 'Всього вхідних'}
+                      value={stats.total}
+                      prefix={<InboxOutlined />}
+                      valueStyle={{ color: '#1890ff' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'New Tickets' : 'Нові тікети'}
+                      value={stats.new}
+                      prefix={<Badge status="processing" />}
+                      valueStyle={{ color: '#1890ff' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Unassigned' : 'Не призначені'}
+                      value={stats.unassigned}
+                      prefix={<ClockCircleOutlined />}
+                      valueStyle={{ color: '#faad14' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Urgent' : 'Термінові'}
+                      value={stats.urgent}
+                      prefix={<WarningOutlined />}
+                      valueStyle={{ color: '#ff4d4f' }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+            ),
+          },
+          {
+            key: 'inProgress',
+            label: i18n.language === 'en' ? 'In Progress' : 'В роботі',
+            children: (
+              <Row gutter={16} style={{ marginBottom: 16 }}>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Total In Progress' : 'Всього в роботі'}
+                      value={stats.total}
+                      prefix={<CheckCircleOutlined />}
+                      valueStyle={{ color: '#52c41a' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'In Progress' : 'В процесі'}
+                      value={stats.inProgress}
+                      prefix={<ClockCircleOutlined />}
+                      valueStyle={{ color: '#1890ff' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Urgent' : 'Термінові'}
+                      value={stats.urgent}
+                      prefix={<WarningOutlined />}
+                      valueStyle={{ color: '#ff4d4f' }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+            ),
+          },
+          {
+            key: 'completed',
+            label: i18n.language === 'en' ? 'Completed' : 'Завершені',
+            children: (
+              <Row gutter={16} style={{ marginBottom: 16 }}>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Total Completed' : 'Всього завершених'}
+                      value={stats.total}
+                      prefix={<CheckCircleOutlined />}
+                      valueStyle={{ color: '#52c41a' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Resolved' : 'Вирішено'}
+                      value={stats.inProgress}
+                      prefix={<CheckCircleOutlined />}
+                      valueStyle={{ color: '#52c41a' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Closed' : 'Закрито'}
+                      value={stats.total - stats.inProgress}
+                      prefix={<CheckCircleOutlined />}
+                      valueStyle={{ color: '#8c8c8c' }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+            ),
+          },
+        ]}
+      />
 
       <Table
         columns={columns}
@@ -535,7 +539,7 @@ export default function IncomingQueue() {
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <Text>{i18n.language === 'en' ? 'Select Assignee (optional)' : 'Оберіть виконавця (необов\'язково)'}:</Text>
+              <Text>{i18n.language === 'en' ? 'Select Assignee' : 'Оберіть виконавця'}:</Text>
               <Select
                 style={{ width: '100%', marginTop: 8 }}
                 placeholder={i18n.language === 'en' ? 'Select user' : 'Оберіть користувача'}

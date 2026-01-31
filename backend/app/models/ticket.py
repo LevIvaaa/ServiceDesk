@@ -37,6 +37,12 @@ class Ticket(Base):
     # Content
     title: Mapped[str] = mapped_column(String(300), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
+    
+    # New fields from TZ (migration 009)
+    incident_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    port_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    contact_source: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    station_logs: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Assignment
     assigned_user_id: Mapped[Optional[int]] = mapped_column(

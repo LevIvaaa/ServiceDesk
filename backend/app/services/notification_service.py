@@ -26,48 +26,34 @@ class NotificationService:
 
     async def notify_ticket_created(self, ticket: Ticket):
         """Notify about new ticket creation."""
-        # Get all users with tickets.assign permission (ticket handlers)
-        from app.models.role import Permission, RolePermission
-        from app.models.user import UserRole
+        # Get all users with ticket_handler role
+        from app.models.role import Role
+        from sqlalchemy.orm import selectinload
         
-        # Find permission ID for tickets.assign
-        perm_result = await self.db.execute(
-            select(Permission).where(Permission.name == "tickets.assign")
+        # Find ticket_handler role
+        role_result = await self.db.execute(
+            select(Role)
+            .options(selectinload(Role.users))
+            .where(Role.name == "ticket_handler")
         )
-        assign_permission = perm_result.scalar_one_or_none()
+        ticket_handler_role = role_result.scalar_one_or_none()
         
-        if assign_permission:
-            # Find all roles with this permission
-            role_perm_result = await self.db.execute(
-                select(RolePermission.role_id).where(
-                    RolePermission.permission_id == assign_permission.id
-                )
-            )
-            role_ids = [row[0] for row in role_perm_result.fetchall()]
-            
-            # Find all users with these roles
-            if role_ids:
-                user_role_result = await self.db.execute(
-                    select(UserRole.user_id).where(UserRole.role_id.in_(role_ids)).distinct()
-                )
-                user_ids = [row[0] for row in user_role_result.fetchall()]
+        if ticket_handler_role and ticket_handler_role.users:
+            # Create notifications for all ticket handlers
+            for user in ticket_handler_role.users:
+                # Don't notify the creator
+                if user.id == ticket.created_by_id:
+                    continue
                 
-                # Create notifications for ticket handlers
-                for user_id in user_ids:
-                    # Don't notify the creator
-                    if user_id == ticket.created_by_id:
-                        continue
-                        
-                    user_settings = await self._get_user_notification_settings(user_id)
-                    if user_settings and user_settings.notify_ticket_created:
-                        notification = Notification(
-                            user_id=user_id,
-                            ticket_id=ticket.id,
-                            type="ticket_created",
-                            title=f"Новий тікет #{ticket.ticket_number}",
-                            message=f"Створено новий тікет \"{ticket.title}\" (пріоритет: {self._translate_priority(ticket.priority)})",
-                        )
-                        self.db.add(notification)
+                # Always create in-app notification
+                notification = Notification(
+                    user_id=user.id,
+                    ticket_id=ticket.id,
+                    type="ticket_created",
+                    title=f"Новий тікет #{ticket.ticket_number}",
+                    message=f"Прийшов новий тікет \"{ticket.title}\" (пріоритет: {self._translate_priority(ticket.priority)})",
+                )
+                self.db.add(notification)
         
         await self.db.commit()
 
@@ -140,6 +126,36 @@ class NotificationService:
                 message=f"Статус тікету \"{ticket.title}\" змінено з \"{self._translate_status(old_status)}\" на \"{self._translate_status(new_status)}\"",
             )
             self.db.add(notification)
+        
+        # If status changed to resolved or closed, notify ticket handlers
+        if new_status in ["resolved", "closed"]:
+            from app.models.role import Role
+            from sqlalchemy.orm import selectinload
+            
+            # Find ticket_handler role
+            role_result = await self.db.execute(
+                select(Role)
+                .options(selectinload(Role.users))
+                .where(Role.name == "ticket_handler")
+            )
+            ticket_handler_role = role_result.scalar_one_or_none()
+            
+            if ticket_handler_role and ticket_handler_role.users:
+                # Create notifications for all ticket handlers
+                for user in ticket_handler_role.users:
+                    # Don't notify if already in recipients
+                    if any(u.id == user.id for u, _ in recipients):
+                        continue
+                    
+                    # Create in-app notification
+                    notification = Notification(
+                        user_id=user.id,
+                        ticket_id=ticket.id,
+                        type="ticket_status_changed",
+                        title=f"Тікет #{ticket.ticket_number} {self._translate_status(new_status).lower()}",
+                        message=f"Тікет \"{ticket.title}\" змінив статус на \"{self._translate_status(new_status)}\"",
+                    )
+                    self.db.add(notification)
         
         await self.db.commit()
 

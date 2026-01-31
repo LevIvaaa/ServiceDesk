@@ -88,10 +88,37 @@ export default function TicketDetail() {
   const navigate = useNavigate()
   const { t } = useTranslation('tickets')
   const { hasPermission } = useAuthStore()
+  const user = useAuthStore(state => state.user)
 
-  const statuses = ['new', 'open', 'in_progress', 'pending', 'resolved', 'closed']
+  // Визначаємо доступні статуси залежно від ролі
+  const getAvailableStatuses = () => {
+    const allStatuses = ['new', 'open', 'in_progress', 'pending', 'resolved', 'closed']
+    
+    // Якщо користувач має роль ticket_handler, прибираємо статус 'closed'
+    if (user && !user.is_admin && user.roles.some(role => role.name === 'ticket_handler')) {
+      return allStatuses.filter(status => status !== 'closed')
+    }
+    
+    return allStatuses
+  }
+
+  const statuses = getAvailableStatuses()
   const priorities = ['low', 'medium', 'high', 'critical']
   const categories = ['hardware', 'software', 'network', 'billing', 'other']
+
+  // Функція для перекладу джерел звернення
+  const getContactSourceLabel = (value: string | null) => {
+    if (!value) return '-'
+    const sources: Record<string, string> = {
+      'phone': 'Телефон',
+      'email': 'Email',
+      'telegram': 'Telegram',
+      'viber': 'Viber',
+      'app': 'Мобільний додаток',
+      'other': 'Інше',
+    }
+    return sources[value] || value
+  }
 
   const fetchTicket = async () => {
     if (!id) return
@@ -276,7 +303,6 @@ export default function TicketDetail() {
   const handleStationSelect = (stationId: number) => {
     const station = stationOptions.find(s => s.id === stationId)
     setSelectedStation(station || null)
-    editForm.setFieldValue('port_number', undefined)
   }
 
   // Edit ticket handlers
@@ -288,7 +314,7 @@ export default function TicketDetail() {
         category: ticket.category,
         priority: ticket.priority,
         station_id: ticket.station_id,
-        port_number: ticket.port_number,
+        port_type: ticket.port_type,
         reporter_name: ticket.reporter_name,
         reporter_phone: ticket.reporter_phone,
         reporter_email: ticket.reporter_email,
@@ -766,140 +792,32 @@ export default function TicketDetail() {
       ),
     },
     {
-      key: 'logs',
+      key: 'station_logs',
       label: (
         <span>
           <CodeOutlined />
-          {t('logs.title', 'Логи')} ({logs.length})
+          Логи станції
         </span>
       ),
       children: (
         <div>
-          {/* AI Log Analysis */}
-          {ticket.ai_log_analysis && (
-            <Card
-              type="inner"
-              size="small"
-              title={
-                <Space>
-                  <RobotOutlined style={{ color: '#1890ff' }} />
-                  <span>{t('logs.aiAnalysis', 'AI Розшифровка')}</span>
-                </Space>
-              }
-              style={{ marginBottom: 16, background: '#f0f7ff' }}
-            >
-              {/* Status */}
-              <div style={{ marginBottom: 12 }}>
-                <Text strong>{t('logs.stationStatus', 'Статус станції')}: </Text>
-                <Tag color={getAIStatusColor(ticket.ai_log_analysis.status)} style={{ marginLeft: 8 }}>
-                  {ticket.ai_log_analysis.status}
-                </Tag>
-              </div>
-
-              {/* Analysis */}
-              <div style={{ marginBottom: 12 }}>
-                <Space>
-                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                  <Text strong>{t('logs.analysisSection', 'Аналіз')}</Text>
-                </Space>
-                <div style={{ marginTop: 4, whiteSpace: 'pre-wrap' }}>
-                  {ticket.ai_log_analysis.analysis}
-                </div>
-              </div>
-
-              {/* Error Codes */}
-              {ticket.ai_log_analysis.error_codes && ticket.ai_log_analysis.error_codes.length > 0 && (
-                <div style={{ marginBottom: 12 }}>
-                  <Space>
-                    <WarningOutlined style={{ color: '#faad14' }} />
-                    <Text strong>{t('logs.errorCodes', 'Коди помилок')}</Text>
-                  </Space>
-                  <div style={{ marginTop: 4 }}>
-                    {ticket.ai_log_analysis.error_codes.map((code, idx) => (
-                      <Tag key={idx} color="error" style={{ marginBottom: 4 }}>
-                        {code}
-                      </Tag>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Recommendations */}
-              {ticket.ai_log_analysis.recommendations && ticket.ai_log_analysis.recommendations.length > 0 && (
-                <div>
-                  <Space>
-                    <BulbOutlined style={{ color: '#1890ff' }} />
-                    <Text strong>{t('logs.recommendations', 'Рекомендації')}</Text>
-                  </Space>
-                  <ul style={{ marginTop: 4, paddingLeft: 20 }}>
-                    {ticket.ai_log_analysis.recommendations.map((rec, idx) => (
-                      <li key={idx}>{rec}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </Card>
+          {ticket.station_logs ? (
+            <pre style={{ 
+              backgroundColor: '#f5f5f5', 
+              padding: '12px', 
+              borderRadius: '4px',
+              maxHeight: '500px',
+              overflow: 'auto',
+              fontSize: '12px',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              margin: 0
+            }}>
+              {ticket.station_logs}
+            </pre>
+          ) : (
+            <Text type="secondary">Логи станції відсутні</Text>
           )}
-
-          {/* Log files list */}
-          {logs.length === 0 && !ticket.ai_log_analysis ? (
-            <Text type="secondary">{t('logs.empty', 'Немає логів')}</Text>
-          ) : logs.length > 0 ? (
-            <List
-              dataSource={logs}
-              renderItem={(log) => (
-                <List.Item
-                  actions={[
-                    <Button
-                      key="preview"
-                      type="link"
-                      icon={<FileTextOutlined />}
-                      onClick={() => handlePreviewLog(log)}
-                    >
-                      {t('logs.preview', 'Переглянути')}
-                    </Button>,
-                    <Button
-                      key="download"
-                      type="link"
-                      icon={<DownloadOutlined />}
-                      onClick={() => handleDownloadLog(log)}
-                    >
-                      {t('common:actions.download', 'Завантажити')}
-                    </Button>,
-                    hasPermission('tickets.delete_logs') && (
-                      <Button
-                        key="delete"
-                        type="link"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => handleDeleteLog(log.id)}
-                      >
-                        {t('common:actions.delete', 'Видалити')}
-                      </Button>
-                    ),
-                  ].filter(Boolean)}
-                >
-                  <List.Item.Meta
-                    avatar={<CodeOutlined style={{ fontSize: 24, color: '#1890ff' }} />}
-                    title={log.filename}
-                    description={
-                      <Space direction="vertical" size={0}>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {t('logs.type', 'Тип')}: {log.log_type || 'text'}
-                        </Text>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {t('logs.size', 'Розмір')}: {(log.file_size / 1024).toFixed(1)} KB
-                        </Text>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {t('logs.uploaded', 'Завантажено')}: {dayjs(log.collected_at).format('DD.MM.YYYY HH:mm')}
-                        </Text>
-                      </Space>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          ) : null}
         </div>
       ),
     },
@@ -1025,15 +943,22 @@ export default function TicketDetail() {
           {/* Details Card */}
           <Card title={t('details.title', 'Деталі')}>
             <Descriptions column={1} size="small">
+              {ticket.incident_type && (
+                <Descriptions.Item label="Тип інциденту">
+                  {ticket.incident_type}
+                </Descriptions.Item>
+              )}
               <Descriptions.Item label={t('category.label')}>
                 {t(`category.${ticket.category}`)}
               </Descriptions.Item>
               <Descriptions.Item label={t('fields.station')}>
                 {ticket.station ? `${ticket.station.station_id} - ${ticket.station.name}` : '-'}
               </Descriptions.Item>
-              <Descriptions.Item label={t('fields.port')}>
-                {formatPortDisplay(ticket.port_number)}
-              </Descriptions.Item>
+              {ticket.port_type && (
+                <Descriptions.Item label="Порт">
+                  {ticket.port_type}
+                </Descriptions.Item>
+              )}
               <Descriptions.Item label={t('fields.assignedUser')}>
                 {ticket.assigned_user
                   ? `${ticket.assigned_user.first_name} ${ticket.assigned_user.last_name}`
@@ -1058,7 +983,7 @@ export default function TicketDetail() {
             </Descriptions>
           </Card>
 
-          {(ticket.reporter_name || ticket.reporter_phone || ticket.reporter_email) && (
+          {(ticket.reporter_name || ticket.reporter_phone || ticket.reporter_email || ticket.contact_source) && (
             <Card title={t('reporter.title')} style={{ marginTop: 16 }}>
               <Descriptions column={1} size="small">
                 {ticket.reporter_name && (
@@ -1074,6 +999,11 @@ export default function TicketDetail() {
                 {ticket.reporter_email && (
                   <Descriptions.Item label={t('reporter.email')}>
                     {ticket.reporter_email}
+                  </Descriptions.Item>
+                )}
+                {ticket.contact_source && (
+                  <Descriptions.Item label="Джерело звернення">
+                    {getContactSourceLabel(ticket.contact_source)}
                   </Descriptions.Item>
                 )}
               </Descriptions>
@@ -1194,7 +1124,6 @@ export default function TicketDetail() {
               onSelect={handleStationSelect}
               onClear={() => {
                 setSelectedStation(null)
-                editForm.setFieldValue('port_number', undefined)
               }}
               loading={stationSearchLoading}
               notFoundContent={stationSearchLoading ? 'Завантаження...' : 'Станції не знайдено'}
@@ -1206,6 +1135,29 @@ export default function TicketDetail() {
                     : `${station.station_id} - ${station.name}`}
                 </Select.Option>
               ))}
+            </Select>
+          </Form.Item>
+
+          {/* Port Type */}
+          <Form.Item
+            name="port_type"
+            label="Тип порту"
+          >
+            <Select
+              allowClear
+              placeholder="Оберіть тип порту..."
+              showSearch
+              optionFilterProp="children"
+            >
+              <Select.Option value="CCS 2">CCS 2</Select.Option>
+              <Select.Option value="CHADEMO">CHADEMO</Select.Option>
+              <Select.Option value="GBT DC">GBT DC</Select.Option>
+              <Select.Option value="GBT AC">GBT AC</Select.Option>
+              <Select.Option value="Type 2 socket">Type 2 socket</Select.Option>
+              <Select.Option value="Type 2 plug">Type 2 plug</Select.Option>
+              <Select.Option value="Type 1">Type 1</Select.Option>
+              <Select.Option value="NACS DC">NACS DC</Select.Option>
+              <Select.Option value="NACS AC">NACS AC</Select.Option>
             </Select>
           </Form.Item>
 
@@ -1223,26 +1175,6 @@ export default function TicketDetail() {
                     {selectedStation.city && `, ${selectedStation.city}`}
                   </Text>
                 </div>
-                {selectedStation.ports && selectedStation.ports.length > 0 && (
-                  <Form.Item
-                    name="port_number"
-                    label={t('station.selectPort', 'Оберіть порт')}
-                    style={{ marginBottom: 0, marginTop: 8 }}
-                  >
-                    <Select
-                      allowClear
-                      placeholder={t('station.portPlaceholder', 'Оберіть порт...')}
-                    >
-                      {selectedStation.ports.map((port: any) => (
-                        <Select.Option key={port.port_number} value={port.port_number}>
-                          Port {port.port_number}
-                          {port.connector_type && ` - ${port.connector_type}`}
-                          {port.power_kw && ` (${port.power_kw} kW)`}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                )}
               </Space>
             </Card>
           )}
