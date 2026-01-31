@@ -33,12 +33,7 @@ import {
   DownloadOutlined,
   DeleteOutlined,
   EditOutlined,
-  FileTextOutlined,
   CodeOutlined,
-  RobotOutlined,
-  CheckCircleOutlined,
-  WarningOutlined,
-  BulbOutlined,
 } from '@ant-design/icons'
 import { ticketsApi, Ticket, TicketComment, TicketHistory, TicketAttachment, TicketLog } from '../../api/tickets'
 import { stationsApi, Station } from '../../api/stations'
@@ -239,48 +234,6 @@ export default function TicketDetail() {
   const closePreview = () => {
     setPreviewVisible(false)
     setPreviewAttachment(null)
-  }
-
-  // Log handlers
-  const handleDownloadLog = async (log: TicketLog) => {
-    if (!id) return
-    try {
-      const blob = await ticketsApi.downloadLog(parseInt(id), log.id)
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = log.filename
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch (error) {
-      message.error('Failed to download log')
-    }
-  }
-
-  const handlePreviewLog = async (log: TicketLog) => {
-    if (!id) return
-    try {
-      const blob = await ticketsApi.downloadLog(parseInt(id), log.id)
-      const text = await blob.text()
-      setLogPreviewContent(text)
-      setLogPreviewTitle(log.filename)
-      setLogPreviewVisible(true)
-    } catch (error) {
-      message.error('Failed to load log preview')
-    }
-  }
-
-  const handleDeleteLog = async (logId: number) => {
-    if (!id) return
-    try {
-      await ticketsApi.deleteLog(parseInt(id), logId)
-      setLogs(logs.filter(l => l.id !== logId))
-      message.success('Log deleted')
-    } catch (error) {
-      message.error('Failed to delete log')
-    }
   }
 
   // Station search for edit modal
@@ -520,20 +473,6 @@ export default function TicketDetail() {
     }
   }
 
-  // Format port display with connector type and power
-  const formatPortDisplay = (portNumber: number | null | undefined): string => {
-    if (!portNumber) return '-'
-    if (!ticketStation?.ports) return `Port ${portNumber}`
-
-    const port = ticketStation.ports.find(p => p.port_number === portNumber)
-    if (!port) return `Port ${portNumber}`
-
-    let display = `Port ${port.port_number}`
-    if (port.connector_type) display += ` - ${port.connector_type}`
-    if (port.power_kw) display += ` (${port.power_kw} kW)`
-    return display
-  }
-
   const priorityColors: Record<string, string> = {
     low: 'green',
     medium: 'gold',
@@ -548,24 +487,6 @@ export default function TicketDetail() {
     pending: 'gold',
     resolved: 'green',
     closed: 'default',
-  }
-
-  // AI Log Analysis status colors
-  const getAIStatusColor = (status: string): string => {
-    const aiStatusColors: Record<string, string> = {
-      Available: 'green',
-      Preparing: 'blue',
-      Charging: 'cyan',
-      SuspendedEV: 'orange',
-      SuspendedEVSE: 'orange',
-      Finishing: 'purple',
-      Reserved: 'gold',
-      Unavailable: 'default',
-      Faulted: 'red',
-      unknown: 'default',
-      error: 'red',
-    }
-    return aiStatusColors[status] || 'default'
   }
 
   if (loading) {

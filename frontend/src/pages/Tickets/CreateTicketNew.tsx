@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-  Card,
   Form,
   Input,
   Select,
@@ -28,7 +27,7 @@ import { ticketsApi } from '../../api/tickets'
 import { stationsApi, Station } from '../../api/stations'
 import { departmentsApi, Department } from '../../api/departments'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 const { TextArea } = Input
 
 // Типи інцидентів
@@ -91,7 +90,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   const [aiAnalysis, setAiAnalysis] = useState('')
   
   const navigate = useNavigate()
-  const { t, i18n } = useTranslation('tickets')
+  const { i18n } = useTranslation('tickets')
 
   // Load departments
   const loadDepartments = async () => {
@@ -121,11 +120,10 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
       setStationSearchLoading(true)
       const response = await stationsApi.list({
         search: searchValue,
-        is_active: true,
         per_page: 20,
       })
 
-      const options: StationOption[] = response.items.map((station) => ({
+      const options = response.items.map((station) => ({
         value: station.id,
         label: `${station.station_id} - ${station.name}`,
         station,
