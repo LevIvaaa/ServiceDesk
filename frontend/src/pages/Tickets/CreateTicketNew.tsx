@@ -144,6 +144,8 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
     const option = stationOptions.find((opt) => opt.value === value)
     if (option) {
       setSelectedStation(option.station)
+      // Set the form field value explicitly
+      form.setFieldsValue({ station_id: value })
     }
   }
 
@@ -197,10 +199,26 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
     try {
       setLoading(true)
 
+      // Визначаємо категорію на основі типу інциденту
+      let category = 'other'
+      const incidentType = values.incident_type?.toLowerCase() || ''
+      
+      if (incidentType.includes('софтов') || incidentType.includes('баг') || incidentType.includes('звязок')) {
+        category = 'software'
+      } else if (incidentType.includes('фізичн') || incidentType.includes('поломк') || incidentType.includes('зламал')) {
+        category = 'hardware'
+      } else if (incidentType.includes('зарядит') || incidentType.includes('двс')) {
+        category = 'hardware'
+      } else if (incidentType.includes('перерахунок')) {
+        category = 'billing'
+      } else if (incidentType.includes('звязок') || incidentType.includes('зв\'язок')) {
+        category = 'network'
+      }
+
       const ticketData: any = {
         title: values.incident_type || 'Новий інцидент',
         description: values.description,
-        category: 'other',
+        category: category,
         priority: 'medium',
         incident_type: values.incident_type,
         station_id: values.station_id,
@@ -327,24 +345,24 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
           {/* Номер інциденту */}
           <Form.Item 
             label="Номер інциденту" 
-            style={{ marginBottom: 20 }}
+            style={{ marginBottom: 8 }}
           >
             <Input 
               value="Автогенерація" 
               disabled 
               style={{ color: '#1890ff', fontStyle: 'italic' }}
             />
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              Генерується автоматично при збереженні
-            </Text>
           </Form.Item>
+          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: -4, marginBottom: 20 }}>
+            Генерується автоматично при збереженні
+          </Text>
 
           {/* Відділ */}
           <Form.Item
             label={<span><span style={{ color: 'red' }}>* </span>Відділ</span>}
             name="assigned_department_id"
             rules={[{ required: true, message: 'Оберіть відділ' }]}
-            style={{ marginBottom: 20 }}
+            style={{ marginBottom: 8 }}
           >
             <Select
               placeholder="Оберіть відділ..."
@@ -358,15 +376,16 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                 </Select.Option>
               ))}
             </Select>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              Відділ, який буде обробляти тікет
-            </Text>
           </Form.Item>
+          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: -4, marginBottom: 20 }}>
+            Відділ, який буде обробляти тікет
+          </Text>
 
           {/* Станція */}
           <Form.Item
             label={<span><span style={{ color: 'red' }}>* </span>Станція</span>}
             name="station_id"
+            rules={[{ required: true, message: 'Оберіть станцію' }]}
             style={{ marginBottom: 8 }}
           >
             <Select
@@ -427,6 +446,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
           <Form.Item
             label={<span><span style={{ color: 'red' }}>* </span>Порт станції</span>}
             name="port_type"
+            rules={[{ required: true, message: 'Оберіть порт станції' }]}
             style={{ marginBottom: 20 }}
           >
             <Select

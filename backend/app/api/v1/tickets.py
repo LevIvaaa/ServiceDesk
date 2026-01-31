@@ -332,7 +332,7 @@ async def delete_ticket(
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("tickets.delete"))],
 ):
-    """Delete a ticket."""
+    """Delete a ticket. Only closed tickets can be deleted."""
     result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
     ticket = result.scalar_one_or_none()
 
@@ -340,6 +340,13 @@ async def delete_ticket(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Ticket not found",
+        )
+
+    # Only allow deletion of new or closed tickets
+    if ticket.status not in ["new", "closed"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only new or closed tickets can be deleted",
         )
 
     await db.delete(ticket)
@@ -373,6 +380,16 @@ async def update_ticket_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Ticket not found",
         )
+
+    # Перевірка: тільки адміни можуть ставити статус "closed"
+    if status_data.status == "closed" and not current_user.is_admin:
+        # Перевіряємо чи користувач має роль ticket_handler
+        user_roles = [role.name for role in current_user.roles]
+        if "ticket_handler" in user_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only administrators can set status to 'closed'. You can set status to 'resolved' instead.",
+            )
 
     old_status = ticket.status
     ticket.status = status_data.status
@@ -756,6 +773,11 @@ async def _build_ticket_response(ticket: Ticket, db: AsyncSession) -> TicketResp
         "ai_log_analysis": ticket.ai_log_analysis,
         "comments_count": comments_count,
         "attachments_count": attachments_count,
+        # New fields from TZ
+        "incident_type": ticket.incident_type,
+        "port_type": ticket.port_type,
+        "contact_source": ticket.contact_source,
+        "station_logs": ticket.station_logs,
     }
 
     if ticket.station:
@@ -818,6 +840,11 @@ async def _build_ticket_detail_response(
         "attachments": ticket.attachments,
         "history": sorted(ticket.history, key=lambda h: h.created_at, reverse=True),
         "logs": ticket.logs,
+        # New fields from TZ
+        "incident_type": ticket.incident_type,
+        "port_type": ticket.port_type,
+        "contact_source": ticket.contact_source,
+        "station_logs": ticket.station_logs,
     }
 
     if ticket.station:

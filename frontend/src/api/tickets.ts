@@ -57,6 +57,11 @@ export interface Ticket {
   ai_log_analysis: AILogAnalysis | null
   comments_count: number
   attachments_count: number
+  // New fields from TZ
+  incident_type: string | null
+  port_type: string | null
+  contact_source: string | null
+  station_logs: string | null
 }
 
 export interface TicketComment {
@@ -171,6 +176,11 @@ export interface CreateTicketData {
   assigned_user_id?: number
   assigned_department_id?: number
   ai_log_analysis?: AILogAnalysis
+  // New fields from TZ
+  incident_type?: string
+  port_type?: string
+  contact_source?: string
+  station_logs?: string
 }
 
 export const ticketsApi = {

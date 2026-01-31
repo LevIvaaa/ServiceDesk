@@ -14,6 +14,11 @@ class TicketBase(BaseModel):
     reporter_name: Optional[str] = Field(None, max_length=200)
     reporter_phone: Optional[str] = Field(None, max_length=20)
     reporter_email: Optional[EmailStr] = None
+    # New fields from TZ
+    incident_type: Optional[str] = Field(None, max_length=100)
+    port_type: Optional[str] = Field(None, max_length=50)
+    contact_source: Optional[str] = Field(None, max_length=50)
+    station_logs: Optional[str] = None
 
 
 class AILogAnalysis(BaseModel):
@@ -173,6 +178,11 @@ class TicketResponse(BaseModel):
     ai_log_analysis: Optional[AILogAnalysis] = None
     comments_count: int = 0
     attachments_count: int = 0
+    # New fields from TZ
+    incident_type: Optional[str] = None
+    port_type: Optional[str] = None
+    contact_source: Optional[str] = None
+    station_logs: Optional[str] = None
 
     class Config:
         from_attributes = True

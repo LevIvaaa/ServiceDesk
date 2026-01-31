@@ -9,7 +9,9 @@ import {
   WarningOutlined,
 } from '@ant-design/icons'
 import client from '../api/client'
+import { ticketsApi, Ticket } from '../api/tickets'
 import { useAuthStore } from '../store/authStore'
+import dayjs from 'dayjs'
 
 const { Title } = Typography
 
@@ -24,20 +26,9 @@ interface DashboardStats {
   avg_resolution_hours: number
 }
 
-interface MyTicket {
-  id: number
-  ticket_number: string
-  title: string
-  priority: string
-  status: string
-  created_at: string
-  sla_due_date: string | null
-  sla_breached: boolean
-}
-
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [myTickets, setMyTickets] = useState<MyTicket[]>([])
+  const [tickets, setTickets] = useState<Ticket[]>([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const { t } = useTranslation('tickets')
@@ -55,10 +46,10 @@ export default function Dashboard() {
       try {
         const [statsRes, ticketsRes] = await Promise.all([
           client.get('/dashboard/stats'),
-          client.get('/dashboard/my-tickets'),
+          ticketsApi.list({ page: 1, per_page: 10 }), // Останні 10 тікетів
         ])
         setStats(statsRes.data)
-        setMyTickets(ticketsRes.data)
+        setTickets(ticketsRes.items)
       } catch (error) {
         console.error('Failed to fetch dashboard data', error)
       } finally {
@@ -67,8 +58,8 @@ export default function Dashboard() {
     }
 
     fetchData()
-    // Auto-refresh every 5 seconds
-    const interval = setInterval(fetchData, 5000)
+    // Auto-refresh every 2 seconds for near real-time updates
+    const interval = setInterval(fetchData, 2000)
     return () => clearInterval(interval)
   }, [])
 
@@ -93,9 +84,10 @@ export default function Dashboard() {
       title: t('ticketNumber'),
       dataIndex: 'ticket_number',
       key: 'ticket_number',
-      render: (text: string, record: MyTicket) => (
+      render: (text: string, record: Ticket) => (
         <a onClick={() => navigate(`/tickets/${record.id}`)}>{text}</a>
       ),
+      width: 130,
     },
     {
       title: t('fields.title'),
@@ -110,6 +102,7 @@ export default function Dashboard() {
       render: (priority: string) => (
         <Tag color={priorityColors[priority]}>{t(`priority.${priority}`)}</Tag>
       ),
+      width: 100,
     },
     {
       title: t('status.label'),
@@ -118,17 +111,38 @@ export default function Dashboard() {
       render: (status: string) => (
         <Tag color={statusColors[status]}>{t(`status.${status}`)}</Tag>
       ),
+      width: 110,
     },
     {
-      title: 'SLA',
-      dataIndex: 'sla_breached',
-      key: 'sla',
-      render: (breached: boolean) =>
-        breached ? (
-          <Tag color="red" icon={<WarningOutlined />}>
-            Breached
-          </Tag>
-        ) : null,
+      title: t('category.label'),
+      dataIndex: 'category',
+      key: 'category',
+      render: (category: string) => t(`category.${category}`),
+      width: 120,
+    },
+    {
+      title: t('fields.station'),
+      dataIndex: 'station',
+      key: 'station',
+      render: (station: Ticket['station']) =>
+        station ? station.station_id : '-',
+      width: 100,
+    },
+    {
+      title: t('fields.assignedUser'),
+      dataIndex: 'assigned_user',
+      key: 'assigned_user',
+      render: (user: Ticket['assigned_user']) =>
+        user ? `${user.first_name} ${user.last_name}` : '-',
+      width: 140,
+      ellipsis: true,
+    },
+    {
+      title: t('fields.createdAt'),
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (date: string) => dayjs(date).format('DD.MM.YYYY HH:mm'),
+      width: 140,
     },
   ]
 
@@ -228,10 +242,11 @@ export default function Dashboard() {
       <Card title={t('dashboard.myTickets')} style={{ marginTop: 24 }}>
         <Table
           columns={columns}
-          dataSource={myTickets}
+          dataSource={tickets}
           rowKey="id"
           pagination={false}
           size="small"
+          scroll={{ x: 1000 }}
         />
       </Card>
     </div>
