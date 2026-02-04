@@ -215,6 +215,15 @@ export default function TicketsList() {
       ellipsis: true,
     },
     {
+      title: t('fields.assignedDepartment', 'Відділ'),
+      dataIndex: 'assigned_department',
+      key: 'assigned_department',
+      render: (department: Ticket['assigned_department']) =>
+        department ? department.name : '-',
+      width: 140,
+      ellipsis: true,
+    },
+    {
       title: t('fields.createdAt'),
       dataIndex: 'created_at',
       key: 'created_at',
@@ -426,7 +435,7 @@ export default function TicketsList() {
           pageSize: 20,
           onChange: setPage,
         }}
-        scroll={{ x: 1050 }}
+        scroll={{ x: 1200 }}
       />
 
       {/* Create Ticket Modal */}

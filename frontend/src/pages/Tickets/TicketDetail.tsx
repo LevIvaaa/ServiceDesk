@@ -66,9 +66,11 @@ export default function TicketDetail() {
   const [stationOptions, setStationOptions] = useState<Station[]>([])
   const [stationSearchLoading, setStationSearchLoading] = useState(false)
   const [selectedStation, setSelectedStation] = useState<Station | null>(null)
+  const [stationPorts, setStationPorts] = useState<any[]>([])
   // Assignment state
   const [assignModalVisible, setAssignModalVisible] = useState(false)
   const [departments, setDepartments] = useState<Department[]>([])
+  const [departmentsLoading, setDepartmentsLoading] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<number | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
@@ -79,16 +81,57 @@ export default function TicketDetail() {
   const { hasPermission } = useAuthStore()
   const user = useAuthStore(state => state.user)
 
+  // Проверяем, может ли пользователь редактировать тикет
+  const canEditTicket = () => {
+    if (!ticket || !user) return false
+    if (user.is_admin) return true // Админы могут все
+    
+    // Если тикет назначен другому пользователю - только просмотр
+    if (ticket.assigned_user_id && ticket.assigned_user_id !== user.id) {
+      return false
+    }
+    
+    // Если тикет в отделе пользователя и не назначен никому - можно редактировать
+    if (ticket.assigned_department_id === user.department_id) {
+      return true
+    }
+    
+    // Если пользователь создал тикет (sender) - может редактировать свой
+    if (ticket.created_by_id === user.id) {
+      return true
+    }
+    
+    return false
+  }
+
   // Визначаємо доступні статуси залежно від ролі
   const getAvailableStatuses = () => {
     const allStatuses = ['new', 'open', 'in_progress', 'pending', 'resolved', 'closed']
     
-    // Якщо користувач має роль ticket_handler, прибираємо статус 'closed'
-    if (user && !user.is_admin && user.roles.some(role => role.name === 'ticket_handler')) {
+    // Якщо користувач має роль handler, прибираємо статус 'closed'
+    if (user && !user.is_admin && user.roles.some(role => role.name === 'handler')) {
       return allStatuses.filter(status => status !== 'closed')
     }
     
     return allStatuses
+  }
+
+  // Перевіряємо чи тікет належить відділу користувача
+  const isTicketFromMyDepartment = () => {
+    if (!ticket || !user) return false
+    if (user.is_admin) return true // Адміни можуть все
+    
+    // Якщо користувач має роль sender, він може редагувати свої тікети
+    if (user.roles.some(role => role.name === 'sender')) {
+      return ticket.created_by_id === user.id
+    }
+    
+    // Якщо користувач має роль handler, перевіряємо відділ
+    if (user.roles.some(role => role.name === 'handler')) {
+      return ticket.assigned_department_id === user.department_id
+    }
+    
+    return false
   }
 
   const statuses = getAvailableStatuses()
@@ -231,7 +274,12 @@ export default function TicketDetail() {
 
   const handleStationSelect = (stationId: number) => {
     const station = stationOptions.find(s => s.id === stationId)
-    setSelectedStation(station || null)
+    if (station) {
+      setSelectedStation(station)
+      setStationPorts(station.ports || [])
+      // Очищаем выбранный порт при смене станции
+      editForm.setFieldsValue({ port_type: undefined })
+    }
   }
 
   // Edit ticket handlers
@@ -254,16 +302,19 @@ export default function TicketDetail() {
           const fullStation = await stationsApi.get(ticket.station_id)
           setSelectedStation(fullStation)
           setStationOptions([fullStation])
+          setStationPorts(fullStation.ports || [])
         } catch (e) {
           // Fallback to ticket.station if fetch fails
           if (ticket.station) {
             setSelectedStation(ticket.station as any)
             setStationOptions([ticket.station as any])
+            setStationPorts([])
           }
         }
       } else {
         setSelectedStation(null)
         setStationOptions([])
+        setStationPorts([])
       }
       setEditModalVisible(true)
     }
@@ -321,10 +372,14 @@ export default function TicketDetail() {
   // Assignment functions
   const loadDepartments = async () => {
     try {
+      setDepartmentsLoading(true)
       const response = await departmentsApi.list({ is_active: true, per_page: 100 })
       setDepartments(response.items)
     } catch (error) {
       console.error('Failed to load departments:', error)
+      message.error('Помилка завантаження відділів')
+    } finally {
+      setDepartmentsLoading(false)
     }
   }
 
@@ -342,18 +397,24 @@ export default function TicketDetail() {
       setUsers(response.items)
     } catch (error) {
       console.error('Failed to load users:', error)
+      message.error('Помилка завантаження користувачів')
     } finally {
       setUsersLoading(false)
     }
   }
 
-  const openAssignModal = () => {
+  const openAssignModal = async () => {
     // Pre-fill with current values
     setSelectedDepartmentId(ticket?.assigned_department_id || null)
     setSelectedUserId(ticket?.assigned_user_id || null)
     setAssignComment('')
-    loadDepartments()
-    loadUsers(ticket?.assigned_department_id || undefined)
+    
+    // Load data before opening modal
+    await loadDepartments()
+    if (ticket?.assigned_department_id) {
+      await loadUsers(ticket.assigned_department_id)
+    }
+    
     setAssignModalVisible(true)
   }
 
@@ -726,7 +787,7 @@ export default function TicketDetail() {
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
           {t('common:actions.back')}
         </Button>
-        {hasPermission('tickets.edit') && (
+        {hasPermission('tickets.edit') && canEditTicket() && (
           <Button icon={<EditOutlined />} onClick={openEditModal}>
             {t('common:actions.edit', 'Редагувати')}
           </Button>
@@ -766,7 +827,7 @@ export default function TicketDetail() {
               {/* Status */}
               <div>
                 <Text type="secondary">{t('fields.status', 'Статус')}:</Text>
-                {hasPermission('tickets.change_status') ? (
+                {hasPermission('tickets.change_status') && canEditTicket() ? (
                   <Select
                     value={ticket.status}
                     onChange={(val) => {
@@ -793,10 +854,31 @@ export default function TicketDetail() {
                 )}
               </div>
 
+              {/* Close Ticket Button for Senders when status is resolved */}
+              {user && 
+               user.roles.some(role => role.name === 'sender') && 
+               ticket.created_by_id === user.id && 
+               ticket.status === 'resolved' && (
+                <div>
+                  <Button
+                    type="primary"
+                    block
+                    onClick={() => {
+                      setPendingStatus('closed')
+                      setStatusModalVisible(true)
+                    }}
+                    loading={submitting}
+                    style={{ marginTop: 8 }}
+                  >
+                    {t('actions.closeTicket', 'Закрити тікет')}
+                  </Button>
+                </div>
+              )}
+
               {/* Priority */}
               <div>
                 <Text type="secondary">{t('fields.priority', 'Пріоритет')}:</Text>
-                {hasPermission('tickets.edit') ? (
+                {hasPermission('tickets.edit') && canEditTicket() ? (
                   <Select
                     value={ticket.priority}
                     onChange={handlePriorityChange}
@@ -817,7 +899,7 @@ export default function TicketDetail() {
               </div>
 
               {/* Assignment */}
-              {hasPermission('tickets.assign') && (
+              {hasPermission('tickets.assign') && canEditTicket() && (
                 <div>
                   <Text type="secondary">{t('fields.assignment', 'Призначення')}:</Text>
                   <Button
@@ -852,7 +934,7 @@ export default function TicketDetail() {
                 {ticket.station ? `${ticket.station.station_id} - ${ticket.station.name}` : '-'}
               </Descriptions.Item>
               {ticket.port_type && (
-                <Descriptions.Item label="Порт">
+                <Descriptions.Item label="Тип порту">
                   {ticket.port_type}
                 </Descriptions.Item>
               )}
@@ -1035,26 +1117,30 @@ export default function TicketDetail() {
             </Select>
           </Form.Item>
 
-          {/* Port Type */}
+          {/* Тип порту */}
           <Form.Item
             name="port_type"
             label="Тип порту"
           >
             <Select
               allowClear
-              placeholder="Оберіть тип порту..."
+              placeholder={selectedStation ? "Оберіть тип порту..." : "Спочатку оберіть станцію"}
               showSearch
               optionFilterProp="children"
+              disabled={!selectedStation || stationPorts.length === 0}
+              notFoundContent={selectedStation && stationPorts.length === 0 ? "У станції немає портів" : null}
             >
-              <Select.Option value="CCS 2">CCS 2</Select.Option>
-              <Select.Option value="CHADEMO">CHADEMO</Select.Option>
-              <Select.Option value="GBT DC">GBT DC</Select.Option>
-              <Select.Option value="GBT AC">GBT AC</Select.Option>
-              <Select.Option value="Type 2 socket">Type 2 socket</Select.Option>
-              <Select.Option value="Type 2 plug">Type 2 plug</Select.Option>
-              <Select.Option value="Type 1">Type 1</Select.Option>
-              <Select.Option value="NACS DC">NACS DC</Select.Option>
-              <Select.Option value="NACS AC">NACS AC</Select.Option>
+              {stationPorts.map((port: any) => (
+                <Select.Option 
+                  key={port.id} 
+                  value={port.connector_type || `Порт ${port.port_number}`}
+                >
+                  {port.connector_type 
+                    ? `${port.connector_type}${port.power_kw ? ` (${port.power_kw} kW)` : ''} - Порт ${port.port_number}`
+                    : `Порт ${port.port_number}`
+                  }
+                </Select.Option>
+              ))}
             </Select>
           </Form.Item>
 
@@ -1159,6 +1245,7 @@ export default function TicketDetail() {
               style={{ width: '100%' }}
               value={selectedDepartmentId}
               onChange={handleDepartmentChange}
+              loading={departmentsLoading}
             >
               {departments.map(dept => (
                 <Select.Option key={dept.id} value={dept.id}>

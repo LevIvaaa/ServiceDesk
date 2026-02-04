@@ -20,7 +20,7 @@ import Settings from './pages/Settings/Settings'
 import LogAnalysis from './pages/LogAnalysis/LogAnalysis'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuthStore()
+  const { isAuthenticated, isLoading, user } = useAuthStore()
 
   if (isLoading) {
     return (
@@ -35,6 +35,17 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>
+}
+
+function DashboardRedirect() {
+  const { user } = useAuthStore()
+  
+  // Redirect admins to users page instead of dashboard
+  if (user?.is_admin) {
+    return <Navigate to="/users" replace />
+  }
+  
+  return <Dashboard />
 }
 
 function App() {
@@ -65,7 +76,7 @@ function App() {
             <PrivateRoute>
               <MainLayout>
                 <Routes>
-                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/" element={<DashboardRedirect />} />
                   <Route path="/tickets" element={<TicketsList />} />
                   <Route path="/tickets/queue" element={<IncomingQueue />} />
                   <Route path="/tickets/:id" element={<TicketDetail />} />

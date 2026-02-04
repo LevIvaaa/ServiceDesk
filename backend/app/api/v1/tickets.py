@@ -97,6 +97,7 @@ async def list_tickets(
     category: Optional[str] = None,
     assigned_user_id: Optional[int] = None,
     assigned_department_id: Optional[int] = None,
+    department_id: Optional[int] = None,
     station_id: Optional[int] = None,
     created_by_id: Optional[int] = None,
     my_tickets: bool = False,
@@ -133,6 +134,9 @@ async def list_tickets(
         query = query.where(Ticket.assigned_user_id == assigned_user_id)
     if assigned_department_id is not None:
         query = query.where(Ticket.assigned_department_id == assigned_department_id)
+    if department_id is not None:
+        # Filter by department (either assigned or related)
+        query = query.where(Ticket.assigned_department_id == department_id)
     if station_id is not None:
         query = query.where(Ticket.station_id == station_id)
     if created_by_id is not None:
@@ -381,14 +385,21 @@ async def update_ticket_status(
             detail="Ticket not found",
         )
 
-    # Перевірка: тільки адміни можуть ставити статус "closed"
-    if status_data.status == "closed" and not current_user.is_admin:
-        # Перевіряємо чи користувач має роль ticket_handler
+    # Перевірка: обробники не можуть ставити статус "closed", тільки "resolved"
+    # Відправники та адміни можуть закривати тікети
+    if status_data.status == "closed":
         user_roles = [role.name for role in current_user.roles]
-        if "ticket_handler" in user_roles:
+        # Заборонити обробникам закривати тікети
+        if "handler" in user_roles and not current_user.is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only administrators can set status to 'closed'. You can set status to 'resolved' instead.",
+                detail="Handlers cannot set status to 'closed'. You can set status to 'resolved' instead. Only ticket creator can close the ticket.",
+            )
+        # Дозволити відправникам закривати тільки свої тікети
+        if "sender" in user_roles and ticket.created_by_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only close your own tickets.",
             )
 
     old_status = ticket.status
@@ -555,21 +566,20 @@ async def delegate_ticket(
 
     old_dept = ticket.assigned_department_id
     old_user = ticket.assigned_user_id
+    old_status = ticket.status
 
     ticket.assigned_department_id = delegate_data.assigned_department_id
 
-    # Auto-assign user if not specified
+    # Assign user only if explicitly specified
+    # If not specified, leave it empty so someone from the department can accept it
     assigned_user_id = delegate_data.assigned_user_id
-    if assigned_user_id is None:
-        # Use auto-assignment service
-        assignment_service = AssignmentService(db)
-        auto_assigned_user = await assignment_service.get_next_assignee(
-            delegate_data.assigned_department_id
-        )
-        if auto_assigned_user:
-            assigned_user_id = auto_assigned_user.id
-
     ticket.assigned_user_id = assigned_user_id
+    
+    # If delegating to a different department, reset status to 'open' if it was 'in_progress'
+    # This allows the new department to see it in their incoming queue
+    if old_dept != delegate_data.assigned_department_id:
+        if ticket.status == 'in_progress':
+            ticket.status = 'open'
 
     # Add history entry
     history = TicketHistory(
@@ -1207,7 +1217,7 @@ async def get_ticket_attachments(
 async def upload_ticket_attachment(
     ticket_id: int,
     db: DbSession,
-    current_user: Annotated[User, Depends(PermissionRequired("tickets.add_attachments"))],
+    current_user: Annotated[User, Depends(PermissionRequired("tickets.upload_attachments"))],
     file: UploadFile = File(...),
 ):
     """Upload an attachment (image/video) to a ticket."""

@@ -44,7 +44,8 @@
     "emailInvalid": "Невірний формат email",
     "passwordRequired": "Пароль обов'язковий",
     "passwordMinLength": "Мінімум 6 символів",
-    "nameRequired": "Назва обов'язкова"
+    "nameRequired": "Назва обов'язкова",
+    "passwordOptional": "Залиште порожнім, якщо не хочете змінювати пароль"
   },
   "placeholders": {
     "selectDepartment": "Оберіть відділ",
@@ -79,10 +80,9 @@
   },
   "roles": {
     "title": "Ролі",
-    "operator": "Користувач",
-    "ticket_handler": "Обробник тікетів",
-    "technician": "Технічний спеціаліст",
-    "manager": "Керівник"
+    "admin": "Адміністратор",
+    "sender": "Відправник",
+    "handler": "Обробник"
   },
   "notifications": {
     "title": "Налаштування сповіщень",

@@ -126,24 +126,25 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/',
       icon: <DashboardOutlined />,
       label: t('menu.dashboard'),
-      visible: hasPermission('tickets.create'), // Hide for ticket handlers
+      visible: hasPermission('tickets.create') && !user?.is_admin, // Only for senders, not admins
     },
     {
       key: hasPermission('tickets.assign') && !hasPermission('tickets.create') ? '/tickets/queue' : '/tickets',
       icon: <FileTextOutlined />,
       label: t('menu.tickets'),
+      visible: !user?.is_admin, // Only for senders and handlers, not admins
     },
     {
       key: '/stations',
       icon: <ThunderboltOutlined />,
       label: t('menu.stations'),
-      visible: hasPermission('stations.view') && hasPermission('tickets.create'), // Hide for ticket handlers
+      visible: true, // Visible for everyone
     },
     {
       key: '/operators',
       icon: <TeamOutlined />,
       label: t('menu.operators'),
-      visible: hasPermission('operators.view') && hasPermission('tickets.create'), // Hide for ticket handlers
+      visible: hasPermission('operators.view') && hasPermission('tickets.create'), // Only for senders with permission
     },
     {
       key: '/knowledge',
@@ -155,18 +156,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/log-analysis',
       icon: <FileTextOutlined />,
       label: t('menu.logAnalysis'),
+      visible: !user?.is_admin, // Only for senders and handlers, not admins
     },
     {
       key: '/users',
       icon: <UserOutlined />,
       label: t('menu.users'),
-      visible: hasPermission('users.view'),
+      visible: hasPermission('users.view'), // Visible for all with permission
     },
     {
       key: '/departments',
       icon: <ApartmentOutlined />,
       label: t('menu.departments'),
-      visible: hasPermission('departments.view'),
+      visible: hasPermission('departments.view'), // Visible for all with permission
     },
     {
       key: '/settings',

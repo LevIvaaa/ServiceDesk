@@ -93,7 +93,8 @@
     "assign": "Призначити",
     "delegate": "Делегувати",
     "changeStatus": "Змінити статус",
-    "collectLogs": "Зібрати логи"
+    "collectLogs": "Зібрати логи",
+    "closeTicket": "Закрити тікет"
   },
   "parseMessage": {
     "title": "Повідомлення клієнта",

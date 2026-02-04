@@ -63,4 +63,9 @@ export const departmentsApi = {
   delete: async (id: number): Promise<void> => {
     await client.delete(`/departments/${id}`)
   },
+
+  getUsers: async (id: number): Promise<any[]> => {
+    const response = await client.get<any[]>(`/departments/${id}/users`)
+    return response.data
+  },
 }

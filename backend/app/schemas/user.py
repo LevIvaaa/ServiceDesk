@@ -72,8 +72,10 @@ class UserListResponse(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
+    phone: Optional[str] = None
     is_active: bool
     is_admin: bool
+    department_id: Optional[int] = None
     department: Optional[DepartmentShort]
     roles: list[RoleShort] = []
     created_at: datetime

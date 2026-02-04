@@ -44,7 +44,8 @@
     "emailInvalid": "Invalid email format",
     "passwordRequired": "Password is required",
     "passwordMinLength": "Minimum 6 characters",
-    "nameRequired": "Name is required"
+    "nameRequired": "Name is required",
+    "passwordOptional": "Leave empty if you don't want to change the password"
   },
   "placeholders": {
     "selectDepartment": "Select department",
@@ -79,10 +80,9 @@
   },
   "roles": {
     "title": "Roles",
-    "operator": "User",
-    "ticket_handler": "Ticket Handler",
-    "technician": "Technician",
-    "manager": "Manager"
+    "admin": "Administrator",
+    "sender": "Sender",
+    "handler": "Handler"
   },
   "notifications": {
     "title": "Notification Settings",

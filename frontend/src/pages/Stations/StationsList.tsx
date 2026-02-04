@@ -29,6 +29,7 @@ import {
 } from '@ant-design/icons'
 import { stationsApi, StationListItem, Station, CreateStationData, UpdateStationData } from '../../api/stations'
 import { operatorsApi, Operator } from '../../api/operators'
+import { useAuthStore } from '../../store/authStore'
 
 const { Title } = Typography
 
@@ -45,6 +46,7 @@ const CONNECTOR_TYPES = ['CCS2', 'CHAdeMO', 'Type2', 'Type1', 'GBT']
 
 export default function StationsList() {
   const { t, i18n } = useTranslation(['stations', 'common'])
+  const { user: currentUser } = useAuthStore()
   const [stations, setStations] = useState<StationListItem[]>([])
   const [operators, setOperators] = useState<Operator[]>([])
   const [loading, setLoading] = useState(false)
@@ -221,17 +223,6 @@ export default function StationsList() {
       width: 120,
     },
     {
-      title: t('fields.status'),
-      dataIndex: 'status',
-      key: 'status',
-      width: 120,
-      render: (status: string) => (
-        <Tag color={STATUS_COLORS[status] || 'default'}>
-          {t(`status.${status}`)}
-        </Tag>
-      ),
-    },
-    {
       title: t('common:actions.title'),
       key: 'actions',
       width: 150,
@@ -242,19 +233,23 @@ export default function StationsList() {
             icon={<EyeOutlined />}
             onClick={() => handleView(record.id)}
           />
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record.id)}
-          />
-          <Popconfirm
-            title={t('actions.decommission')}
-            onConfirm={() => handleDelete(record.id)}
-            okText={t('common:actions.yes')}
-            cancelText={t('common:actions.no')}
-          >
-            <Button type="text" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          {currentUser?.is_admin && (
+            <>
+              <Button
+                type="text"
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record.id)}
+              />
+              <Popconfirm
+                title={t('actions.decommission')}
+                onConfirm={() => handleDelete(record.id)}
+                okText={t('common:actions.yes')}
+                cancelText={t('common:actions.no')}
+              >
+                <Button type="text" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            </>
+          )}
         </Space>
       ),
     },
@@ -264,9 +259,11 @@ export default function StationsList() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <Title level={2}>{t('title')}</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          {t('create')}
-        </Button>
+        {currentUser?.is_admin && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+            {t('create')}
+          </Button>
+        )}
       </div>
 
       <Card style={{ marginBottom: 16 }}>
@@ -532,12 +529,14 @@ export default function StationsList() {
           <Button key="close" onClick={() => setDetailModalVisible(false)}>
             {t('common:actions.close')}
           </Button>,
-          <Button key="edit" type="primary" onClick={() => {
-            setDetailModalVisible(false)
-            if (viewingStation) handleEdit(viewingStation.id)
-          }}>
-            {t('common:actions.edit')}
-          </Button>,
+          ...(currentUser?.is_admin ? [
+            <Button key="edit" type="primary" onClick={() => {
+              setDetailModalVisible(false)
+              if (viewingStation) handleEdit(viewingStation.id)
+            }}>
+              {t('common:actions.edit')}
+            </Button>,
+          ] : []),
         ]}
         width={800}
       >

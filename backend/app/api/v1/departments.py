@@ -53,7 +53,10 @@ async def list_departments(
     items = []
     for dept in departments:
         count_result = await db.execute(
-            select(func.count()).where(User.department_id == dept.id)
+            select(func.count()).where(
+                User.department_id == dept.id,
+                User.is_active == True
+            )
         )
         users_count = count_result.scalar()
         
@@ -110,7 +113,10 @@ async def list_all_departments(
     items = []
     for dept in departments:
         count_result = await db.execute(
-            select(func.count()).where(User.department_id == dept.id)
+            select(func.count()).where(
+                User.department_id == dept.id,
+                User.is_active == True
+            )
         )
         users_count = count_result.scalar()
         
@@ -280,7 +286,7 @@ async def get_department_users(
 
     result = await db.execute(
         select(User)
-        .options(selectinload(User.department))
+        .options(selectinload(User.department), selectinload(User.roles))
         .where(User.department_id == department_id, User.is_active == True)
         .order_by(User.last_name, User.first_name)
     )

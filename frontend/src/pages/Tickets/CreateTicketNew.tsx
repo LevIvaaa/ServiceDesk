@@ -24,7 +24,7 @@ import {
   FileTextOutlined,
 } from '@ant-design/icons'
 import { ticketsApi } from '../../api/tickets'
-import { stationsApi, StationListItem } from '../../api/stations'
+import { stationsApi, StationListItem, Station, StationPort } from '../../api/stations'
 import { departmentsApi, Department } from '../../api/departments'
 
 const { Text } = Typography
@@ -40,19 +40,6 @@ const INCIDENT_TYPES = [
   'ДВС',
   'Зламалось авто',
   'Інше',
-]
-
-// Типи портів
-const PORT_TYPES = [
-  'CCS 2',
-  'CHADEMO',
-  'GBT DC',
-  'GBT AC',
-  'Type 2 socket',
-  'Type 2 plug',
-  'Type 1',
-  'NACS DC',
-  'NACS AC',
 ]
 
 // Джерела звернення
@@ -81,7 +68,8 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   const [loading, setLoading] = useState(false)
   const [stationSearchLoading, setStationSearchLoading] = useState(false)
   const [stationOptions, setStationOptions] = useState<StationOption[]>([])
-  const [selectedStation, setSelectedStation] = useState<StationListItem | null>(null)
+  const [selectedStation, setSelectedStation] = useState<Station | null>(null)
+  const [stationPorts, setStationPorts] = useState<StationPort[]>([])
   const [attachmentFiles, setAttachmentFiles] = useState<UploadFile[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [departmentsLoading, setDepartmentsLoading] = useState(false)
@@ -138,12 +126,24 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   }
 
   // Handle station selection
-  const handleStationSelect = (value: number) => {
+  const handleStationSelect = async (value: number) => {
     const option = stationOptions.find((opt) => opt.value === value)
     if (option) {
-      setSelectedStation(option.station)
-      // Set the form field value explicitly
-      form.setFieldsValue({ station_id: value })
+      try {
+        // Загружаем полную информацию о станции с портами
+        const fullStation = await stationsApi.get(value, i18n.language)
+        setSelectedStation(fullStation)
+        setStationPorts(fullStation.ports || [])
+        
+        // Очищаем выбранный порт при смене станции
+        form.setFieldsValue({ 
+          station_id: value,
+          port_type: undefined 
+        })
+      } catch (error) {
+        console.error('Failed to load station details:', error)
+        message.error('Помилка завантаження інформації про станцію')
+      }
     }
   }
 
@@ -440,21 +440,29 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
             />
           )}
 
-          {/* Порт станції */}
+          {/* Тип порту */}
           <Form.Item
-            label={<span><span style={{ color: 'red' }}>* </span>Порт станції</span>}
+            label={<span><span style={{ color: 'red' }}>* </span>Тип порту</span>}
             name="port_type"
-            rules={[{ required: true, message: 'Оберіть порт станції' }]}
+            rules={[{ required: true, message: 'Оберіть тип порту' }]}
             style={{ marginBottom: 20 }}
           >
             <Select
-              placeholder="Оберіть порт..."
+              placeholder={selectedStation ? "Оберіть тип порту..." : "Спочатку оберіть станцію"}
               showSearch
               optionFilterProp="children"
+              disabled={!selectedStation || stationPorts.length === 0}
+              notFoundContent={selectedStation && stationPorts.length === 0 ? "У станції немає портів" : null}
             >
-              {PORT_TYPES.map((type) => (
-                <Select.Option key={type} value={type}>
-                  {type}
+              {stationPorts.map((port) => (
+                <Select.Option 
+                  key={port.id} 
+                  value={port.connector_type || `Порт ${port.port_number}`}
+                >
+                  {port.connector_type 
+                    ? `${port.connector_type}${port.power_kw ? ` (${port.power_kw} kW)` : ''} - Порт ${port.port_number}`
+                    : `Порт ${port.port_number}`
+                  }
                 </Select.Option>
               ))}
             </Select>

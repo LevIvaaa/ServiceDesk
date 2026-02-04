@@ -69,8 +69,10 @@ async def list_users(
             "email": user.email,
             "first_name": user.first_name_en if lang == "en" and user.first_name_en else user.first_name,
             "last_name": user.last_name_en if lang == "en" and user.last_name_en else user.last_name,
+            "phone": user.phone,
             "is_active": user.is_active,
             "is_admin": user.is_admin,
+            "department_id": user.department_id,
             "department": {
                 "id": user.department.id,
                 "name": user.department.name_en if lang == "en" and user.department.name_en else user.department.name
@@ -297,7 +299,14 @@ async def update_user(
             db.add(user_role)
 
     await db.commit()
-    await db.refresh(user, ["roles", "department"])
+    
+    # Reload with relationships
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.roles), selectinload(User.department))
+        .where(User.id == user_id)
+    )
+    user = result.scalar_one()
 
     return UserResponse.model_validate(user)
 
@@ -308,7 +317,7 @@ async def delete_user(
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("users.delete"))],
 ):
-    """Deactivate a user (soft delete)."""
+    """Permanently delete a user."""
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
 
@@ -321,13 +330,38 @@ async def delete_user(
     if user.id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot deactivate yourself",
+            detail="Cannot delete yourself",
         )
 
-    user.is_active = False
+    # Permanently delete the user
+    await db.delete(user)
     await db.commit()
 
-    return {"message": "User deactivated successfully"}
+    return {"message": "User deleted successfully"}
+
+
+@router.put("/{user_id}/password")
+async def reset_user_password(
+    user_id: int,
+    new_password: str,
+    db: DbSession,
+    current_user: Annotated[User, Depends(PermissionRequired("users.edit"))],
+):
+    """Reset user password (admin only)."""
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    # Update password
+    user.password_hash = get_password_hash(new_password)
+    await db.commit()
+
+    return {"message": "Password reset successfully"}
 
 
 @router.put("/{user_id}/roles", response_model=UserResponse)

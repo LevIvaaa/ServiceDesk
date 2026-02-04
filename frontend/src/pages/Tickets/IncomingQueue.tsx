@@ -31,6 +31,7 @@ import {
 import { ticketsApi, Ticket } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
+import { useAuthStore } from '../../store/authStore'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/uk'
@@ -46,13 +47,15 @@ export default function IncomingQueue() {
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [activeTab, setActiveTab] = useState('incoming')
+  const [activeTab, setActiveTab] = useState('all')
   const [stats, setStats] = useState({ new: 0, unassigned: 0, urgent: 0, total: 0, inProgress: 0 })
+  const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState<number | undefined>(undefined)
+  const [departments, setDepartments] = useState<Department[]>([])
   
   // Assignment modal
   const [assignModalVisible, setAssignModalVisible] = useState(false)
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
-  const [departments, setDepartments] = useState<Department[]>([])
+  const [assignDepartments, setAssignDepartments] = useState<Department[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<number | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
@@ -61,9 +64,23 @@ export default function IncomingQueue() {
   
   const navigate = useNavigate()
   const { t, i18n } = useTranslation('tickets')
+  const { user: currentUser } = useAuthStore()
 
   useEffect(() => {
     dayjs.locale(i18n.language)
+  }, [i18n.language])
+
+  // Load departments for filter
+  useEffect(() => {
+    const loadDepartments = async () => {
+      try {
+        const response = await departmentsApi.list({ is_active: true, per_page: 100, lang: i18n.language })
+        setDepartments(response.items)
+      } catch (error) {
+        console.error('Failed to load departments:', error)
+      }
+    }
+    loadDepartments()
   }, [i18n.language])
 
   const fetchTickets = async () => {
@@ -71,32 +88,57 @@ export default function IncomingQueue() {
       setLoading(true)
       
       let statusFilter = ''
-      if (activeTab === 'incoming') {
-        // Incoming: new and open tickets (призначені але ще не прийняті в роботу)
+      let departmentFilter: number | undefined = undefined
+      
+      if (activeTab === 'all') {
+        // All tickets: show all statuses, optionally filter by selected department
+        statusFilter = ''
+        departmentFilter = selectedDepartmentFilter
+      } else if (activeTab === 'incoming') {
+        // Incoming: ALL new and open tickets for current user's department (not just assigned to user)
         statusFilter = 'new,open'
+        departmentFilter = currentUser?.department_id || undefined
       } else if (activeTab === 'inProgress') {
-        // In progress: in_progress and pending (прийняті в роботу)
+        // In progress: in_progress and pending for current user's department
         statusFilter = 'in_progress,pending'
+        departmentFilter = currentUser?.department_id || undefined
+      } else if (activeTab === 'myTickets') {
+        // My tickets: tickets assigned to current user
+        statusFilter = 'in_progress,pending'
+        departmentFilter = undefined // Don't filter by department, filter by user below
       } else {
-        // Completed: resolved and closed
+        // Completed: resolved and closed for current user's department
         statusFilter = 'resolved,closed'
+        departmentFilter = currentUser?.department_id || undefined
       }
       
       const response = await ticketsApi.list({
         page,
         per_page: 20,
-        status: statusFilter,
+        status: statusFilter || undefined,
+        department_id: departmentFilter,
+        assigned_user_id: activeTab === 'myTickets' ? currentUser?.id : undefined,
       })
+      
       setTickets(response.items)
       setTotal(response.total)
       
       // Calculate stats based on active tab
-      if (activeTab === 'incoming') {
+      if (activeTab === 'all') {
+        const newCount = response.items.filter(t => t.status === 'new').length
+        const inProgressCount = response.items.filter(t => t.status === 'in_progress').length
+        const urgentCount = response.items.filter(t => t.priority === 'high' || t.priority === 'critical').length
+        setStats({ new: newCount, unassigned: 0, urgent: urgentCount, total: response.total, inProgress: inProgressCount })
+      } else if (activeTab === 'incoming') {
         const newCount = response.items.filter(t => t.status === 'new').length
         const unassignedCount = response.items.filter(t => !t.assigned_user_id && !t.assigned_department_id).length
         const urgentCount = response.items.filter(t => t.priority === 'high' || t.priority === 'critical').length
         setStats({ new: newCount, unassigned: unassignedCount, urgent: urgentCount, total: response.total, inProgress: 0 })
       } else if (activeTab === 'inProgress') {
+        const inProgressCount = response.items.filter(t => t.status === 'in_progress').length
+        const urgentCount = response.items.filter(t => t.priority === 'high' || t.priority === 'critical').length
+        setStats({ new: 0, unassigned: 0, urgent: urgentCount, total: response.total, inProgress: inProgressCount })
+      } else if (activeTab === 'myTickets') {
         const inProgressCount = response.items.filter(t => t.status === 'in_progress').length
         const urgentCount = response.items.filter(t => t.priority === 'high' || t.priority === 'critical').length
         setStats({ new: 0, unassigned: 0, urgent: urgentCount, total: response.total, inProgress: inProgressCount })
@@ -114,14 +156,14 @@ export default function IncomingQueue() {
 
   useEffect(() => {
     fetchTickets()
-    const interval = setInterval(fetchTickets, 2000) // Every 2 seconds for near real-time
+    const interval = setInterval(fetchTickets, 3000) // Every 3 seconds
     return () => clearInterval(interval)
-  }, [page, activeTab])
+  }, [page, activeTab, selectedDepartmentFilter])
 
   const loadDepartments = async () => {
     try {
       const response = await departmentsApi.list({ is_active: true, per_page: 100, lang: i18n.language })
-      setDepartments(response.items)
+      setAssignDepartments(response.items)
     } catch (error) {
       console.error('Failed to load departments:', error)
     }
@@ -192,7 +234,14 @@ export default function IncomingQueue() {
 
   const handleQuickAccept = async (ticket: Ticket) => {
     try {
+      // Assign ticket to current user if not assigned
+      if (!ticket.assigned_user_id && currentUser) {
+        await ticketsApi.assign(ticket.id, currentUser.id, 'Прийнято в роботу')
+      }
+      
+      // Change status to in_progress
       await ticketsApi.updateStatus(ticket.id, 'in_progress', 'Прийнято в роботу')
+      
       message.success(i18n.language === 'en' 
         ? 'Ticket accepted and moved to "In Progress"' 
         : 'Тікет прийнято і переміщено у "В роботі"')
@@ -280,6 +329,13 @@ export default function IncomingQueue() {
       width: 120,
     },
     {
+      title: i18n.language === 'en' ? 'Department' : 'Відділ',
+      dataIndex: 'assigned_department',
+      key: 'assigned_department',
+      render: (department: Ticket['assigned_department']) => department?.name || '-',
+      width: 150,
+    },
+    {
       title: activeTab === 'incoming' 
         ? (i18n.language === 'en' ? 'Created By' : 'Створив')
         : (i18n.language === 'en' ? 'Assigned To' : 'Призначено'),
@@ -339,6 +395,20 @@ export default function IncomingQueue() {
               )}
             </>
           )}
+          {activeTab === 'all' && (
+            <>
+              {(record.status === 'new' || record.status === 'open') && !record.assigned_user_id && (
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<CheckCircleOutlined />}
+                  onClick={() => handleQuickAccept(record)}
+                >
+                  {i18n.language === 'en' ? 'Accept' : 'Прийняти'}
+                </Button>
+              )}
+            </>
+          )}
         </Space>
       ),
     },
@@ -359,9 +429,61 @@ export default function IncomingQueue() {
         onChange={(key) => {
           setActiveTab(key)
           setPage(1)
+          // Reset department filter when switching tabs
+          if (key !== 'all') {
+            setSelectedDepartmentFilter(undefined)
+          }
         }}
         style={{ marginBottom: 16 }}
         items={[
+          {
+            key: 'all',
+            label: i18n.language === 'en' ? 'All' : 'Всі',
+            children: (
+              <Row gutter={16} style={{ marginBottom: 16 }}>
+                <Col xs={24} sm={12} md={6}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Total Tickets' : 'Всього тікетів'}
+                      value={stats.total}
+                      prefix={<InboxOutlined />}
+                      valueStyle={{ color: '#1890ff' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'New' : 'Нові'}
+                      value={stats.new}
+                      prefix={<Badge status="processing" />}
+                      valueStyle={{ color: '#1890ff' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'In Progress' : 'В роботі'}
+                      value={stats.inProgress}
+                      prefix={<ClockCircleOutlined />}
+                      valueStyle={{ color: '#52c41a' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Urgent' : 'Термінові'}
+                      value={stats.urgent}
+                      prefix={<WarningOutlined />}
+                      valueStyle={{ color: '#ff4d4f' }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+            ),
+          },
           {
             key: 'incoming',
             label: i18n.language === 'en' ? 'Incoming' : 'Вхідні',
@@ -449,6 +571,44 @@ export default function IncomingQueue() {
             ),
           },
           {
+            key: 'myTickets',
+            label: i18n.language === 'en' ? 'My Tickets' : 'Мої тікети',
+            children: (
+              <Row gutter={16} style={{ marginBottom: 16 }}>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'My Tickets' : 'Мої тікети'}
+                      value={stats.total}
+                      prefix={<UserAddOutlined />}
+                      valueStyle={{ color: '#1890ff' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'In Progress' : 'В процесі'}
+                      value={stats.inProgress}
+                      prefix={<ClockCircleOutlined />}
+                      valueStyle={{ color: '#52c41a' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Urgent' : 'Термінові'}
+                      value={stats.urgent}
+                      prefix={<FireOutlined />}
+                      valueStyle={{ color: '#ff4d4f' }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+            ),
+          },
+          {
             key: 'completed',
             label: i18n.language === 'en' ? 'Completed' : 'Завершені',
             children: (
@@ -489,6 +649,31 @@ export default function IncomingQueue() {
         ]}
       />
 
+      {/* Department filter for "All" tab */}
+      {activeTab === 'all' && (
+        <div style={{ marginBottom: 16 }}>
+          <Space>
+            <Text>{i18n.language === 'en' ? 'Filter by department:' : 'Фільтр по відділу:'}</Text>
+            <Select
+              allowClear
+              placeholder={i18n.language === 'en' ? 'All departments' : 'Всі відділи'}
+              style={{ width: 250 }}
+              value={selectedDepartmentFilter}
+              onChange={(value) => {
+                setSelectedDepartmentFilter(value)
+                setPage(1)
+              }}
+            >
+              {departments.map(dept => (
+                <Select.Option key={dept.id} value={dept.id}>
+                  {dept.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Space>
+        </div>
+      )}
+
       <Table
         columns={columns}
         dataSource={tickets}
@@ -501,7 +686,7 @@ export default function IncomingQueue() {
           onChange: setPage,
           showTotal: (total) => i18n.language === 'en' ? `Total: ${total}` : `Всього: ${total}`,
         }}
-        scroll={{ x: 1300 }}
+        scroll={{ x: 1450 }}
         rowClassName={(record) => record.status === 'new' ? 'new-ticket-row' : ''}
       />
 
@@ -531,7 +716,7 @@ export default function IncomingQueue() {
                 allowClear
                 value={selectedDepartmentId}
                 onChange={handleDepartmentChange}
-                options={departments.map(d => ({
+                options={assignDepartments.map(d => ({
                   value: d.id,
                   label: d.name,
                 }))}

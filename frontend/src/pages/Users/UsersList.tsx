@@ -49,9 +49,17 @@ export default function UsersList() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
   const [form] = Form.useForm()
   const [passwordForm] = Form.useForm()
+  const [isAdminChecked, setIsAdminChecked] = useState(false)
+  const [selectedRoles, setSelectedRoles] = useState<number[]>([])
 
   // Check if user is ticket handler (has assign but not create permission)
   const isTicketHandler = hasPermission('tickets.assign') && !hasPermission('tickets.create')
+
+  // Check if sender role is selected
+  const isSenderSelected = selectedRoles.some(roleId => {
+    const role = roles.find(r => r.id === roleId)
+    return role?.name === 'sender'
+  })
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -90,7 +98,14 @@ export default function UsersList() {
   const fetchRoles = async () => {
     try {
       const response = await rolesApi.list()
-      setRoles(response)
+      // Filter to only show sender and handler roles (admin is set via switch)
+      const validRoles = response.filter(r => ['sender', 'handler'].includes(r.name))
+      // Sort: sender first, then handler
+      validRoles.sort((a, b) => {
+        const order = { sender: 1, handler: 2 }
+        return (order[a.name as keyof typeof order] || 999) - (order[b.name as keyof typeof order] || 999)
+      })
+      setRoles(validRoles)
     } catch (error) {
       // Ignore
     }
@@ -108,14 +123,19 @@ export default function UsersList() {
   const handleCreate = () => {
     setEditingUser(null)
     form.resetFields()
+    setIsAdminChecked(false)
+    setSelectedRoles([])
     setModalVisible(true)
   }
 
   const handleEdit = (user: User) => {
     setEditingUser(user)
+    setIsAdminChecked(user.is_admin || false)
+    const roleIds = (user.roles || []).map(r => r.id)
+    setSelectedRoles(roleIds)
     form.setFieldsValue({
       ...user,
-      role_ids: (user.roles || []).map(r => r.id),
+      role_ids: roleIds,
     })
     setModalVisible(true)
   }
@@ -144,6 +164,12 @@ export default function UsersList() {
           role_ids: values.role_ids,
         }
         await usersApi.update(editingUser.id, updateData)
+        
+        // Update password separately if provided
+        if (values.new_password && values.new_password.trim() !== '') {
+          await usersApi.resetPassword(editingUser.id, values.new_password)
+        }
+        
         message.success(t('messages.updated'))
       } else {
         const createData: CreateUserData = {
@@ -228,44 +254,36 @@ export default function UsersList() {
         </Tag>
       ),
     },
-    {
+    ...(currentUser?.is_admin ? [{
       title: t('common:actions.edit'),
       key: 'actions',
       width: 150,
       render: (_: any, record: User) => (
-        !isTicketHandler ? (
-          <Space>
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            />
-            <Button
-              type="text"
-              icon={<KeyOutlined />}
-              onClick={() => handleResetPassword(record.id)}
-              title={t('actions.resetPassword')}
-            />
-            <Popconfirm
-              title={t('messages.deleteConfirm')}
-              description={t('messages.deleteDescription')}
-              onConfirm={() => handleDelete(record.id)}
-              okText={t('common:actions.yes')}
-              cancelText={t('common:actions.no')}
-            >
-              <Button type="text" danger icon={<DeleteOutlined />} />
-            </Popconfirm>
-          </Space>
-        ) : null
+        <Space>
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          />
+          <Popconfirm
+            title={t('messages.deleteConfirm')}
+            description={t('messages.deleteDescription')}
+            onConfirm={() => handleDelete(record.id)}
+            okText={t('common:actions.yes')}
+            cancelText={t('common:actions.no')}
+          >
+            <Button type="text" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </Space>
       ),
-    },
+    }] : []),
   ]
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <Title level={2}>{t('title')}</Title>
-        {!isTicketHandler && (
+        {currentUser?.is_admin && (
           <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
             {t('create')}
           </Button>
@@ -376,16 +394,20 @@ export default function UsersList() {
             </Form.Item>
           )}
 
+          {editingUser && (
+            <Form.Item
+              name="new_password"
+              label={t('fields.newPassword')}
+              rules={[
+                { min: 6, message: t('validation.passwordMinLength') },
+              ]}
+            >
+              <Input.Password placeholder={t('validation.passwordOptional', 'Новий пароль (необов\'язково)')} />
+            </Form.Item>
+          )}
+
           <Form.Item name="phone" label={t('fields.phone')}>
             <Input />
-          </Form.Item>
-
-          <Form.Item name="department_id" label={t('fields.department')}>
-            <Select
-              allowClear
-              placeholder={t('placeholders.selectDepartment')}
-              options={departments.map(d => ({ value: d.id, label: d.name }))}
-            />
           </Form.Item>
 
           <Form.Item name="role_ids" label={t('fields.roles')}>
@@ -393,8 +415,20 @@ export default function UsersList() {
               mode="multiple"
               placeholder={t('placeholders.selectRoles')}
               options={roles.map(r => ({ value: r.id, label: t(`roles.${r.name}`) }))}
+              disabled={isAdminChecked}
+              onChange={(value) => setSelectedRoles(value)}
             />
           </Form.Item>
+
+          {!isSenderSelected && (
+            <Form.Item name="department_id" label={t('fields.department')}>
+              <Select
+                allowClear
+                placeholder={t('placeholders.selectDepartment')}
+                options={departments.map(d => ({ value: d.id, label: d.name }))}
+              />
+            </Form.Item>
+          )}
 
           <Row gutter={16}>
             <Col span={12}>
@@ -404,7 +438,18 @@ export default function UsersList() {
             </Col>
             <Col span={12}>
               <Form.Item name="is_admin" label={t('fields.isAdmin')} valuePropName="checked">
-                <Switch checkedChildren={t('switches.yes')} unCheckedChildren={t('switches.no')} />
+                <Switch 
+                  checkedChildren={t('switches.yes')} 
+                  unCheckedChildren={t('switches.no')}
+                  onChange={(checked) => {
+                    setIsAdminChecked(checked)
+                    if (checked) {
+                      // Clear role selection when admin is enabled
+                      form.setFieldsValue({ role_ids: [] })
+                      setSelectedRoles([])
+                    }
+                  }}
+                />
               </Form.Item>
             </Col>
           </Row>

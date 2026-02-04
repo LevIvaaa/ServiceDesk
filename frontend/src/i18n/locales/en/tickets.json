@@ -118,7 +118,8 @@
     "assignCommentPlaceholder": "Add a comment about the assignment...",
     "delegate": "Delegate",
     "changeStatus": "Change Status",
-    "collectLogs": "Collect Logs"
+    "collectLogs": "Collect Logs",
+    "closeTicket": "Close Ticket"
   },
   "parseMessage": {
     "title": "Customer Message",

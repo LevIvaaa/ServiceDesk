@@ -20,11 +20,13 @@ import {
   SearchOutlined,
 } from '@ant-design/icons'
 import { operatorsApi, Operator, CreateOperatorData } from '../../api/operators'
+import { useAuthStore } from '../../store/authStore'
 
 const { Title } = Typography
 
 export default function OperatorsList() {
   const { t } = useTranslation(['stations', 'common'])
+  const { user: currentUser } = useAuthStore()
   const [operators, setOperators] = useState<Operator[]>([])
   const [loading, setLoading] = useState(false)
   const [total, setTotal] = useState(0)
@@ -135,7 +137,7 @@ export default function OperatorsList() {
         </Tag>
       ),
     },
-    {
+    ...(currentUser?.is_admin ? [{
       title: t('common:actions.edit'),
       key: 'actions',
       width: 120,
@@ -157,16 +159,18 @@ export default function OperatorsList() {
           </Popconfirm>
         </Space>
       ),
-    },
+    }] : []),
   ]
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <Title level={2}>{t('operators.title')}</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          {t('operators.create')}
-        </Button>
+        {currentUser?.is_admin && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+            {t('operators.create')}
+          </Button>
+        )}
       </div>
 
       <Card style={{ marginBottom: 16 }}>
