@@ -26,23 +26,32 @@ class NotificationService:
 
     async def notify_ticket_created(self, ticket: Ticket):
         """Notify about new ticket creation."""
-        # Get all users with ticket_handler role
+        # Get all users with handler role from the assigned department
         from app.models.role import Role
         from sqlalchemy.orm import selectinload
         
-        # Find ticket_handler role
+        # Only notify if ticket is assigned to a department
+        if not ticket.assigned_department_id:
+            await self.db.commit()
+            return
+        
+        # Find handler role
         role_result = await self.db.execute(
             select(Role)
             .options(selectinload(Role.users))
-            .where(Role.name == "ticket_handler")
+            .where(Role.name == "handler")
         )
-        ticket_handler_role = role_result.scalar_one_or_none()
+        handler_role = role_result.scalar_one_or_none()
         
-        if ticket_handler_role and ticket_handler_role.users:
-            # Create notifications for all ticket handlers
-            for user in ticket_handler_role.users:
+        if handler_role and handler_role.users:
+            # Create notifications only for handlers in the assigned department
+            for user in handler_role.users:
                 # Don't notify the creator
                 if user.id == ticket.created_by_id:
+                    continue
+                
+                # Only notify users from the assigned department
+                if user.department_id != ticket.assigned_department_id:
                     continue
                 
                 # Always create in-app notification
@@ -127,24 +136,28 @@ class NotificationService:
             )
             self.db.add(notification)
         
-        # If status changed to resolved or closed, notify ticket handlers
-        if new_status in ["resolved", "closed"]:
+        # If status changed to resolved or closed, notify ticket handlers from the assigned department
+        if new_status in ["resolved", "closed"] and ticket.assigned_department_id:
             from app.models.role import Role
             from sqlalchemy.orm import selectinload
             
-            # Find ticket_handler role
+            # Find handler role
             role_result = await self.db.execute(
                 select(Role)
                 .options(selectinload(Role.users))
-                .where(Role.name == "ticket_handler")
+                .where(Role.name == "handler")
             )
-            ticket_handler_role = role_result.scalar_one_or_none()
+            handler_role = role_result.scalar_one_or_none()
             
-            if ticket_handler_role and ticket_handler_role.users:
-                # Create notifications for all ticket handlers
-                for user in ticket_handler_role.users:
+            if handler_role and handler_role.users:
+                # Create notifications only for handlers in the assigned department
+                for user in handler_role.users:
                     # Don't notify if already in recipients
                     if any(u.id == user.id for u, _ in recipients):
+                        continue
+                    
+                    # Only notify users from the assigned department
+                    if user.department_id != ticket.assigned_department_id:
                         continue
                     
                     # Create in-app notification

@@ -854,27 +854,6 @@ export default function TicketDetail() {
                 )}
               </div>
 
-              {/* Close Ticket Button for Senders when status is resolved */}
-              {user && 
-               user.roles.some(role => role.name === 'sender') && 
-               ticket.created_by_id === user.id && 
-               ticket.status === 'resolved' && (
-                <div>
-                  <Button
-                    type="primary"
-                    block
-                    onClick={() => {
-                      setPendingStatus('closed')
-                      setStatusModalVisible(true)
-                    }}
-                    loading={submitting}
-                    style={{ marginTop: 8 }}
-                  >
-                    {t('actions.closeTicket', 'Закрити тікет')}
-                  </Button>
-                </div>
-              )}
-
               {/* Priority */}
               <div>
                 <Text type="secondary">{t('fields.priority', 'Пріоритет')}:</Text>
@@ -897,6 +876,26 @@ export default function TicketDetail() {
                   </div>
                 )}
               </div>
+
+              {/* Close Ticket Button for Senders when status is resolved */}
+              {user && 
+               user.roles.some(role => role.name === 'sender') && 
+               ticket.created_by_id === user.id && 
+               ticket.status === 'resolved' && (
+                <div>
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      setPendingStatus('closed')
+                      setStatusModalVisible(true)
+                    }}
+                    loading={submitting}
+                    style={{ marginTop: 8 }}
+                  >
+                    {t('actions.closeTicket', 'Закрити тікет')}
+                  </Button>
+                </div>
+              )}
 
               {/* Assignment */}
               {hasPermission('tickets.assign') && canEditTicket() && (

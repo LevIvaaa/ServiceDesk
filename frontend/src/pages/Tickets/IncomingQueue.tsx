@@ -365,39 +365,9 @@ export default function IncomingQueue() {
       fixed: 'right' as const,
       render: (_: any, record: Ticket) => (
         <Space size="small">
-          <Button
-            type="default"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => navigate(`/tickets/${record.id}`)}
-          >
-            {i18n.language === 'en' ? 'View' : 'Переглянути'}
-          </Button>
           {activeTab === 'incoming' && (
             <>
-              <Button
-                type="primary"
-                size="small"
-                icon={<UserAddOutlined />}
-                onClick={() => openAssignModal(record)}
-              >
-                {i18n.language === 'en' ? 'Assign' : 'Призначити'}
-              </Button>
               {(record.status === 'new' || record.status === 'open') && (
-                <Button
-                  type="default"
-                  size="small"
-                  icon={<CheckCircleOutlined />}
-                  onClick={() => handleQuickAccept(record)}
-                >
-                  {i18n.language === 'en' ? 'Accept' : 'Прийняти'}
-                </Button>
-              )}
-            </>
-          )}
-          {activeTab === 'all' && (
-            <>
-              {(record.status === 'new' || record.status === 'open') && !record.assigned_user_id && (
                 <Button
                   type="primary"
                   size="small"
@@ -407,7 +377,48 @@ export default function IncomingQueue() {
                   {i18n.language === 'en' ? 'Accept' : 'Прийняти'}
                 </Button>
               )}
+              <Button
+                type="default"
+                size="small"
+                icon={<UserAddOutlined />}
+                onClick={() => openAssignModal(record)}
+              >
+                {i18n.language === 'en' ? 'Assign' : 'Призначити'}
+              </Button>
             </>
+          )}
+          {activeTab === 'all' && (
+            <>
+              {(record.status === 'new' || record.status === 'open') && 
+               record.assigned_department_id === currentUser?.department_id && (
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<CheckCircleOutlined />}
+                  onClick={() => handleQuickAccept(record)}
+                >
+                  {i18n.language === 'en' ? 'Accept' : 'Прийняти'}
+                </Button>
+              )}
+              <Button
+                type="default"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => navigate(`/tickets/${record.id}`)}
+              >
+                {i18n.language === 'en' ? 'View' : 'Переглянути'}
+              </Button>
+            </>
+          )}
+          {(activeTab === 'inProgress' || activeTab === 'myTickets' || activeTab === 'completed') && (
+            <Button
+              type="default"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => navigate(`/tickets/${record.id}`)}
+            >
+              {i18n.language === 'en' ? 'View' : 'Переглянути'}
+            </Button>
           )}
         </Space>
       ),

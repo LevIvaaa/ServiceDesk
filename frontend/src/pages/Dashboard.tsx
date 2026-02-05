@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Row, Col, Card, Statistic, Table, Tag, Typography, Spin } from 'antd'
+import { Row, Col, Card, Statistic, Table, Tag, Typography, Spin, Button, Space, Popconfirm, message } from 'antd'
 import {
   FileTextOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
   WarningOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons'
 import client from '../api/client'
 import { ticketsApi, Ticket } from '../api/tickets'
@@ -31,8 +33,8 @@ export default function Dashboard() {
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
-  const { t } = useTranslation('tickets')
-  const { hasPermission } = useAuthStore()
+  const { t, i18n } = useTranslation('tickets')
+  const { hasPermission, user } = useAuthStore()
 
   // Redirect ticket handlers to queue page
   useEffect(() => {
@@ -41,27 +43,43 @@ export default function Dashboard() {
     }
   }, [hasPermission, navigate])
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsRes, ticketsRes] = await Promise.all([
-          client.get('/dashboard/stats'),
-          ticketsApi.list({ page: 1, per_page: 10 }), // Останні 10 тікетів
-        ])
-        setStats(statsRes.data)
-        setTickets(ticketsRes.items)
-      } catch (error) {
-        console.error('Failed to fetch dashboard data', error)
-      } finally {
-        setLoading(false)
-      }
+  const handleDelete = async (ticketId: number) => {
+    try {
+      await ticketsApi.delete(ticketId)
+      message.success(i18n.language === 'uk' ? 'Тікет видалено' : 'Ticket deleted')
+      fetchData()
+    } catch (error) {
+      message.error(i18n.language === 'uk' ? 'Помилка видалення' : 'Delete error')
     }
+  }
 
+  const fetchData = async () => {
+    try {
+      // Для отправителей показываем только их тикеты
+      const ticketParams: any = { page: 1, per_page: 10 }
+      if (user && user.roles.some(role => role.name === 'sender')) {
+        ticketParams.created_by_id = user.id
+      }
+      
+      const [statsRes, ticketsRes] = await Promise.all([
+        client.get('/dashboard/stats'),
+        ticketsApi.list(ticketParams),
+      ])
+      setStats(statsRes.data)
+      setTickets(ticketsRes.items)
+    } catch (error) {
+      console.error('Failed to fetch dashboard data', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchData()
     // Auto-refresh every 2 seconds for near real-time updates
     const interval = setInterval(fetchData, 2000)
     return () => clearInterval(interval)
-  }, [])
+  }, [user])
 
   const priorityColors: Record<string, string> = {
     low: 'green',
@@ -143,6 +161,52 @@ export default function Dashboard() {
       key: 'created_at',
       render: (date: string) => dayjs(date).format('DD.MM.YYYY HH:mm'),
       width: 140,
+    },
+    {
+      title: '',
+      key: 'actions',
+      width: 80,
+      fixed: 'right' as const,
+      render: (_: any, record: Ticket) => (
+        <Space size="small" direction="vertical" style={{ width: '100%' }}>
+          {hasPermission('tickets.edit') && (
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={(e) => {
+                e.stopPropagation()
+                navigate(`/tickets/${record.id}`)
+              }}
+              title={i18n.language === 'uk' ? 'Редагувати' : 'Edit'}
+              style={{ width: '100%', padding: '0 4px' }}
+            />
+          )}
+          {hasPermission('tickets.delete') && (record.status === 'new' || record.status === 'closed') && (
+            <Popconfirm
+              title={i18n.language === 'uk' ? 'Видалити цей тікет?' : 'Delete this ticket?'}
+              onConfirm={(e) => {
+                e?.stopPropagation()
+                handleDelete(record.id)
+              }}
+              onCancel={(e) => e?.stopPropagation()}
+              okText={i18n.language === 'uk' ? 'Видалити' : 'Delete'}
+              cancelText={i18n.language === 'uk' ? 'Скасувати' : 'Cancel'}
+              okButtonProps={{ danger: true }}
+            >
+              <Button
+                type="text"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={(e) => e.stopPropagation()}
+                title={i18n.language === 'uk' ? 'Видалити' : 'Delete'}
+                style={{ width: '100%', padding: '0 4px' }}
+              />
+            </Popconfirm>
+          )}
+        </Space>
+      ),
     },
   ]
 
@@ -239,14 +303,14 @@ export default function Dashboard() {
         </Col>
       </Row>
 
-      <Card title={t('dashboard.myTickets')} style={{ marginTop: 24 }}>
+      <Card title={i18n.language === 'uk' ? 'Мої тікети' : 'My Tickets'} style={{ marginTop: 24 }}>
         <Table
           columns={columns}
           dataSource={tickets}
           rowKey="id"
           pagination={false}
           size="small"
-          scroll={{ x: 1000 }}
+          scroll={{ x: 1100 }}
         />
       </Card>
     </div>
