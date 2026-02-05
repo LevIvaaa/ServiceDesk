@@ -49,7 +49,7 @@ class User(Base):
         "Ticket", back_populates="created_by", foreign_keys="Ticket.created_by_id"
     )
     notification_settings: Mapped[Optional["UserNotificationSettings"]] = relationship(
-        "UserNotificationSettings", back_populates="user", uselist=False
+        "UserNotificationSettings", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
 
     @property
