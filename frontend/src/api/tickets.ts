@@ -150,6 +150,7 @@ export interface TicketListParams {
   category?: string
   assigned_user_id?: number
   assigned_department_id?: number
+  department_id?: number
   station_id?: number
   created_by_id?: number
   my_tickets?: boolean

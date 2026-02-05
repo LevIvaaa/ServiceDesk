@@ -21,11 +21,9 @@ import {
   DeleteOutlined,
   SearchOutlined,
   TeamOutlined,
-  InfoCircleOutlined,
 } from '@ant-design/icons'
 import { departmentsApi, Department, CreateDepartmentData } from '../../api/departments'
 import { usersApi, User } from '../../api/users'
-import { rolesApi, Role } from '../../api/roles'
 import { useAuthStore } from '../../store/authStore'
 
 const { Title } = Typography
@@ -35,7 +33,6 @@ export default function DepartmentsList() {
   const { user: currentUser } = useAuthStore()
   const [departments, setDepartments] = useState<Department[]>([])
   const [users, setUsers] = useState<User[]>([])
-  const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(false)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -97,20 +94,7 @@ export default function DepartmentsList() {
     }
   }
 
-  const fetchRoles = async () => {
-    try {
-      const response = await rolesApi.list()
-      // Filter to only show sender and handler roles
-      const validRoles = response.filter(r => ['sender', 'handler'].includes(r.name))
-      validRoles.sort((a, b) => {
-        const order = { sender: 1, handler: 2 }
-        return (order[a.name as keyof typeof order] || 999) - (order[b.name as keyof typeof order] || 999)
-      })
-      setRoles(validRoles)
-    } catch (error) {
-      // Ignore
-    }
-  }
+
 
   const fetchDepartmentUsers = async (departmentId: number) => {
     try {
@@ -123,7 +107,6 @@ export default function DepartmentsList() {
 
   useEffect(() => {
     fetchUsers()
-    fetchRoles()
   }, [i18n.language])
 
   useEffect(() => {
@@ -151,7 +134,7 @@ export default function DepartmentsList() {
       // Convert undefined to null for head_user_id
       const submitData = {
         ...values,
-        head_user_id: values.head_user_id || null,
+        head_user_id: values.head_user_id || undefined,
       }
       
       if (selectedDepartment) {

@@ -116,24 +116,6 @@ export default function TicketDetail() {
     return allStatuses
   }
 
-  // Перевіряємо чи тікет належить відділу користувача
-  const isTicketFromMyDepartment = () => {
-    if (!ticket || !user) return false
-    if (user.is_admin) return true // Адміни можуть все
-    
-    // Якщо користувач має роль sender, він може редагувати свої тікети
-    if (user.roles.some(role => role.name === 'sender')) {
-      return ticket.created_by_id === user.id
-    }
-    
-    // Якщо користувач має роль handler, перевіряємо відділ
-    if (user.roles.some(role => role.name === 'handler')) {
-      return ticket.assigned_department_id === user.department_id
-    }
-    
-    return false
-  }
-
   const statuses = getAvailableStatuses()
   const priorities = ['low', 'medium', 'high', 'critical']
   const categories = ['hardware', 'software', 'network', 'billing', 'other']

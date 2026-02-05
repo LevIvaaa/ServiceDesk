@@ -22,7 +22,6 @@ import {
   EditOutlined,
   DeleteOutlined,
   SearchOutlined,
-  KeyOutlined,
 } from '@ant-design/icons'
 import { usersApi, User, CreateUserData, UpdateUserData } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
@@ -44,11 +43,9 @@ export default function UsersList() {
   const [search, setSearch] = useState('')
   const [filterDepartment, setFilterDepartment] = useState<number | undefined>()
   const [modalVisible, setModalVisible] = useState(false)
-  const [passwordModalVisible, setPasswordModalVisible] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
   const [form] = Form.useForm()
-  const [passwordForm] = Form.useForm()
+
   const [isAdminChecked, setIsAdminChecked] = useState(false)
   const [selectedRoles, setSelectedRoles] = useState<number[]>([])
 
@@ -190,23 +187,6 @@ export default function UsersList() {
       fetchUsers()
     } catch (error: any) {
       message.error(error.response?.data?.detail || t('messages.saveError'))
-    }
-  }
-
-  const handleResetPassword = (userId: number) => {
-    setSelectedUserId(userId)
-    passwordForm.resetFields()
-    setPasswordModalVisible(true)
-  }
-
-  const handlePasswordSubmit = async (values: { new_password: string }) => {
-    if (!selectedUserId) return
-    try {
-      await usersApi.resetPassword(selectedUserId, values.new_password)
-      message.success(t('messages.passwordReset'))
-      setPasswordModalVisible(false)
-    } catch (error: any) {
-      message.error(error.response?.data?.detail || t('messages.passwordResetError'))
     }
   }
 
@@ -467,38 +447,6 @@ export default function UsersList() {
         </Form>
       </Modal>
 
-      {/* Reset Password Modal */}
-      <Modal
-        title={t('actions.resetPasswordTitle')}
-        open={passwordModalVisible}
-        onCancel={() => setPasswordModalVisible(false)}
-        footer={null}
-        width={400}
-      >
-        <Form form={passwordForm} layout="vertical" onFinish={handlePasswordSubmit}>
-          <Form.Item
-            name="new_password"
-            label={t('fields.newPassword')}
-            rules={[
-              { required: true, message: t('validation.passwordRequired') },
-              { min: 6, message: t('validation.passwordMinLength') },
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
-
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit">
-                {t('actions.reset')}
-              </Button>
-              <Button onClick={() => setPasswordModalVisible(false)}>
-                {t('common:actions.cancel')}
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
     </div>
   )
 }

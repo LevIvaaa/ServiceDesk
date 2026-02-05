@@ -20,7 +20,7 @@ import Settings from './pages/Settings/Settings'
 import LogAnalysis from './pages/LogAnalysis/LogAnalysis'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, user } = useAuthStore()
+  const { isAuthenticated, isLoading } = useAuthStore()
 
   if (isLoading) {
     return (
