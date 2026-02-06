@@ -69,19 +69,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: ecofactor_frontend
-    environment:
-      - DANGEROUSLY_DISABLE_HOST_CHECK=true
-      - VITE_HMR_HOST=buffalo-florist-apt-lyric.trycloudflare.com
-      - VITE_HMR_PROTOCOL=wss
-      - VITE_HMR_CLIENT_PORT=443
-    volumes:
-      - ./frontend/src:/app/src
     ports:
       - "3000:3000"
-    # VITE_API_URL is not set - frontend will use dynamic URL based on browser hostname
     depends_on:
       - backend
-    command: npm run dev -- --host 0.0.0.0 --strictPort
 
   celery_worker:
     build:
