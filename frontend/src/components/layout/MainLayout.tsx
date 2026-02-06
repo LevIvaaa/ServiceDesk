@@ -63,16 +63,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { user, logout, hasPermission } = useAuthStore()
   const { token } = theme.useToken()
 
+  console.log('MainLayout render - currentLanguage:', currentLanguage, 'i18n.language:', i18n.language)
+
   // Force Ukrainian language on mount
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language')
+    console.log('useEffect - savedLanguage:', savedLanguage)
     
     // Only set to English if explicitly saved
     if (savedLanguage === 'en') {
+      console.log('Setting to EN')
       setCurrentLanguage('en')
       i18n.changeLanguage('en')
     } else {
       // Always force Ukrainian otherwise
+      console.log('Setting to UA')
       setCurrentLanguage('ua')
       i18n.changeLanguage('ua')
       localStorage.setItem('language', 'ua')
