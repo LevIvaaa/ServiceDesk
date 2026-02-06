@@ -61,6 +61,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { user, logout, hasPermission } = useAuthStore()
   const { token } = theme.useToken()
 
+  // Initialize language from localStorage
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language')
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage)
+    } else if (!savedLanguage) {
+      // If no saved language, default to 'uk' and save it
+      const defaultLang = 'uk'
+      i18n.changeLanguage(defaultLang)
+      localStorage.setItem('language', defaultLang)
+    }
+  }, [i18n])
+
   // Fetch notification count periodically
   useEffect(() => {
     const fetchCount = async () => {
@@ -366,7 +379,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <Dropdown menu={languageMenu}>
               <Button icon={<GlobalOutlined />}>
-                {i18n.language?.toUpperCase().substring(0, 2) || 'UK'}
+                {i18n.language?.startsWith('en') ? 'EN' : 'UK'}
               </Button>
             </Dropdown>
             <Dropdown menu={userMenu}>
