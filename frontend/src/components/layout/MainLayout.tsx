@@ -74,6 +74,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }
   }, [i18n])
 
+  // Get normalized language for display
+  const getCurrentLanguage = () => {
+    const lang = i18n.language || localStorage.getItem('language') || 'uk'
+    console.log('Current i18n.language:', i18n.language, 'localStorage:', localStorage.getItem('language'))
+    // Check if it's English (en, en-US, en-GB, etc.)
+    if (lang.toLowerCase().startsWith('en')) {
+      return 'EN'
+    }
+    // Default to Ukrainian for any other language (uk, uk-UA, ru, etc.)
+    return 'UK'
+  }
+
   // Fetch notification count periodically
   useEffect(() => {
     const fetchCount = async () => {
@@ -379,7 +391,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <Dropdown menu={languageMenu}>
               <Button icon={<GlobalOutlined />}>
-                {i18n.language?.startsWith('en') ? 'EN' : 'UK'}
+                {getCurrentLanguage()}
               </Button>
             </Dropdown>
             <Dropdown menu={userMenu}>
