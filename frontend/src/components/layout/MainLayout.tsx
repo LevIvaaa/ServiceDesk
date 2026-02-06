@@ -64,14 +64,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
   // Initialize language from localStorage or default to 'uk'
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language')
-    if (savedLanguage && (savedLanguage === 'uk' || savedLanguage === 'en')) {
-      i18n.changeLanguage(savedLanguage)
-    } else {
-      // Default to Ukrainian
+    
+    // Force Ukrainian as default if no valid language is saved
+    if (!savedLanguage || (savedLanguage !== 'uk' && savedLanguage !== 'en')) {
       i18n.changeLanguage('uk')
       localStorage.setItem('language', 'uk')
+    } else {
+      i18n.changeLanguage(savedLanguage)
     }
-  }, [i18n])
+  }, [])
 
   // Fetch notification count periodically
   useEffect(() => {

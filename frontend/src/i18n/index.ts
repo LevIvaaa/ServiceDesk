@@ -38,11 +38,20 @@ const resources = {
   },
 }
 
+// Initialize language from localStorage or set default
+const savedLanguage = localStorage.getItem('language')
+const initialLanguage = (savedLanguage === 'uk' || savedLanguage === 'en') ? savedLanguage : 'uk'
+
+// Save to localStorage if not set or invalid
+if (!savedLanguage || (savedLanguage !== 'uk' && savedLanguage !== 'en')) {
+  localStorage.setItem('language', 'uk')
+}
+
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'uk', // Set default language to Ukrainian
+    lng: initialLanguage, // Use language from localStorage or default to 'uk'
     fallbackLng: 'uk',
     defaultNS: 'common',
     interpolation: {
