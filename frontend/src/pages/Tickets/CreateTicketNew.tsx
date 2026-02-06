@@ -131,7 +131,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
     if (option) {
       try {
         // Загружаем полную информацию о станции с портами
-        const lang = i18n.language?.startsWith('en') ? 'en' : 'uk'
+        const lang = i18n.language?.startsWith('en') ? 'en' : 'ua'
         const fullStation = await stationsApi.get(value, lang)
         setSelectedStation(fullStation)
         setStationPorts(fullStation.ports || [])

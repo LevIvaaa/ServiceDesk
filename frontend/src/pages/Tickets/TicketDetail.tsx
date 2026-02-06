@@ -245,7 +245,7 @@ export default function TicketDetail() {
     }
     try {
       setStationSearchLoading(true)
-      const lang = i18n.language?.startsWith('en') ? 'en' : 'uk'
+      const lang = i18n.language?.startsWith('en') ? 'en' : 'ua'
       const stations = await stationsApi.search(value, 20, lang)
       setStationOptions(stations)
     } catch (error) {
@@ -282,7 +282,7 @@ export default function TicketDetail() {
       // Fetch full station data with ports for the dropdown
       if (ticket.station_id) {
         try {
-          const lang = i18n.language?.startsWith('en') ? 'en' : 'uk'
+          const lang = i18n.language?.startsWith('en') ? 'en' : 'ua'
           const fullStation = await stationsApi.get(ticket.station_id, lang)
           setSelectedStation(fullStation)
           setStationOptions([fullStation])

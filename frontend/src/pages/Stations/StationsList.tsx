@@ -65,8 +65,8 @@ export default function StationsList() {
   const fetchStations = async () => {
     setLoading(true)
     try {
-      // Normalize language to 'uk' or 'en'
-      const lang = i18n.language?.startsWith('en') ? 'en' : 'uk'
+      // Normalize language to 'ua' or 'en'
+      const lang = i18n.language?.startsWith('en') ? 'en' : 'ua'
       const response = await stationsApi.list({
         page,
         per_page: pageSize,
@@ -109,7 +109,7 @@ export default function StationsList() {
 
   const handleEdit = async (id: number) => {
     try {
-      const lang = i18n.language?.startsWith('en') ? 'en' : 'uk'
+      const lang = i18n.language?.startsWith('en') ? 'en' : 'ua'
       const station = await stationsApi.get(id, lang)
       setEditingStation(station)
       form.setFieldsValue({
@@ -125,7 +125,7 @@ export default function StationsList() {
 
   const handleView = async (id: number) => {
     try {
-      const lang = i18n.language?.startsWith('en') ? 'en' : 'uk'
+      const lang = i18n.language?.startsWith('en') ? 'en' : 'ua'
       const station = await stationsApi.get(id, lang)
       setViewingStation(station)
       setDetailModalVisible(true)

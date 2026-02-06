@@ -61,14 +61,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { user, logout, hasPermission } = useAuthStore()
   const { token } = theme.useToken()
 
-  // Initialize language from localStorage or default to 'uk'
+  // Initialize language from localStorage or default to 'ua'
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language')
     
     // Force Ukrainian as default if no valid language is saved
-    if (!savedLanguage || (savedLanguage !== 'uk' && savedLanguage !== 'en')) {
-      i18n.changeLanguage('uk')
-      localStorage.setItem('language', 'uk')
+    if (!savedLanguage || (savedLanguage !== 'ua' && savedLanguage !== 'en')) {
+      i18n.changeLanguage('ua')
+      localStorage.setItem('language', 'ua')
     } else {
       i18n.changeLanguage(savedLanguage)
     }
@@ -211,7 +211,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   const languageMenu = {
     items: [
-      { key: 'uk', label: t('language.uk') },
+      { key: 'ua', label: t('language.uk') },
       { key: 'en', label: t('language.en') },
     ],
     onClick: ({ key }: { key: string }) => changeLanguage(key),
@@ -379,7 +379,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <Dropdown menu={languageMenu}>
               <Button icon={<GlobalOutlined />}>
-                {i18n.language === 'en' ? 'EN' : 'UK'}
+                {i18n.language === 'en' ? 'EN' : 'UA'}
               </Button>
             </Dropdown>
             <Dropdown menu={userMenu}>

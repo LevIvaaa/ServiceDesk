@@ -18,7 +18,7 @@ import enLogAnalysis from './locales/en/logAnalysis.json'
 import enSettings from './locales/en/settings.json'
 
 const resources = {
-  uk: {
+  ua: {
     common: ukCommon,
     tickets: ukTickets,
     users: ukUsers,
@@ -40,19 +40,22 @@ const resources = {
 
 // Initialize language from localStorage or set default
 const savedLanguage = localStorage.getItem('language')
-const initialLanguage = (savedLanguage === 'uk' || savedLanguage === 'en') ? savedLanguage : 'uk'
+let initialLanguage = 'ua'
 
-// Save to localStorage if not set or invalid
-if (!savedLanguage || (savedLanguage !== 'uk' && savedLanguage !== 'en')) {
-  localStorage.setItem('language', 'uk')
+// Only accept 'ua' or 'en'
+if (savedLanguage === 'ua' || savedLanguage === 'en') {
+  initialLanguage = savedLanguage
+} else {
+  // Invalid or no language saved, default to Ukrainian
+  localStorage.setItem('language', 'ua')
 }
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: initialLanguage, // Use language from localStorage or default to 'uk'
-    fallbackLng: 'uk',
+    lng: initialLanguage, // Use language from localStorage or default to 'ua'
+    fallbackLng: 'ua',
     defaultNS: 'common',
     interpolation: {
       escapeValue: false,

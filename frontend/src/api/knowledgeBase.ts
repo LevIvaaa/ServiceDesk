@@ -106,7 +106,7 @@ export const knowledgeBaseApi = {
         id: result.article_id,
         title: result.title,
         category: result.category,
-        language: language || 'uk',
+        language: language || 'ua',
         content: result.content_preview,
         tags,
         is_published: true,

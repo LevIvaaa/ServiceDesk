@@ -362,14 +362,14 @@ export default function Settings() {
           <Space direction="vertical" size="large">
             <div>
               <Text>{t('language.current')}: </Text>
-              <Text strong>{i18n.language === 'uk' ? t('language.ukrainian') : t('language.english')}</Text>
+              <Text strong>{i18n.language === 'ua' ? t('language.ukrainian') : t('language.english')}</Text>
             </div>
             <Select
               value={i18n.language}
               onChange={handleLanguageChange}
               style={{ width: 200 }}
               options={[
-                { value: 'uk', label: `🇺🇦 ${t('language.ukrainian')}` },
+                { value: 'ua', label: `🇺🇦 ${t('language.ukrainian')}` },
                 { value: 'en', label: `🇬🇧 ${t('language.english')}` },
               ]}
             />

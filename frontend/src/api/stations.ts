@@ -108,7 +108,7 @@ export const stationsApi = {
 
   get: async (id: number, language?: string): Promise<Station> => {
     const response = await client.get<Station>(`/stations/${id}`, {
-      params: { language: language || 'uk' }
+      params: { language: language || 'ua' }
     })
     return response.data
   },
@@ -129,7 +129,7 @@ export const stationsApi = {
 
   search: async (q: string, limit?: number, language?: string): Promise<Station[]> => {
     const response = await client.get<Station[]>('/stations/search', {
-      params: { q, limit, language: language || 'uk' },
+      params: { q, limit, language: language || 'ua' },
     })
     return response.data
   },
