@@ -53,6 +53,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [notifications, setNotifications] = useState<NotificationType[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [notificationsLoading, setNotificationsLoading] = useState(false)
+  const [currentLanguage, setCurrentLanguage] = useState('ua') // Local state for language display
   const prevUnreadCountRef = useRef<number>(0)
   const isFirstLoadRef = useRef(true)
   const navigate = useNavigate()
@@ -65,8 +66,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language')
     
-    if (savedLanguage !== 'en') {
+    if (savedLanguage === 'en') {
+      setCurrentLanguage('en')
+      i18n.changeLanguage('en')
+    } else {
       // Force Ukrainian for any other case
+      setCurrentLanguage('ua')
       i18n.changeLanguage('ua')
       localStorage.setItem('language', 'ua')
     }
@@ -201,6 +206,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   }
 
   const changeLanguage = (lang: string) => {
+    setCurrentLanguage(lang)
     i18n.changeLanguage(lang)
     localStorage.setItem('language', lang)
     // Force reload to ensure all API calls use new language
@@ -377,7 +383,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <Dropdown menu={languageMenu}>
               <Button icon={<GlobalOutlined />}>
-                {i18n.language === 'en' ? 'EN' : 'UA'}
+                {currentLanguage === 'en' ? 'EN' : 'UA'}
               </Button>
             </Dropdown>
             <Dropdown menu={userMenu}>
