@@ -61,30 +61,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { user, logout, hasPermission } = useAuthStore()
   const { token } = theme.useToken()
 
-  // Initialize language from localStorage
+  // Initialize language from localStorage or default to 'uk'
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language')
-    if (savedLanguage && savedLanguage !== i18n.language) {
+    if (savedLanguage && (savedLanguage === 'uk' || savedLanguage === 'en')) {
       i18n.changeLanguage(savedLanguage)
-    } else if (!savedLanguage) {
-      // If no saved language, default to 'uk' and save it
-      const defaultLang = 'uk'
-      i18n.changeLanguage(defaultLang)
-      localStorage.setItem('language', defaultLang)
+    } else {
+      // Default to Ukrainian
+      i18n.changeLanguage('uk')
+      localStorage.setItem('language', 'uk')
     }
   }, [i18n])
-
-  // Get normalized language for display
-  const getCurrentLanguage = () => {
-    const lang = i18n.language || localStorage.getItem('language') || 'uk'
-    console.log('Current i18n.language:', i18n.language, 'localStorage:', localStorage.getItem('language'))
-    // Check if it's English (en, en-US, en-GB, etc.)
-    if (lang.toLowerCase().startsWith('en')) {
-      return 'EN'
-    }
-    // Default to Ukrainian for any other language (uk, uk-UA, ru, etc.)
-    return 'UK'
-  }
 
   // Fetch notification count periodically
   useEffect(() => {
@@ -391,7 +378,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <Dropdown menu={languageMenu}>
               <Button icon={<GlobalOutlined />}>
-                {getCurrentLanguage()}
+                {i18n.language === 'en' ? 'EN' : 'UK'}
               </Button>
             </Dropdown>
             <Dropdown menu={userMenu}>
