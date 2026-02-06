@@ -191,6 +191,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang)
+    localStorage.setItem('language', lang)
+    // Force reload to ensure all API calls use new language
+    window.location.reload()
   }
 
   const languageMenu = {
@@ -363,7 +366,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <Dropdown menu={languageMenu}>
               <Button icon={<GlobalOutlined />}>
-                {i18n.language === 'uk' ? 'UA' : 'EN'}
+                {i18n.language?.toUpperCase().substring(0, 2) || 'UK'}
               </Button>
             </Dropdown>
             <Dropdown menu={userMenu}>
