@@ -32,7 +32,7 @@ async def list_stations(
     operator_id: Optional[int] = None,
     city: Optional[str] = None,
     station_status: Optional[str] = None,
-    language: str = Query("uk", regex="^(uk|en)$"),
+    language: str = Query("uk"),
 ):
     """List all stations with pagination and filters."""
     query = select(Station).options(selectinload(Station.operator))
@@ -94,7 +94,7 @@ async def search_stations(
     current_user: Annotated[User, Depends(PermissionRequired("stations.view"))],
     q: str = Query("", min_length=0),
     limit: int = Query(10, ge=1, le=50),
-    language: str = Query("uk", regex="^(uk|en)$"),
+    language: str = Query("uk"),
 ):
     """Search stations by ID or name (for autocomplete). Empty query returns all stations up to limit."""
     query = select(Station).options(selectinload(Station.operator), selectinload(Station.ports))
@@ -190,7 +190,7 @@ async def get_station(
     station_id: int,
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("stations.view"))],
-    language: str = Query("uk", regex="^(uk|en)$"),
+    language: str = Query("uk"),
 ):
     """Get a specific station by ID."""
     result = await db.execute(
