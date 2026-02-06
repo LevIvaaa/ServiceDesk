@@ -38,34 +38,29 @@ const resources = {
   },
 }
 
-// Initialize language from localStorage or set default
+// Initialize language - force Ukrainian by default, only allow 'en' if explicitly set
 const savedLanguage = localStorage.getItem('language')
 let initialLanguage = 'ua'
 
-console.log('i18n init - savedLanguage from localStorage:', savedLanguage)
-
-// Only accept 'ua' or 'en'
-if (savedLanguage === 'ua' || savedLanguage === 'en') {
-  initialLanguage = savedLanguage
+// Only use English if explicitly saved as 'en', otherwise always Ukrainian
+if (savedLanguage === 'en') {
+  initialLanguage = 'en'
 } else {
-  // Invalid or no language saved, default to Ukrainian
+  // Force Ukrainian for any other case (null, 'uk', 'ua', etc.)
+  initialLanguage = 'ua'
   localStorage.setItem('language', 'ua')
 }
-
-console.log('i18n init - setting initialLanguage to:', initialLanguage)
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: initialLanguage, // Use language from localStorage or default to 'ua'
+    lng: initialLanguage,
     fallbackLng: 'ua',
     defaultNS: 'common',
     interpolation: {
       escapeValue: false,
     },
   })
-
-console.log('i18n initialized - current language:', i18n.language)
 
 export default i18n
