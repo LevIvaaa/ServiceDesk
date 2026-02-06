@@ -53,11 +53,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [notifications, setNotifications] = useState<NotificationType[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [notificationsLoading, setNotificationsLoading] = useState(false)
-  // Initialize language from localStorage immediately, default to 'ua'
-  const [currentLanguage, setCurrentLanguage] = useState(() => {
-    const saved = localStorage.getItem('language')
-    return saved === 'en' ? 'en' : 'ua'
-  })
+  // Initialize language - always start with 'ua'
+  const [currentLanguage, setCurrentLanguage] = useState('ua')
   const prevUnreadCountRef = useRef<number>(0)
   const isFirstLoadRef = useRef(true)
   const navigate = useNavigate()
@@ -66,15 +63,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { user, logout, hasPermission } = useAuthStore()
   const { token } = theme.useToken()
 
-  // Sync i18n with current language on mount
+  // Force Ukrainian language on mount
   useEffect(() => {
-    if (currentLanguage === 'en') {
+    const savedLanguage = localStorage.getItem('language')
+    
+    // Only set to English if explicitly saved
+    if (savedLanguage === 'en') {
+      setCurrentLanguage('en')
       i18n.changeLanguage('en')
     } else {
+      // Always force Ukrainian otherwise
+      setCurrentLanguage('ua')
       i18n.changeLanguage('ua')
       localStorage.setItem('language', 'ua')
     }
-  }, [])
+  }, [i18n])
 
   // Fetch notification count periodically
   useEffect(() => {
