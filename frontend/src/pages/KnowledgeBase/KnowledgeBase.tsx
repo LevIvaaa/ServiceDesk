@@ -62,7 +62,7 @@ export default function KnowledgeBase() {
   const fetchArticles = async () => {
     setLoading(true)
     try {
-      const currentLanguage = i18n.language === 'uk' ? 'uk' : 'en'
+      const currentLanguage = i18n.language === 'ua' ? 'ua' : 'en'
       const response = await knowledgeBaseApi.list({
         page,
         per_page: perPage,
@@ -95,7 +95,7 @@ export default function KnowledgeBase() {
 
     setSearching(true)
     try {
-      const currentLanguage = i18n.language === 'uk' ? 'uk' : 'en'
+      const currentLanguage = i18n.language === 'ua' ? 'ua' : 'en'
       const results = await knowledgeBaseApi.search(
         searchQuery, 
         50, 

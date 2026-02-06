@@ -61,6 +61,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { user, logout, hasPermission } = useAuthStore()
   const { token } = theme.useToken()
 
+  // Debug: log current language
+  console.log('MainLayout render - i18n.language:', i18n.language, 'localStorage:', localStorage.getItem('language'))
+
   // Initialize language from localStorage or default to 'ua'
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language')

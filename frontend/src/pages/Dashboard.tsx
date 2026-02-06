@@ -46,10 +46,10 @@ export default function Dashboard() {
   const handleDelete = async (ticketId: number) => {
     try {
       await ticketsApi.delete(ticketId)
-      message.success(i18n.language === 'uk' ? 'Тікет видалено' : 'Ticket deleted')
+      message.success(i18n.language === 'ua' ? 'Тікет видалено' : 'Ticket deleted')
       fetchData()
     } catch (error) {
-      message.error(i18n.language === 'uk' ? 'Помилка видалення' : 'Delete error')
+      message.error(i18n.language === 'ua' ? 'Помилка видалення' : 'Delete error')
     }
   }
 
@@ -178,20 +178,20 @@ export default function Dashboard() {
                 e.stopPropagation()
                 navigate(`/tickets/${record.id}`)
               }}
-              title={i18n.language === 'uk' ? 'Редагувати' : 'Edit'}
+              title={i18n.language === 'ua' ? 'Редагувати' : 'Edit'}
               style={{ width: '100%', padding: '0 4px' }}
             />
           )}
           {hasPermission('tickets.delete') && (record.status === 'new' || record.status === 'closed') && (
             <Popconfirm
-              title={i18n.language === 'uk' ? 'Видалити цей тікет?' : 'Delete this ticket?'}
+              title={i18n.language === 'ua' ? 'Видалити цей тікет?' : 'Delete this ticket?'}
               onConfirm={(e) => {
                 e?.stopPropagation()
                 handleDelete(record.id)
               }}
               onCancel={(e) => e?.stopPropagation()}
-              okText={i18n.language === 'uk' ? 'Видалити' : 'Delete'}
-              cancelText={i18n.language === 'uk' ? 'Скасувати' : 'Cancel'}
+              okText={i18n.language === 'ua' ? 'Видалити' : 'Delete'}
+              cancelText={i18n.language === 'ua' ? 'Скасувати' : 'Cancel'}
               okButtonProps={{ danger: true }}
             >
               <Button
@@ -200,7 +200,7 @@ export default function Dashboard() {
                 danger
                 icon={<DeleteOutlined />}
                 onClick={(e) => e.stopPropagation()}
-                title={i18n.language === 'uk' ? 'Видалити' : 'Delete'}
+                title={i18n.language === 'ua' ? 'Видалити' : 'Delete'}
                 style={{ width: '100%', padding: '0 4px' }}
               />
             </Popconfirm>
@@ -303,7 +303,7 @@ export default function Dashboard() {
         </Col>
       </Row>
 
-      <Card title={i18n.language === 'uk' ? 'Мої тікети' : 'My Tickets'} style={{ marginTop: 24 }}>
+      <Card title={i18n.language === 'ua' ? 'Мої тікети' : 'My Tickets'} style={{ marginTop: 24 }}>
         <Table
           columns={columns}
           dataSource={tickets}
