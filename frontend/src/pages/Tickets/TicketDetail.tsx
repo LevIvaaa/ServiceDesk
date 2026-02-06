@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import i18n from '../../i18n'
 import {
   Card,
   Descriptions,
@@ -78,7 +77,7 @@ export default function TicketDetail() {
   const [assignComment, setAssignComment] = useState('')
   const [usersLoading, setUsersLoading] = useState(false)
   const navigate = useNavigate()
-  const { t } = useTranslation('tickets')
+  const { t, i18n } = useTranslation('tickets')
   const { hasPermission } = useAuthStore()
   const user = useAuthStore(state => state.user)
 
