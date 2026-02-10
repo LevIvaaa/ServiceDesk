@@ -12,6 +12,8 @@ import {
   Space,
   Alert,
   Spin,
+  Row,
+  Col,
 } from 'antd'
 import type { UploadFile } from 'antd'
 import {
@@ -260,7 +262,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
   return (
     <div style={{ 
-      maxWidth: isModal ? '100%' : 700, 
+      maxWidth: isModal ? '100%' : 870, 
       margin: isModal ? 0 : '0 auto', 
       padding: isModal ? 0 : '0 16px',
       width: '100%'
@@ -321,287 +323,301 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
           onFinish={handleSubmit}
           requiredMark={false}
         >
-          {/* Заголовок інциденту */}
-          <Form.Item
-            label={<span><span style={{ color: 'red' }}>* </span>Заголовок інциденту</span>}
-            name="incident_type"
-            rules={[{ required: true, message: 'Оберіть тип проблеми' }]}
-            style={{ marginBottom: 20 }}
-          >
-            <Select
-              placeholder="Оберіть тип проблеми..."
-              showSearch
-              optionFilterProp="children"
-            >
-              {INCIDENT_TYPES.map((type) => (
-                <Select.Option key={type} value={type}>
-                  {type}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          {/* Номер інциденту */}
-          <Form.Item 
-            label="Номер інциденту" 
-            style={{ marginBottom: 8 }}
-          >
-            <Input 
-              value="Автогенерація" 
-              disabled 
-              style={{ color: '#1890ff', fontStyle: 'italic' }}
-            />
-          </Form.Item>
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: -4, marginBottom: 20 }}>
-            Генерується автоматично при збереженні
-          </Text>
-
-          {/* Відділ */}
-          <Form.Item
-            label={<span><span style={{ color: 'red' }}>* </span>Відділ</span>}
-            name="assigned_department_id"
-            rules={[{ required: true, message: 'Оберіть відділ' }]}
-            style={{ marginBottom: 8 }}
-          >
-            <Select
-              placeholder="Оберіть відділ..."
-              loading={departmentsLoading}
-              showSearch
-              optionFilterProp="children"
-            >
-              {departments.map((dept) => (
-                <Select.Option key={dept.id} value={dept.id}>
-                  {dept.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: -4, marginBottom: 20 }}>
-            Відділ, який буде обробляти тікет
-          </Text>
-
-          {/* Станція */}
-          <Form.Item
-            label={<span><span style={{ color: 'red' }}>* </span>Станція</span>}
-            name="station_id"
-            rules={[{ required: true, message: 'Оберіть станцію' }]}
-            style={{ marginBottom: 8 }}
-          >
-            <Select
-              showSearch
-              placeholder="Пошук по номеру (1892, 2099...)"
-              loading={stationSearchLoading}
-              onSearch={searchStations}
-              onChange={handleStationSelect}
-              filterOption={false}
-              notFoundContent={stationSearchLoading ? <Spin size="small" /> : null}
-            >
-              {stationOptions.map((option) => (
-                <Select.Option key={option.value} value={option.value}>
-                  {option.label}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          {/* Station details */}
-          {selectedStation && (
-            <Alert
-              message={
-                <div>
-                  <Space style={{ marginBottom: 8 }}>
-                    <span style={{ fontSize: 16 }}>🔌</span>
-                    <Text strong>{selectedStation.station_id}</Text>
-                  </Space>
-                  <div style={{ paddingLeft: 24 }}>
-                    <div style={{ marginBottom: 4 }}>
-                      <EnvironmentOutlined style={{ color: '#1890ff', marginRight: 8 }} />
-                      <Text strong>Адреса станції:</Text> <Text>{selectedStation.address || 'Не вказано'}</Text>
-                    </div>
-                    <div style={{ marginBottom: 4 }}>
-                      <UserOutlined style={{ color: '#1890ff', marginRight: 8 }} />
-                      <Text strong>Власник станції:</Text> <Text>{selectedStation.operator?.name || 'Не вказано'}</Text>
-                    </div>
-                    <div>
-                      <ToolOutlined style={{ color: '#1890ff', marginRight: 8 }} />
-                      <Text strong>Виробник станції:</Text> <Text>EcoFactor</Text>
-                    </div>
-                  </div>
-                  <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 8 }}>
-                    Завантажується автоматично по номеру станції
-                  </Text>
-                </div>
-              }
-              type="warning"
-              style={{ 
-                marginBottom: 20,
-                backgroundColor: '#fff7e6',
-                border: '1px solid #ffd591'
-              }}
-            />
-          )}
-
-          {/* Тип порту */}
-          <Form.Item
-            label={<span><span style={{ color: 'red' }}>* </span>Тип порту</span>}
-            name="port_type"
-            rules={[{ required: true, message: 'Оберіть тип порту' }]}
-            style={{ marginBottom: 20 }}
-          >
-            <Select
-              placeholder={selectedStation ? "Оберіть тип порту..." : "Спочатку оберіть станцію"}
-              showSearch
-              optionFilterProp="children"
-              disabled={!selectedStation || stationPorts.length === 0}
-              notFoundContent={selectedStation && stationPorts.length === 0 ? "У станції немає портів" : null}
-            >
-              {stationPorts.map((port) => (
-                <Select.Option 
-                  key={port.id} 
-                  value={port.connector_type || `Порт ${port.port_number}`}
-                >
-                  {port.connector_type 
-                    ? `${port.connector_type}${port.power_kw ? ` (${port.power_kw} kW)` : ''} - Порт ${port.port_number}`
-                    : `Порт ${port.port_number}`
-                  }
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          {/* Контактна інформація */}
-          <div style={{ marginBottom: 20 }}>
-            <Text strong style={{ display: 'block', marginBottom: 16 }}>
-              Контактна інформація
-            </Text>
-
-            <Form.Item
-              label="Ім'я клієнта"
-              name="reporter_name"
-              style={{ marginBottom: 16 }}
-            >
-              <Input placeholder="---" />
-            </Form.Item>
-
-            <Form.Item
-              label="Телефон клієнта"
-              name="reporter_phone"
-              style={{ marginBottom: 16 }}
-            >
-              <Input placeholder="---" />
-            </Form.Item>
-
-            <Form.Item
-              label="Джерело"
-              name="contact_source"
-              style={{ marginBottom: 0 }}
-            >
-              <Select placeholder="---">
-                {CONTACT_SOURCES.map((source) => (
-                  <Select.Option key={source.value} value={source.value}>
-                    {source.label}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </div>
-
-          {/* Опис проблеми */}
-          <div style={{ marginBottom: 20 }}>
-            <Text strong style={{ display: 'block', marginBottom: 16 }}>
-              Опис проблеми
-            </Text>
-
-            <Form.Item
-              label="Опис"
-              name="description"
-              rules={[{ required: true, message: 'Введіть опис проблеми' }]}
-              style={{ marginBottom: 16 }}
-            >
-              <TextArea
-                rows={4}
-                placeholder="Детальний опис інциденту..."
-              />
-            </Form.Item>
-
-            {/* Вкладення */}
-            <Form.Item label="Вкладення" style={{ marginBottom: 0 }}>
-              <Upload
-                fileList={attachmentFiles}
-                onChange={({ fileList }) => setAttachmentFiles(fileList)}
-                beforeUpload={() => false}
-                multiple
+          <Row gutter={20}>
+            {/* LEFT COLUMN */}
+            <Col span={12}>
+              {/* Заголовок інциденту */}
+              <Form.Item
+                label={<span style={{ fontSize: 13 }}><span style={{ color: 'red' }}>* </span>Заголовок інциденту</span>}
+                name="incident_type"
+                rules={[{ required: true, message: 'Оберіть тип проблеми' }]}
+                style={{ marginBottom: 14 }}
               >
-                <Button icon={<UploadOutlined />}>
-                  Додати файли
-                </Button>
-              </Upload>
-            </Form.Item>
-          </div>
-
-          {/* Логи станції */}
-          <div style={{ marginBottom: 24 }}>
-            <Text strong style={{ display: 'block', marginBottom: 16 }}>
-              Логи станції
-            </Text>
-
-            <Form.Item label="Текст логу" style={{ marginBottom: 0 }}>
-              <TextArea
-                rows={4}
-                placeholder="Вставте OCPP логи, повідомлення клієнта, діагностику станції або будь-який текст..."
-                value={stationLogs}
-                onChange={(e) => setStationLogs(e.target.value)}
-              />
-              <div style={{ marginTop: 8 }}>
-                <Button
-                  icon={<RobotOutlined />}
-                  onClick={handleAnalyzeLog}
-                  loading={analyzingLog}
-                  disabled={!stationLogs.trim()}
-                  style={{ backgroundColor: '#f0f5ff', borderColor: '#adc6ff', color: '#2f54eb' }}
+                <Select
+                  placeholder="Оберіть тип проблеми..."
+                  showSearch
+                  optionFilterProp="children"
+                  style={{ fontSize: 13 }}
                 >
-                  Розпізнати AI
-                </Button>
-              </div>
-              <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 6 }}>
-                Можна вставити повідомлення клієнта або завантажити картинку у вкладенні для розпізнавання
-              </Text>
-            </Form.Item>
+                  {INCIDENT_TYPES.map((type) => (
+                    <Select.Option key={type} value={type}>
+                      {type}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
 
-            {/* AI Analysis Result */}
-            {aiAnalysis && (
-              <Form.Item label="AI Розшифровка" style={{ marginTop: 16 }}>
-                <TextArea
-                  rows={12}
-                  value={aiAnalysis}
-                  readOnly
-                  style={{ 
-                    backgroundColor: '#f6ffed', 
-                    border: '1px solid #b7eb8f',
-                    color: '#000'
-                  }}
+              {/* Номер інциденту */}
+              <Form.Item 
+                label={<span style={{ fontSize: 13 }}>Номер інциденту</span>}
+                style={{ marginBottom: 14 }}
+              >
+                <Input 
+                  value="Автогенерація" 
+                  disabled 
+                  style={{ color: '#1890ff', fontStyle: 'italic', fontSize: 13 }}
                 />
               </Form.Item>
-            )}
-          </div>
 
-          {/* Buttons */}
-          <Form.Item style={{ marginBottom: 0 }}>
-            <Space>
-              <Button 
-                type="primary" 
-                htmlType="submit" 
-                loading={loading}
+              {/* Відділ */}
+              <Form.Item
+                label={<span style={{ fontSize: 13 }}><span style={{ color: 'red' }}>* </span>Відділ</span>}
+                name="assigned_department_id"
+                rules={[{ required: true, message: 'Оберіть відділ' }]}
+                style={{ marginBottom: 14 }}
               >
-                Зберегти
-              </Button>
-              {!isModal && (
-                <Button onClick={() => navigate('/tickets')}>
-                  Скасувати
-                </Button>
+                <Select
+                  placeholder="Оберіть відділ..."
+                  loading={departmentsLoading}
+                  showSearch
+                  optionFilterProp="children"
+                  style={{ fontSize: 13 }}
+                >
+                  {departments.map((dept) => (
+                    <Select.Option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              {/* Станція */}
+              <Form.Item
+                label={<span style={{ fontSize: 13 }}><span style={{ color: 'red' }}>* </span>Станція</span>}
+                name="station_id"
+                rules={[{ required: true, message: 'Оберіть станцію' }]}
+                style={{ marginBottom: 14 }}
+              >
+                <Select
+                  showSearch
+                  placeholder="Пошук по номеру (1892, 2099...)"
+                  loading={stationSearchLoading}
+                  onSearch={searchStations}
+                  onChange={handleStationSelect}
+                  filterOption={false}
+                  notFoundContent={stationSearchLoading ? <Spin size="small" /> : null}
+                  style={{ fontSize: 13 }}
+                >
+                  {stationOptions.map((option) => (
+                    <Select.Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              {/* Тип порту */}
+              <Form.Item
+                label={<span style={{ fontSize: 13 }}>Тип порту</span>}
+                name="port_type"
+                style={{ marginBottom: 14 }}
+              >
+                <Select
+                  placeholder={selectedStation ? "Оберіть тип порту..." : "Спочатку оберіть станцію"}
+                  showSearch
+                  optionFilterProp="children"
+                  disabled={!selectedStation || stationPorts.length === 0}
+                  notFoundContent={selectedStation && stationPorts.length === 0 ? "У станції немає портів" : null}
+                  style={{ fontSize: 13 }}
+                >
+                  {stationPorts.map((port) => (
+                    <Select.Option 
+                      key={port.id} 
+                      value={port.connector_type || `Порт ${port.port_number}`}
+                    >
+                      {port.connector_type 
+                        ? `${port.connector_type}${port.power_kw ? ` (${port.power_kw} kW)` : ''} - Порт ${port.port_number}`
+                        : `Порт ${port.port_number}`
+                      }
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              {/* Контактна інформація */}
+              <div style={{ marginTop: 20, marginBottom: 14 }}>
+                <Text strong style={{ display: 'block', marginBottom: 12, fontSize: 14 }}>
+                  Контактна інформація
+                </Text>
+
+                <Form.Item
+                  label={<span style={{ fontSize: 13 }}>Ім'я клієнта</span>}
+                  name="reporter_name"
+                  style={{ marginBottom: 12 }}
+                >
+                  <Input placeholder="---" style={{ fontSize: 13 }} />
+                </Form.Item>
+
+                <Form.Item
+                  label={<span style={{ fontSize: 13 }}>Телефон клієнта</span>}
+                  name="reporter_phone"
+                  style={{ marginBottom: 12 }}
+                >
+                  <Input placeholder="---" style={{ fontSize: 13 }} />
+                </Form.Item>
+
+                <Form.Item
+                  label={<span style={{ fontSize: 13 }}>Джерело</span>}
+                  name="contact_source"
+                  style={{ marginBottom: 0 }}
+                >
+                  <Select placeholder="---" style={{ fontSize: 13 }}>
+                    {CONTACT_SOURCES.map((source) => (
+                      <Select.Option key={source.value} value={source.value}>
+                        {source.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+            </Col>
+
+            {/* RIGHT COLUMN */}
+            <Col span={12}>
+              {/* Station details */}
+              {selectedStation && (
+                <Alert
+                  message={
+                    <div>
+                      <Space style={{ marginBottom: 6 }}>
+                        <span style={{ fontSize: 14 }}>🔌</span>
+                        <Text strong style={{ fontSize: 13 }}>{selectedStation.station_id}</Text>
+                      </Space>
+                      <div style={{ paddingLeft: 20, fontSize: 12 }}>
+                        <div style={{ marginBottom: 3 }}>
+                          <EnvironmentOutlined style={{ color: '#1890ff', marginRight: 6, fontSize: 12 }} />
+                          <Text strong style={{ fontSize: 12 }}>Адреса:</Text> <Text style={{ fontSize: 12 }}>{selectedStation.address || 'Не вказано'}</Text>
+                        </div>
+                        <div style={{ marginBottom: 3 }}>
+                          <UserOutlined style={{ color: '#1890ff', marginRight: 6, fontSize: 12 }} />
+                          <Text strong style={{ fontSize: 12 }}>Власник:</Text> <Text style={{ fontSize: 12 }}>{selectedStation.operator?.name || 'Не вказано'}</Text>
+                        </div>
+                        <div>
+                          <ToolOutlined style={{ color: '#1890ff', marginRight: 6, fontSize: 12 }} />
+                          <Text strong style={{ fontSize: 12 }}>Виробник:</Text> <Text style={{ fontSize: 12 }}>ECOFACTOR</Text>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                  type="warning"
+                  style={{ 
+                    marginBottom: 14,
+                    backgroundColor: '#fff7e6',
+                    border: '1px solid #ffd591',
+                    padding: '6px 10px'
+                  }}
+                />
               )}
-            </Space>
-          </Form.Item>
+
+              {/* Авто */}
+              <Form.Item
+                label={<span style={{ fontSize: 13 }}>Авто</span>}
+                name="vehicle"
+                style={{ marginBottom: 14 }}
+              >
+                <Input placeholder="Марка, модель, номер..." style={{ fontSize: 13 }} />
+              </Form.Item>
+
+              {/* Опис проблеми */}
+              <div style={{ marginBottom: 14 }}>
+                <Text strong style={{ display: 'block', marginBottom: 12, fontSize: 14 }}>
+                  Опис проблеми
+                </Text>
+
+                <Form.Item
+                  label={<span style={{ fontSize: 13 }}>Опис</span>}
+                  name="description"
+                  rules={[{ required: true, message: 'Введіть опис проблеми' }]}
+                  style={{ marginBottom: 12 }}
+                >
+                  <TextArea
+                    rows={3}
+                    placeholder="Детальний опис інциденту..."
+                    style={{ fontSize: 13 }}
+                  />
+                </Form.Item>
+
+                {/* Вкладення */}
+                <Form.Item label={<span style={{ fontSize: 13 }}>Вкладення</span>} style={{ marginBottom: 0 }}>
+                  <Upload
+                    fileList={attachmentFiles}
+                    onChange={({ fileList }) => setAttachmentFiles(fileList)}
+                    beforeUpload={() => false}
+                    multiple
+                  >
+                    <Button icon={<UploadOutlined />} size="small">
+                      Додати файли
+                    </Button>
+                  </Upload>
+                </Form.Item>
+              </div>
+
+              {/* Логи станції */}
+              <div style={{ marginBottom: 14 }}>
+                <Text strong style={{ display: 'block', marginBottom: 12, fontSize: 14 }}>
+                  Логи станції
+                </Text>
+
+                <Form.Item label={<span style={{ fontSize: 13 }}>Текст логу</span>} style={{ marginBottom: 0 }}>
+                  <TextArea
+                    rows={3}
+                    placeholder="Вставте OCPP логи або текст..."
+                    value={stationLogs}
+                    onChange={(e) => setStationLogs(e.target.value)}
+                    style={{ fontSize: 13 }}
+                  />
+                  <div style={{ marginTop: 6 }}>
+                    <Button
+                      icon={<RobotOutlined />}
+                      onClick={handleAnalyzeLog}
+                      loading={analyzingLog}
+                      disabled={!stationLogs.trim()}
+                      size="small"
+                      style={{ backgroundColor: '#f0f5ff', borderColor: '#adc6ff', color: '#2f54eb' }}
+                    >
+                      Розпізнати AI
+                    </Button>
+                  </div>
+                </Form.Item>
+
+                {/* AI Analysis Result */}
+                {aiAnalysis && (
+                  <Form.Item label={<span style={{ fontSize: 13 }}>AI Розшифровка</span>} style={{ marginTop: 12 }}>
+                    <TextArea
+                      rows={8}
+                      value={aiAnalysis}
+                      readOnly
+                      style={{ 
+                        backgroundColor: '#f6ffed', 
+                        border: '1px solid #b7eb8f',
+                        color: '#000',
+                        fontSize: 12
+                      }}
+                    />
+                  </Form.Item>
+                )}
+              </div>
+
+              {/* Buttons */}
+              <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+                <Space>
+                  {!isModal && (
+                    <Button onClick={() => navigate('/tickets')} size="middle">
+                      Скасувати
+                    </Button>
+                  )}
+                  <Button 
+                    type="primary" 
+                    htmlType="submit" 
+                    loading={loading}
+                    size="middle"
+                  >
+                    Зберегти
+                  </Button>
+                </Space>
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
         </div>
       </div>

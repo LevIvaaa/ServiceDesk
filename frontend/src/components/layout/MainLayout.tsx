@@ -254,7 +254,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }}
       >
         <div className="logo">
-          {collapsed ? 'EF' : 'Ecofactor'}
+          {collapsed ? 'EF' : 'ECOFACTOR'}
         </div>
         <Menu
           theme="dark"

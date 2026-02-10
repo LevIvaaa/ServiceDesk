@@ -19,6 +19,7 @@ class TicketBase(BaseModel):
     port_type: Optional[str] = Field(None, max_length=50)
     contact_source: Optional[str] = Field(None, max_length=50)
     station_logs: Optional[str] = None
+    vehicle: Optional[str] = Field(None, max_length=200)  # Vehicle info
 
 
 class AILogAnalysis(BaseModel):
@@ -183,6 +184,7 @@ class TicketResponse(BaseModel):
     port_type: Optional[str] = None
     contact_source: Optional[str] = None
     station_logs: Optional[str] = None
+    vehicle: Optional[str] = None  # Vehicle info
 
     class Config:
         from_attributes = True

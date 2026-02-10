@@ -4,7 +4,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # Application
-    APP_NAME: str = "Ecofactor Service Desk"
+    APP_NAME: str = "ECOFACTOR Service Desk"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
 
@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     EMAIL_FROM: str = "noreply@ecofactor.ua"
-    EMAIL_FROM_NAME: str = "Ecofactor Service Desk"
+    EMAIL_FROM_NAME: str = "ECOFACTOR Service Desk"
 
     # Telegram
     TELEGRAM_BOT_TOKEN: str = ""
