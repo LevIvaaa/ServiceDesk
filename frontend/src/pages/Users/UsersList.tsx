@@ -47,7 +47,6 @@ export default function UsersList() {
   const [form] = Form.useForm()
 
   const [isAdminChecked, setIsAdminChecked] = useState(false)
-  const [selectedRoles, setSelectedRoles] = useState<number[]>([])
 
   // Check if user is ticket handler (has assign but not create permission)
   const isTicketHandler = hasPermission('tickets.assign') && !hasPermission('tickets.create')
@@ -108,7 +107,6 @@ export default function UsersList() {
     setEditingUser(null)
     form.resetFields()
     setIsAdminChecked(false)
-    setSelectedRoles([])
     setModalVisible(true)
   }
 
@@ -116,7 +114,6 @@ export default function UsersList() {
     setEditingUser(user)
     setIsAdminChecked(user.is_admin || false)
     const roleIds = (user.roles || []).map(r => r.id)
-    setSelectedRoles(roleIds)
     form.setFieldsValue({
       ...user,
       role_ids: roleIds,
@@ -383,7 +380,6 @@ export default function UsersList() {
               placeholder={t('placeholders.selectRoles')}
               options={roles.map(r => ({ value: r.id, label: t(`roles.${r.name}`) }))}
               disabled={isAdminChecked}
-              onChange={(value) => setSelectedRoles(value)}
             />
           </Form.Item>
 
@@ -411,7 +407,6 @@ export default function UsersList() {
                     if (checked) {
                       // Clear role selection when admin is enabled
                       form.setFieldsValue({ role_ids: [] })
-                      setSelectedRoles([])
                     }
                   }}
                 />
