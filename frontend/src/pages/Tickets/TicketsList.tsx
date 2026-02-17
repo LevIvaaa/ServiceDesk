@@ -202,7 +202,7 @@ export default function TicketsList() {
       dataIndex: 'station',
       key: 'station',
       render: (station: Ticket['station']) =>
-        station ? station.station_id : '-',
+        station ? (station.station_number || station.station_id) : '-',
       width: 100,
     },
     {

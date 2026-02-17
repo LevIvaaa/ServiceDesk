@@ -3,6 +3,7 @@ import client from './client'
 export interface TicketStation {
   id: number
   station_id: string
+  station_number: string | null
   name: string
   address: string | null
   operator_name: string

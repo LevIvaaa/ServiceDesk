@@ -40,7 +40,8 @@ async def list_stations(
     if search:
         search_filter = f"%{search}%"
         query = query.where(
-            (Station.station_id.ilike(search_filter))
+            (Station.station_number.ilike(search_filter))
+            | (Station.station_id.ilike(search_filter))
             | (Station.external_id.ilike(search_filter))
             | (Station.name.ilike(search_filter))
             | (Station.address.ilike(search_filter))
@@ -69,6 +70,7 @@ async def list_stations(
         station_dict = {
             "id": station.id,
             "station_id": station.station_id,
+            "station_number": station.station_number,
             "external_id": station.external_id,
             "name": station.name_en if language == "en" and station.name_en else station.name,
             "operator": station.operator,
@@ -210,6 +212,7 @@ async def get_station(
     station_dict = {
         "id": station.id,
         "station_id": station.station_id,
+        "station_number": station.station_number,
         "external_id": station.external_id,
         "name": station.name_en if language == "en" and station.name_en else station.name,
         "operator_id": station.operator_id,

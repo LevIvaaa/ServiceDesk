@@ -13,6 +13,7 @@ export interface StationPort {
 export interface Station {
   id: number
   station_id: string
+  station_number: string | null  // Display number from chargePoints
   external_id: string | null  // Operator's station number
   name: string
   operator_id: number
@@ -39,6 +40,7 @@ export interface Station {
 export interface StationListItem {
   id: number
   station_id: string
+  station_number: string | null  // Display number from chargePoints
   external_id: string | null  // Operator's station number
   name: string
   operator: {
@@ -69,6 +71,7 @@ export interface CreateStationPort {
 
 export interface CreateStationData {
   station_id: string
+  station_number?: string
   name: string
   operator_id: number
   address?: string
@@ -85,6 +88,7 @@ export interface CreateStationData {
 
 export interface UpdateStationData {
   station_id?: string
+  station_number?: string
   name?: string
   operator_id?: number
   address?: string

@@ -17,6 +17,7 @@ class Station(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     station_id: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    station_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)  # Display number from chargePoints
     external_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)  # Operator's station number
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     name_en: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)

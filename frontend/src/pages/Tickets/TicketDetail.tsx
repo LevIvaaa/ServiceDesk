@@ -914,7 +914,7 @@ export default function TicketDetail() {
                 {t(`category.${ticket.category}`)}
               </Descriptions.Item>
               <Descriptions.Item label={t('fields.station')}>
-                {ticket.station ? `${ticket.station.station_id} - ${ticket.station.name}` : '-'}
+                {ticket.station ? `${ticket.station.station_number || ticket.station.station_id} - ${ticket.station.name}` : '-'}
               </Descriptions.Item>
               {ticket.port_type && (
                 <Descriptions.Item label="Тип порту">

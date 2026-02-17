@@ -150,7 +150,9 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
       const options = response.items.map((station) => ({
         value: station.id,
-        label: `${station.station_id} - ${station.name}`,
+        label: station.station_number 
+          ? `${station.station_number} - ${station.name}`
+          : `${station.station_id} - ${station.name}`,
         station,
       }))
 
@@ -164,24 +166,21 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
   // Handle station selection
   const handleStationSelect = async (value: number) => {
-    const option = stationOptions.find((opt) => opt.value === value)
-    if (option) {
-      try {
-        // Загружаем полную информацию о станции с портами
-        const lang = i18n.language?.startsWith('en') ? 'en' : 'ua'
-        const fullStation = await stationsApi.get(value, lang)
-        setSelectedStation(fullStation)
-        setStationPorts(fullStation.ports || [])
-        
-        // Очищаем выбранный порт при смене станции
-        form.setFieldsValue({ 
-          station_id: value,
-          port_type: undefined 
-        })
-      } catch (error) {
-        console.error('Failed to load station details:', error)
-        message.error('Помилка завантаження інформації про станцію')
-      }
+    try {
+      // Загружаем полную информацию о станции с портами
+      const lang = i18n.language?.startsWith('en') ? 'en' : 'ua'
+      const fullStation = await stationsApi.get(value, lang)
+      setSelectedStation(fullStation)
+      setStationPorts(fullStation.ports || [])
+      
+      // Очищаем выбранный порт при смене станции
+      form.setFieldsValue({ 
+        station_id: value,
+        port_type: undefined 
+      })
+    } catch (error) {
+      console.error('Failed to load station details:', error)
+      message.error('Помилка завантаження інформації про станцію')
     }
   }
 
@@ -570,9 +569,14 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                     <div>
                       <Space style={{ marginBottom: 6 }}>
                         <span style={{ fontSize: 14 }}>🔌</span>
-                        <Text strong style={{ fontSize: 13 }}>{selectedStation.station_id}</Text>
+                        <Text strong style={{ fontSize: 13 }}>
+                          Станція № {selectedStation.station_number || selectedStation.station_id}
+                        </Text>
                       </Space>
                       <div style={{ paddingLeft: 20, fontSize: 12 }}>
+                        <div style={{ marginBottom: 3 }}>
+                          <Text strong style={{ fontSize: 12 }}>ID станції:</Text> <Text style={{ fontSize: 12 }}>{selectedStation.station_id}</Text>
+                        </div>
                         <div style={{ marginBottom: 3 }}>
                           <EnvironmentOutlined style={{ color: '#1890ff', marginRight: 6, fontSize: 12 }} />
                           <Text strong style={{ fontSize: 12 }}>Адреса:</Text> <Text style={{ fontSize: 12 }}>{selectedStation.address || 'Не вказано'}</Text>

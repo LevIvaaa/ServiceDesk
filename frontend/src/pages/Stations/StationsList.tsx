@@ -149,6 +149,7 @@ export default function StationsList() {
       if (editingStation) {
         const updateData: UpdateStationData = {
           station_id: values.station_id,
+          station_number: values.station_number,
           name: values.name,
           operator_id: values.operator_id,
           address: values.address,
@@ -168,6 +169,7 @@ export default function StationsList() {
       } else {
         const createData: CreateStationData = {
           station_id: values.station_id,
+          station_number: values.station_number,
           name: values.name,
           operator_id: values.operator_id,
           address: values.address,
@@ -192,6 +194,13 @@ export default function StationsList() {
   }
 
   const columns = [
+    {
+      title: t('fields.stationNumber'),
+      dataIndex: 'station_number',
+      key: 'station_number',
+      width: 100,
+      render: (text: string | null) => text || '-',
+    },
     {
       title: t('fields.stationId'),
       dataIndex: 'station_id',
@@ -354,6 +363,17 @@ export default function StationsList() {
             </Col>
             <Col span={12}>
               <Form.Item
+                name="station_number"
+                label={t('fields.stationNumber')}
+              >
+                <Input placeholder="192" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
                 name="name"
                 label={t('fields.name')}
                 rules={[{ required: true, message: t('validation.nameRequired') }]}
@@ -361,9 +381,6 @@ export default function StationsList() {
                 <Input placeholder={t('placeholders.name')} />
               </Form.Item>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="operator_id"
@@ -376,29 +393,33 @@ export default function StationsList() {
                 />
               </Form.Item>
             </Col>
+          </Row>
+
+          <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="model" label={t('fields.model')}>
                 <Input placeholder={t('placeholders.model')} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="manufacturer" label={t('fields.manufacturer')}>
+                <Input placeholder={t('placeholders.manufacturer')} />
               </Form.Item>
             </Col>
           </Row>
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="manufacturer" label={t('fields.manufacturer')}>
-                <Input placeholder={t('placeholders.manufacturer')} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
               <Form.Item name="firmware_version" label={t('fields.firmwareVersion')}>
                 <Input placeholder={t('placeholders.firmwareVersion')} />
               </Form.Item>
             </Col>
+            <Col span={12}>
+              <Form.Item name="address" label={t('fields.address')}>
+                <Input placeholder={t('placeholders.address')} />
+              </Form.Item>
+            </Col>
           </Row>
-
-          <Form.Item name="address" label={t('fields.address')}>
-            <Input placeholder={t('placeholders.address')} />
-          </Form.Item>
 
           <Row gutter={16}>
             <Col span={8}>

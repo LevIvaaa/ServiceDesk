@@ -34,6 +34,7 @@ class StationPortResponse(BaseModel):
 
 class StationBase(BaseModel):
     station_id: str = Field(..., min_length=1, max_length=100)
+    station_number: Optional[str] = Field(None, max_length=50)  # Display number from chargePoints
     external_id: Optional[str] = Field(None, max_length=100)  # Operator's station number
     name: str = Field(..., min_length=1, max_length=200)
     operator_id: int
@@ -54,6 +55,7 @@ class StationCreate(StationBase):
 
 class StationUpdate(BaseModel):
     station_id: Optional[str] = Field(None, min_length=1, max_length=100)
+    station_number: Optional[str] = Field(None, max_length=50)
     external_id: Optional[str] = Field(None, max_length=100)
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     operator_id: Optional[int] = None
@@ -81,6 +83,7 @@ class OperatorShort(BaseModel):
 class StationResponse(BaseModel):
     id: int
     station_id: str
+    station_number: Optional[str]  # Display number
     external_id: Optional[str]  # Operator's station number
     name: str
     operator_id: int
@@ -107,6 +110,7 @@ class StationResponse(BaseModel):
 class StationListResponse(BaseModel):
     id: int
     station_id: str
+    station_number: Optional[str]  # Display number
     external_id: Optional[str]  # Operator's station number
     name: str
     operator: OperatorShort

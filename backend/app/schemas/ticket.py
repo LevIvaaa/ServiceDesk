@@ -84,6 +84,7 @@ class DepartmentShort(BaseModel):
 class StationShort(BaseModel):
     id: int
     station_id: str
+    station_number: Optional[str] = None
     name: str
     address: Optional[str] = None
     operator_name: str = ""

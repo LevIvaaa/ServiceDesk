@@ -325,7 +325,7 @@ export default function IncomingQueue() {
       title: t('fields.station'),
       dataIndex: 'station',
       key: 'station',
-      render: (station: Ticket['station']) => station ? station.station_id : '-',
+      render: (station: Ticket['station']) => station ? (station.station_number || station.station_id) : '-',
       width: 120,
     },
     {
