@@ -788,12 +788,14 @@ async def _build_ticket_response(ticket: Ticket, db: AsyncSession) -> TicketResp
         "port_type": ticket.port_type,
         "contact_source": ticket.contact_source,
         "station_logs": ticket.station_logs,
+        "vehicle": ticket.vehicle,
     }
 
     if ticket.station:
         response_dict["station"] = {
             "id": ticket.station.id,
             "station_id": ticket.station.station_id,
+            "station_number": ticket.station.station_number,
             "name": ticket.station.name,
             "address": ticket.station.address,
             "operator_name": ticket.station.operator.name if ticket.station.operator else "",
@@ -855,9 +857,18 @@ async def _build_ticket_detail_response(
         "port_type": ticket.port_type,
         "contact_source": ticket.contact_source,
         "station_logs": ticket.station_logs,
+        "vehicle": ticket.vehicle,
     }
 
     if ticket.station:
+        response_dict["station"] = {
+            "id": ticket.station.id,
+            "station_id": ticket.station.station_id,
+            "station_number": ticket.station.station_number,
+            "name": ticket.station.name,
+            "address": ticket.station.address,
+            "operator_name": ticket.station.operator.name if ticket.station.operator else "",
+        }
         response_dict["station"] = {
             "id": ticket.station.id,
             "station_id": ticket.station.station_id,

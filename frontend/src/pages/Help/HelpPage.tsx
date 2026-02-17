@@ -1,6 +1,5 @@
 import { Typography, Card, Collapse, Divider, Table, Tag } from 'antd'
 import {
-  UserOutlined,
   ToolOutlined,
   TeamOutlined,
   SettingOutlined,
