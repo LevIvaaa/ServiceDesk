@@ -1380,13 +1380,13 @@ async def delete_ticket_attachment(
 async def export_tickets(
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("tickets.view"))],
-    status: Optional[str] = None,
-    priority: Optional[str] = None,
-    category: Optional[str] = None,
-    assigned_user_id: Optional[int] = None,
-    assigned_department_id: Optional[int] = None,
-    created_by_id: Optional[int] = None,
-    search: Optional[str] = None,
+    status: Optional[str] = Query(None),
+    priority: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    assigned_user_id: Optional[int] = Query(None),
+    assigned_department_id: Optional[int] = Query(None),
+    created_by_id: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
 ):
     """Export tickets to Excel file with station details"""
     from openpyxl import Workbook
