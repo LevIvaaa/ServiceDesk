@@ -480,18 +480,14 @@ export default function TicketsList() {
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
         footer={null}
-        width={700}
+        width={900}
         style={{ top: 20 }}
         styles={{ 
           body: { 
             maxHeight: 'calc(100vh - 100px)', 
-            overflowY: 'auto',
-            overflowX: 'hidden',
+            overflow: 'hidden',
             padding: '0 !important',
             borderRadius: 0,
-            // Hide scrollbar
-            scrollbarWidth: 'none', // Firefox
-            msOverflowStyle: 'none', // IE and Edge
           },
           content: {
             borderRadius: '15px',
@@ -502,14 +498,6 @@ export default function TicketsList() {
         destroyOnHidden
         centered={false}
       >
-        <style>{`
-          .ant-modal-body::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
-          }
-          .ant-modal-body {
-            padding: 0 !important;
-          }
-        `}</style>
         <CreateTicketNew onSuccess={handleTicketCreated} isModal={true} />
       </Modal>
     </div>
