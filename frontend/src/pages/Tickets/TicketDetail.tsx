@@ -105,8 +105,18 @@ export default function TicketDetail() {
   }
 
   // Визначаємо доступні статуси залежно від ролі
-  // (не використовується, але залишаємо для можливого використання в майбутньому)
-  
+  const getAvailableStatuses = () => {
+    const allStatuses = ['new', 'open', 'in_progress', 'pending', 'resolved', 'closed']
+    
+    // Якщо користувач має роль handler, прибираємо статус 'closed'
+    if (user && !user.is_admin && user.roles.some(role => role.name === 'handler')) {
+      return allStatuses.filter(status => status !== 'closed')
+    }
+    
+    return allStatuses
+  }
+
+  const statuses = getAvailableStatuses()
   const priorities = ['low', 'medium', 'high', 'critical']
   const categories = ['hardware', 'software', 'network', 'billing', 'other']
 
@@ -801,123 +811,32 @@ export default function TicketDetail() {
               {/* Status */}
               <div>
                 <Text type="secondary">{t('fields.status', 'Статус')}:</Text>
-                <div style={{ marginTop: 4 }}>
-                  <Tag color={statusColors[ticket.status]}>{t(`status.${ticket.status}`)}</Tag>
-                </div>
+                {hasPermission('tickets.change_status') && canEditTicket() ? (
+                  <Select
+                    value={ticket.status}
+                    onChange={(val) => {
+                      if (val === 'resolved' || val === 'closed') {
+                        setPendingStatus(val)
+                        setStatusModalVisible(true)
+                      } else {
+                        handleStatusChange(val)
+                      }
+                    }}
+                    style={{ width: '100%', marginTop: 4 }}
+                    loading={submitting}
+                  >
+                    {statuses.map(s => (
+                      <Select.Option key={s} value={s}>
+                        <Tag color={statusColors[s]}>{t(`status.${s}`)}</Tag>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                ) : (
+                  <div style={{ marginTop: 4 }}>
+                    <Tag color={statusColors[ticket.status]}>{t(`status.${ticket.status}`)}</Tag>
+                  </div>
+                )}
               </div>
-
-              {/* Status Action Buttons */}
-              {hasPermission('tickets.change_status') && canEditTicket() && (
-                <div style={{ marginTop: 8 }}>
-                  <Space direction="vertical" style={{ width: '100%' }} size="small">
-                    {/* Прийняти в роботу - доступна для статусу "new" */}
-                    {ticket.status === 'new' && (
-                      <Button
-                        type="primary"
-                        block
-                        onClick={() => handleStatusChange('in_progress')}
-                        loading={submitting}
-                      >
-                        Прийняти в роботу
-                      </Button>
-                    )}
-
-                    {/* Для статусу "in_progress" доступні: На аналіз, Перевіряється, Закрити */}
-                    {ticket.status === 'in_progress' && (
-                      <>
-                        <Button
-                          block
-                          onClick={() => handleStatusChange('pending')}
-                          loading={submitting}
-                        >
-                          На аналіз
-                        </Button>
-                        <Button
-                          block
-                          onClick={() => {
-                            setPendingStatus('resolved')
-                            setStatusModalVisible(true)
-                          }}
-                          loading={submitting}
-                        >
-                          Перевіряється
-                        </Button>
-                        <Button
-                          block
-                          danger
-                          onClick={() => {
-                            setPendingStatus('closed')
-                            setStatusModalVisible(true)
-                          }}
-                          loading={submitting}
-                        >
-                          Закрити тікет
-                        </Button>
-                      </>
-                    )}
-
-                    {/* Для статусу "pending" (На аналізі) */}
-                    {ticket.status === 'pending' && (
-                      <>
-                        <Button
-                          type="primary"
-                          block
-                          onClick={() => handleStatusChange('in_progress')}
-                          loading={submitting}
-                        >
-                          Повернути в роботу
-                        </Button>
-                        <Button
-                          block
-                          onClick={() => {
-                            setPendingStatus('resolved')
-                            setStatusModalVisible(true)
-                          }}
-                          loading={submitting}
-                        >
-                          Перевіряється
-                        </Button>
-                      </>
-                    )}
-
-                    {/* Для статусу "resolved" (Перевіряється) */}
-                    {ticket.status === 'resolved' && (
-                      <>
-                        <Button
-                          block
-                          onClick={() => handleStatusChange('in_progress')}
-                          loading={submitting}
-                        >
-                          Повернути в роботу
-                        </Button>
-                        <Button
-                          type="primary"
-                          block
-                          danger
-                          onClick={() => {
-                            setPendingStatus('closed')
-                            setStatusModalVisible(true)
-                          }}
-                          loading={submitting}
-                        >
-                          Закрити тікет
-                        </Button>
-                      </>
-                    )}
-
-                    {/* Для статусу "closed" - можна тільки переоткрити (якщо є права) */}
-                    {ticket.status === 'closed' && user?.is_admin && (
-                      <Button
-                        block
-                        onClick={() => handleStatusChange('in_progress')}
-                        loading={submitting}
-                      >
-                        Переоткрити тікет
-                      </Button>
-                    )}
-                  </Space>
-                </div>
-              )}
 
               {/* Priority */}
               <div>
@@ -1002,11 +921,9 @@ export default function TicketDetail() {
                   {ticket.port_type}
                 </Descriptions.Item>
               )}
-              {ticket.vehicle && (
-                <Descriptions.Item label="Модель авто">
-                  {ticket.vehicle}
-                </Descriptions.Item>
-              )}
+              <Descriptions.Item label="Модель авто">
+                {ticket.vehicle || '-'}
+              </Descriptions.Item>
               <Descriptions.Item label={t('fields.assignedUser')}>
                 {ticket.assigned_user
                   ? `${ticket.assigned_user.first_name} ${ticket.assigned_user.last_name}`

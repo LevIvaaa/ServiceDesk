@@ -330,7 +330,7 @@ export const ticketsApi = {
     await client.delete(`/tickets/${ticketId}/attachments/${attachmentId}`)
   },
 
-  export: async (params?: TicketListParams): Promise<Blob> => {
+  export: async (params?: any): Promise<Blob> => {
     const response = await client.get('/tickets/export', {
       params,
       responseType: 'blob',

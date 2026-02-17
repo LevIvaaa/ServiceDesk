@@ -1386,10 +1386,14 @@ async def export_tickets_test(
 
 @router.get("/export")
 async def export_tickets(
-    current_user: CurrentUser,
     db: DbSession,
+    current_user: CurrentUser,
 ):
     """Export tickets to Excel file with station details"""
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Export called by user: {current_user.email}")
+    
     try:
         from openpyxl import Workbook
         from openpyxl.styles import Font, PatternFill, Alignment
