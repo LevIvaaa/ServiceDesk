@@ -1379,19 +1379,27 @@ async def delete_ticket_attachment(
 @router.get("/export")
 async def export_tickets(
     db: DbSession,
-    current_user: Annotated[User, Depends(PermissionRequired("tickets.view"))],
-    status: Optional[str] = Query(None),
-    priority: Optional[str] = Query(None),
-    category: Optional[str] = Query(None),
-    assigned_user_id: Optional[int] = Query(None),
-    assigned_department_id: Optional[int] = Query(None),
-    created_by_id: Optional[int] = Query(None),
-    search: Optional[str] = Query(None),
+    current_user: CurrentUser,
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    category: Optional[str] = None,
+    assigned_user_id: Optional[int] = None,
+    assigned_department_id: Optional[int] = None,
+    created_by_id: Optional[int] = None,
+    search: Optional[str] = None,
 ):
     """Export tickets to Excel file with station details"""
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment
     from tempfile import NamedTemporaryFile
+    from app.core.permissions import check_permission
+    
+    # Check permission
+    if not await check_permission(current_user, "tickets.view", db):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
     
     # Build query
     query = (
