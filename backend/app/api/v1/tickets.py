@@ -1380,13 +1380,13 @@ async def delete_ticket_attachment(
 async def export_tickets(
     db: DbSession,
     current_user: CurrentUser,
-    status: Optional[str] = None,
-    priority: Optional[str] = None,
-    category: Optional[str] = None,
-    assigned_user_id: Optional[int] = None,
-    assigned_department_id: Optional[int] = None,
-    created_by_id: Optional[int] = None,
-    search: Optional[str] = None,
+    ticket_status: Optional[str] = Query(None, alias="status"),
+    ticket_priority: Optional[str] = Query(None, alias="priority"),
+    ticket_category: Optional[str] = Query(None, alias="category"),
+    assigned_user_id: Optional[int] = Query(None),
+    assigned_department_id: Optional[int] = Query(None),
+    created_by_id: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
 ):
     """Export tickets to Excel file with station details"""
     from openpyxl import Workbook
@@ -1413,12 +1413,12 @@ async def export_tickets(
     )
 
     # Apply filters
-    if status:
-        query = query.where(Ticket.status == status)
-    if priority:
-        query = query.where(Ticket.priority == priority)
-    if category:
-        query = query.where(Ticket.category == category)
+    if ticket_status:
+        query = query.where(Ticket.status == ticket_status)
+    if ticket_priority:
+        query = query.where(Ticket.priority == ticket_priority)
+    if ticket_category:
+        query = query.where(Ticket.category == ticket_category)
     if assigned_user_id:
         query = query.where(Ticket.assigned_user_id == assigned_user_id)
     if assigned_department_id:
