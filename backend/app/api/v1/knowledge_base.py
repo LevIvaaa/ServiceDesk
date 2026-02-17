@@ -54,7 +54,7 @@ async def list_articles(
     search: Optional[str] = None,
     category: Optional[str] = None,
     tag: Optional[str] = None,
-    language: Optional[str] = Query(None, pattern="^(uk|en)$"),
+    language: Optional[str] = Query(None, pattern="^(ua|en)$"),
     is_published: Optional[bool] = None,
 ):
     """List knowledge base articles with pagination and filters."""
