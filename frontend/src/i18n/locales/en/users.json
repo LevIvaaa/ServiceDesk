@@ -82,7 +82,10 @@
     "title": "Roles",
     "admin": "Administrator",
     "sender": "Sender",
-    "handler": "Handler"
+    "handler": "Handler",
+    "operator": "Operator",
+    "technician": "Technician",
+    "manager": "Manager"
   },
   "notifications": {
     "title": "Notification Settings",
