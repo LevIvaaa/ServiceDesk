@@ -18,6 +18,7 @@ import OperatorsList from './pages/Operators/OperatorsList'
 import KnowledgeBase from './pages/KnowledgeBase/KnowledgeBase'
 import Settings from './pages/Settings/Settings'
 import LogAnalysis from './pages/LogAnalysis/LogAnalysis'
+import HelpPage from './pages/Help/HelpPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuthStore()
@@ -87,6 +88,7 @@ function App() {
                   <Route path="/knowledge" element={<KnowledgeBase />} />
                   <Route path="/log-analysis" element={<LogAnalysis />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/help" element={<HelpPage />} />
                 </Routes>
               </MainLayout>
             </PrivateRoute>

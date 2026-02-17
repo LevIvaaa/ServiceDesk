@@ -1363,3 +1363,163 @@ async def delete_ticket_attachment(
     await db.commit()
 
     return {"message": "Attachment deleted successfully"}
+
+
+@router.get("/export")
+async def export_tickets(
+    db: DbSession,
+    current_user: Annotated[User, Depends(PermissionRequired("tickets.view"))],
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    category: Optional[str] = None,
+    assigned_user_id: Optional[int] = None,
+    assigned_department_id: Optional[int] = None,
+    created_by_id: Optional[int] = None,
+    search: Optional[str] = None,
+):
+    """Export tickets to Excel file with station details"""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from tempfile import NamedTemporaryFile
+    
+    # Build query
+    query = (
+        select(Ticket)
+        .options(
+            selectinload(Ticket.station).selectinload(Station.operator),
+            selectinload(Ticket.assigned_user),
+            selectinload(Ticket.assigned_department),
+            selectinload(Ticket.created_by),
+        )
+    )
+
+    # Apply filters
+    if status:
+        query = query.where(Ticket.status == status)
+    if priority:
+        query = query.where(Ticket.priority == priority)
+    if category:
+        query = query.where(Ticket.category == category)
+    if assigned_user_id:
+        query = query.where(Ticket.assigned_user_id == assigned_user_id)
+    if assigned_department_id:
+        query = query.where(Ticket.assigned_department_id == assigned_department_id)
+    if created_by_id:
+        query = query.where(Ticket.created_by_id == created_by_id)
+    if search:
+        search_filter = f"%{search}%"
+        query = query.where(
+            or_(
+                Ticket.ticket_number.ilike(search_filter),
+                Ticket.title.ilike(search_filter),
+                Ticket.description.ilike(search_filter),
+            )
+        )
+
+    # Order by created date
+    query = query.order_by(Ticket.created_at.desc())
+
+    result = await db.execute(query)
+    tickets = result.scalars().all()
+
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Tickets"
+
+    # Define headers
+    headers = [
+        "Номер тікету",
+        "Заголовок",
+        "Опис",
+        "Категорія",
+        "Пріоритет",
+        "Статус",
+        "Номер станції",
+        "Назва станції",
+        "Серійний номер вендора",
+        "Адреса станції",
+        "Власник станції",
+        "Партнер",
+        "Тип порту",
+        "Модель авто",
+        "Відповідальний",
+        "Відділ",
+        "Створив",
+        "Дата створення",
+        "Дата оновлення",
+    ]
+
+    # Style header row
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Add data rows
+    for row_num, ticket in enumerate(tickets, 2):
+        # Station details
+        station_number = ticket.station.station_number if ticket.station else ""
+        station_name = ticket.station.name if ticket.station else ""
+        station_id = ticket.station.station_id if ticket.station else ""
+        station_address = ticket.station.address if ticket.station else ""
+        station_operator = ticket.station.operator.name if ticket.station and ticket.station.operator else ""
+        # Partner - можна додати пізніше, якщо буде поле в моделі
+        partner = ""
+        
+        row_data = [
+            ticket.ticket_number,
+            ticket.title,
+            ticket.description,
+            ticket.category,
+            ticket.priority,
+            ticket.status,
+            station_number,
+            station_name,
+            station_id,
+            station_address,
+            station_operator,
+            partner,
+            ticket.port_type or "",
+            ticket.vehicle or "",
+            f"{ticket.assigned_user.first_name} {ticket.assigned_user.last_name}" if ticket.assigned_user else "",
+            ticket.assigned_department.name if ticket.assigned_department else "",
+            f"{ticket.created_by.first_name} {ticket.created_by.last_name}",
+            ticket.created_at.strftime("%d.%m.%Y %H:%M") if ticket.created_at else "",
+            ticket.updated_at.strftime("%d.%m.%Y %H:%M") if ticket.updated_at else "",
+        ]
+        
+        for col_num, value in enumerate(row_data, 1):
+            ws.cell(row=row_num, column=col_num, value=value)
+
+    # Adjust column widths
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+
+    # Save to temporary file
+    with NamedTemporaryFile(mode='wb', suffix='.xlsx', delete=False) as tmp:
+        wb.save(tmp.name)
+        tmp_path = tmp.name
+
+    # Return file
+    filename = f"tickets_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    
+    return FileResponse(
+        path=tmp_path,
+        filename=filename,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        background=None,  # File will be deleted after response
+    )

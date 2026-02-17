@@ -329,4 +329,12 @@ export const ticketsApi = {
   deleteAttachment: async (ticketId: number, attachmentId: number): Promise<void> => {
     await client.delete(`/tickets/${ticketId}/attachments/${attachmentId}`)
   },
+
+  export: async (params?: TicketListParams): Promise<Blob> => {
+    const response = await client.get('/tickets/export', {
+      params,
+      responseType: 'blob',
+    })
+    return response.data
+  },
 }

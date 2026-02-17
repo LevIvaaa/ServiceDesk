@@ -194,6 +194,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
       label: t('menu.settings'),
       visible: hasPermission('settings.view') || user?.is_admin,
     },
+    {
+      key: '/help',
+      icon: <QuestionCircleOutlined />,
+      label: 'Довідка',
+      visible: true, // Visible for everyone
+    },
   ]
     .filter((item) => item.visible !== false)
     .map(({ visible, ...item }) => item)

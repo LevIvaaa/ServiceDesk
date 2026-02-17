@@ -16,7 +16,7 @@ import {
   message,
   Modal,
 } from 'antd'
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ClearOutlined } from '@ant-design/icons'
+import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ClearOutlined, DownloadOutlined } from '@ant-design/icons'
 import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
@@ -146,6 +146,30 @@ export default function TicketsList() {
   const handleResetFilters = () => {
     setFilters({})
     setPage(1)
+  }
+
+  const handleExport = async () => {
+    try {
+      setLoading(true)
+      const blob = await ticketsApi.export(filters)
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `tickets_export_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      message.success('Експорт успішно завершено')
+    } catch (error) {
+      message.error('Помилка експорту')
+      console.error('Export error:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleTicketCreated = () => {
@@ -285,15 +309,24 @@ export default function TicketsList() {
           <Title level={2}>{t('title')}</Title>
         </Col>
         <Col>
-          {hasPermission('tickets.create') && (
+          <Space>
+            {hasPermission('tickets.create') && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setCreateModalOpen(true)}
+              >
+                {t('create')}
+              </Button>
+            )}
             <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setCreateModalOpen(true)}
+              icon={<DownloadOutlined />}
+              onClick={handleExport}
+              loading={loading}
             >
-              {t('create')}
+              Експорт
             </Button>
-          )}
+          </Space>
         </Col>
       </Row>
 
