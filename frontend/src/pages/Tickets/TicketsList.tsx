@@ -151,7 +151,19 @@ export default function TicketsList() {
   const handleExport = async () => {
     try {
       setLoading(true)
-      const blob = await ticketsApi.export(filters)
+      
+      // Filter only supported export parameters
+      const exportParams = {
+        status: filters.status,
+        priority: filters.priority,
+        category: filters.category,
+        assigned_user_id: filters.assigned_user_id,
+        assigned_department_id: filters.assigned_department_id,
+        created_by_id: filters.created_by_id,
+        search: filters.search,
+      }
+      
+      const blob = await ticketsApi.export(exportParams)
       
       // Create download link
       const url = window.URL.createObjectURL(blob)
