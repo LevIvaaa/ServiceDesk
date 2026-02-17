@@ -699,6 +699,10 @@ export default function IncomingQueue() {
         }}
         scroll={{ x: 1450 }}
         rowClassName={(record) => record.status === 'new' ? 'new-ticket-row' : ''}
+        onRow={(record) => ({
+          onClick: () => navigate(`/tickets/${record.id}`),
+          style: { cursor: 'pointer' }
+        })}
       />
 
       <Modal

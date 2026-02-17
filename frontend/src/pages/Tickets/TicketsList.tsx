@@ -436,6 +436,10 @@ export default function TicketsList() {
           onChange: setPage,
         }}
         scroll={{ x: 1200 }}
+        onRow={(record) => ({
+          onClick: () => navigate(`/tickets/${record.id}`),
+          style: { cursor: 'pointer' }
+        })}
       />
 
       {/* Create Ticket Modal */}

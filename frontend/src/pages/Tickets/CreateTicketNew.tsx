@@ -258,6 +258,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
         incident_type: values.incident_type,
         station_id: values.station_id,
         port_type: values.port_type,
+        vehicle: values.vehicle,  // Car model
         reporter_name: values.reporter_name,
         reporter_phone: values.reporter_phone,
         contact_source: values.contact_source,
@@ -520,6 +521,29 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                     </Select.Option>
                   ))}
                 </Select>
+              </Form.Item>
+
+              {/* Модель авто */}
+              <Form.Item
+                label={<span style={{ fontSize: 13 }}>Модель авто</span>}
+                name="vehicle"
+                style={{ marginBottom: 14 }}
+              >
+                <Input 
+                  placeholder="Введіть модель авто..." 
+                  style={{ fontSize: 13 }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      setTimeout(() => {
+                        const nameInput = document.querySelector('[id*="reporter_name"]') as HTMLElement
+                        if (nameInput) {
+                          nameInput.focus()
+                        }
+                      }, 100)
+                    }
+                  }}
+                />
               </Form.Item>
 
               {/* Контактна інформація */}

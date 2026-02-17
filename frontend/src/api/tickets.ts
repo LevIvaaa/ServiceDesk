@@ -63,6 +63,7 @@ export interface Ticket {
   port_type: string | null
   contact_source: string | null
   station_logs: string | null
+  vehicle: string | null  // Car model
 }
 
 export interface TicketComment {

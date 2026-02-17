@@ -921,6 +921,11 @@ export default function TicketDetail() {
                   {ticket.port_type}
                 </Descriptions.Item>
               )}
+              {ticket.vehicle && (
+                <Descriptions.Item label="Модель авто">
+                  {ticket.vehicle}
+                </Descriptions.Item>
+              )}
               <Descriptions.Item label={t('fields.assignedUser')}>
                 {ticket.assigned_user
                   ? `${ticket.assigned_user.first_name} ${ticket.assigned_user.last_name}`
