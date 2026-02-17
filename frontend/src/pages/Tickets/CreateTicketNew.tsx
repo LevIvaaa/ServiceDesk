@@ -82,6 +82,41 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   const navigate = useNavigate()
   const { i18n } = useTranslation('tickets')
 
+  // Load saved form data from localStorage on mount
+  useEffect(() => {
+    const savedFormData = localStorage.getItem('ticketFormDraft')
+    if (savedFormData) {
+      try {
+        const parsedData = JSON.parse(savedFormData)
+        form.setFieldsValue(parsedData)
+        if (parsedData.station_logs) {
+          setStationLogs(parsedData.station_logs)
+        }
+        if (parsedData.station_id) {
+          // Reload station data if station was selected
+          handleStationSelect(parsedData.station_id)
+        }
+      } catch (error) {
+        console.error('Failed to load saved form data:', error)
+      }
+    }
+  }, [])
+
+  // Save form data to localStorage on every change
+  const saveFormDraft = () => {
+    const formValues = form.getFieldsValue()
+    const draftData = {
+      ...formValues,
+      station_logs: stationLogs,
+    }
+    localStorage.setItem('ticketFormDraft', JSON.stringify(draftData))
+  }
+
+  // Clear draft after successful submission
+  const clearFormDraft = () => {
+    localStorage.removeItem('ticketFormDraft')
+  }
+
   // Load departments
   const loadDepartments = async () => {
     try {
@@ -242,6 +277,9 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
         }
       }
 
+      // Clear draft after successful creation
+      clearFormDraft()
+
       message.success('Тікет успішно створено')
       if (onSuccess) {
         onSuccess()
@@ -322,6 +360,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
           layout="vertical"
           onFinish={handleSubmit}
           requiredMark={false}
+          onValuesChange={saveFormDraft}
         >
           <Row gutter={20}>
             {/* LEFT COLUMN */}
@@ -338,6 +377,20 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   showSearch
                   optionFilterProp="children"
                   style={{ fontSize: 13 }}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      // Закриваємо dropdown і переходимо на наступне поле
+                      setTimeout(() => {
+                        const departmentSelect = document.querySelector('[id*="assigned_department_id"]') as HTMLElement
+                        if (departmentSelect) {
+                          departmentSelect.focus()
+                          departmentSelect.click()
+                        }
+                      }, 100)
+                    }
+                  }}
                 >
                   {INCIDENT_TYPES.map((type) => (
                     <Select.Option key={type} value={type}>
@@ -356,6 +409,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   value="Автогенерація" 
                   disabled 
                   style={{ color: '#1890ff', fontStyle: 'italic', fontSize: 13 }}
+                  tabIndex={-1}
                 />
               </Form.Item>
 
@@ -372,6 +426,18 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   showSearch
                   optionFilterProp="children"
                   style={{ fontSize: 13 }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      setTimeout(() => {
+                        const stationSelect = document.querySelector('[id*="station_id"]') as HTMLElement
+                        if (stationSelect) {
+                          stationSelect.focus()
+                          stationSelect.click()
+                        }
+                      }, 100)
+                    }
+                  }}
                 >
                   {departments.map((dept) => (
                     <Select.Option key={dept.id} value={dept.id}>
@@ -397,6 +463,18 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   filterOption={false}
                   notFoundContent={stationSearchLoading ? <Spin size="small" /> : null}
                   style={{ fontSize: 13 }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      setTimeout(() => {
+                        const portSelect = document.querySelector('[id*="port_type"]') as HTMLElement
+                        if (portSelect) {
+                          portSelect.focus()
+                          portSelect.click()
+                        }
+                      }, 100)
+                    }
+                  }}
                 >
                   {stationOptions.map((option) => (
                     <Select.Option key={option.value} value={option.value}>
@@ -419,6 +497,17 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   disabled={!selectedStation || stationPorts.length === 0}
                   notFoundContent={selectedStation && stationPorts.length === 0 ? "У станції немає портів" : null}
                   style={{ fontSize: 13 }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      setTimeout(() => {
+                        const nameInput = document.querySelector('[id*="reporter_name"]') as HTMLElement
+                        if (nameInput) {
+                          nameInput.focus()
+                        }
+                      }, 100)
+                    }
+                  }}
                 >
                   {stationPorts.map((port) => (
                     <Select.Option 
@@ -509,15 +598,6 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                 />
               )}
 
-              {/* Авто */}
-              <Form.Item
-                label={<span style={{ fontSize: 13 }}>Авто</span>}
-                name="vehicle"
-                style={{ marginBottom: 14 }}
-              >
-                <Input placeholder="Марка, модель, номер..." style={{ fontSize: 13 }} />
-              </Form.Item>
-
               {/* Опис проблеми */}
               <div style={{ marginBottom: 14 }}>
                 <Text strong style={{ display: 'block', marginBottom: 12, fontSize: 14 }}>
@@ -563,7 +643,10 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                     rows={3}
                     placeholder="Вставте OCPP логи або текст..."
                     value={stationLogs}
-                    onChange={(e) => setStationLogs(e.target.value)}
+                    onChange={(e) => {
+                      setStationLogs(e.target.value)
+                      saveFormDraft()
+                    }}
                     style={{ fontSize: 13 }}
                   />
                   <div style={{ marginTop: 6 }}>
