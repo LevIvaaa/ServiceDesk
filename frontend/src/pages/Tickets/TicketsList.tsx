@@ -494,13 +494,13 @@ export default function TicketsList() {
         footer={null}
         width="90%"
         style={{ 
-          top: '5vh',
+          top: '2vh',
           maxWidth: '900px',
           paddingBottom: 0,
         }}
         styles={{ 
           body: { 
-            maxHeight: '85vh',
+            maxHeight: '92vh',
             overflowY: 'auto',
             padding: '0 !important',
             borderRadius: 0,
@@ -511,7 +511,7 @@ export default function TicketsList() {
             borderRadius: '15px',
             overflow: 'hidden',
             padding: 0,
-            maxHeight: '90vh',
+            maxHeight: '96vh',
           }
         }}
         className="hide-scrollbar"
