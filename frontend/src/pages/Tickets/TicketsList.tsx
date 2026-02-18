@@ -500,6 +500,8 @@ export default function TicketsList() {
             overflowY: 'auto',
             padding: '0 !important',
             borderRadius: 0,
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
           },
           content: {
             borderRadius: '15px',
@@ -507,6 +509,7 @@ export default function TicketsList() {
             padding: 0,
           }
         }}
+        className="hide-scrollbar"
         destroyOnHidden
         centered={false}
       >
