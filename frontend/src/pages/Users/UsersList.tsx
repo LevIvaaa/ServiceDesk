@@ -47,9 +47,16 @@ export default function UsersList() {
   const [form] = Form.useForm()
 
   const [isAdminChecked, setIsAdminChecked] = useState(false)
+  const [selectedRoles, setSelectedRoles] = useState<number[]>([])
 
   // Check if user is ticket handler (has assign but not create permission)
   const isTicketHandler = hasPermission('tickets.assign') && !hasPermission('tickets.create')
+
+  // Check if sender role is selected
+  const isSenderSelected = selectedRoles.some(roleId => {
+    const role = roles.find(r => r.id === roleId)
+    return role?.name === 'sender'
+  })
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -88,7 +95,14 @@ export default function UsersList() {
   const fetchRoles = async () => {
     try {
       const response = await rolesApi.list()
-      setRoles(response)
+      // Filter to only show sender and handler roles (admin is set via switch)
+      const validRoles = response.filter(r => ['sender', 'handler'].includes(r.name))
+      // Sort: sender first, then handler
+      validRoles.sort((a, b) => {
+        const order = { sender: 1, handler: 2 }
+        return (order[a.name as keyof typeof order] || 999) - (order[b.name as keyof typeof order] || 999)
+      })
+      setRoles(validRoles)
     } catch (error) {
       // Ignore
     }
@@ -107,6 +121,7 @@ export default function UsersList() {
     setEditingUser(null)
     form.resetFields()
     setIsAdminChecked(false)
+    setSelectedRoles([])
     setModalVisible(true)
   }
 
@@ -114,6 +129,7 @@ export default function UsersList() {
     setEditingUser(user)
     setIsAdminChecked(user.is_admin || false)
     const roleIds = (user.roles || []).map(r => r.id)
+    setSelectedRoles(roleIds)
     form.setFieldsValue({
       ...user,
       role_ids: roleIds,
@@ -380,16 +396,19 @@ export default function UsersList() {
               placeholder={t('placeholders.selectRoles')}
               options={roles.map(r => ({ value: r.id, label: t(`roles.${r.name}`) }))}
               disabled={isAdminChecked}
+              onChange={(value) => setSelectedRoles(value)}
             />
           </Form.Item>
 
-          <Form.Item name="department_id" label={t('fields.department')}>
-            <Select
-              allowClear
-              placeholder={t('placeholders.selectDepartment')}
-              options={departments.map(d => ({ value: d.id, label: d.name }))}
-            />
-          </Form.Item>
+          {!isSenderSelected && (
+            <Form.Item name="department_id" label={t('fields.department')}>
+              <Select
+                allowClear
+                placeholder={t('placeholders.selectDepartment')}
+                options={departments.map(d => ({ value: d.id, label: d.name }))}
+              />
+            </Form.Item>
+          )}
 
           <Row gutter={16}>
             <Col span={12}>
@@ -407,6 +426,7 @@ export default function UsersList() {
                     if (checked) {
                       // Clear role selection when admin is enabled
                       form.setFieldsValue({ role_ids: [] })
+                      setSelectedRoles([])
                     }
                   }}
                 />
