@@ -492,12 +492,13 @@ export default function TicketsList() {
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
         footer={null}
-        width={900}
-        style={{ top: 20 }}
+        width="min(90vw, 900px)"
+        style={{ top: '5vh', maxHeight: '90vh' }}
         styles={{ 
           body: { 
-            maxHeight: 'calc(100vh - 100px)', 
+            maxHeight: '80vh',
             overflowY: 'auto',
+            overflowX: 'hidden',
             padding: '0 !important',
             borderRadius: 0,
             scrollbarWidth: 'none',
@@ -507,6 +508,7 @@ export default function TicketsList() {
             borderRadius: '15px',
             overflow: 'hidden',
             padding: 0,
+            maxHeight: '90vh',
           }
         }}
         className="hide-scrollbar"
