@@ -71,22 +71,3 @@ body {
 .ticket-status-pending { color: #faad14; }
 .ticket-status-resolved { color: #52c41a; }
 .ticket-status-closed { color: #8c8c8c; }
-
-/* Hide scrollbar but keep functionality */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.ant-modal-body::-webkit-scrollbar {
-  display: none;
-}
-
-.ant-modal-body {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
