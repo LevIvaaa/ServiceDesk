@@ -497,7 +497,7 @@ export default function TicketsList() {
         styles={{ 
           body: { 
             maxHeight: 'calc(100vh - 100px)', 
-            overflow: 'hidden',
+            overflowY: 'auto',
             padding: '0 !important',
             borderRadius: 0,
           },
