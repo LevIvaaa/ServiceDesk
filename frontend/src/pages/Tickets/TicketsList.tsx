@@ -512,6 +512,8 @@ export default function TicketsList() {
         className="hide-scrollbar"
         destroyOnHidden
         centered={false}
+        maskClosable={false}
+        keyboard={false}
       >
         <CreateTicketNew onSuccess={handleTicketCreated} isModal={true} />
       </Modal>
