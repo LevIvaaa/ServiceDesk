@@ -317,7 +317,7 @@ async def delete_user(
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("users.delete"))],
 ):
-    """Deactivate a user (soft delete)."""
+    """Permanently delete a user."""
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
 
@@ -333,11 +333,11 @@ async def delete_user(
             detail="Cannot delete yourself",
         )
 
-    # Deactivate the user instead of deleting
-    user.is_active = False
+    # Permanently delete the user
+    await db.delete(user)
     await db.commit()
 
-    return {"message": "User deactivated successfully"}
+    return {"message": "User deleted successfully"}
 
 
 @router.put("/{user_id}/password")
