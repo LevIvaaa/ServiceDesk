@@ -513,7 +513,6 @@ export default function TicketsList() {
         destroyOnHidden
         centered={false}
         maskClosable={false}
-        keyboard={false}
       >
         <CreateTicketNew onSuccess={handleTicketCreated} isModal={true} />
       </Modal>
