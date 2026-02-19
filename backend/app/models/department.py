@@ -20,7 +20,7 @@ class Department(Base):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     description_en: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     head_user_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=True
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(

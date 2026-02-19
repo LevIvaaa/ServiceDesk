@@ -142,8 +142,10 @@ export default function UsersList() {
       await usersApi.delete(id)
       message.success(t('messages.deleted'))
       fetchUsers()
-    } catch (error) {
-      message.error(t('messages.deleteError'))
+    } catch (error: any) {
+      console.error('Delete user error:', error)
+      const errorMsg = error.response?.data?.detail || error.message || t('messages.deleteError')
+      message.error(errorMsg)
     }
   }
 

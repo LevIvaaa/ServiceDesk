@@ -148,10 +148,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
       visible: hasPermission('tickets.create') && !user?.is_admin, // Only for senders, not admins
     },
     {
-      key: hasPermission('tickets.assign') && !hasPermission('tickets.create') ? '/tickets/queue' : '/tickets',
+      key: user?.is_admin ? '/tickets' : (hasPermission('tickets.assign') && !hasPermission('tickets.create') ? '/tickets/queue' : '/tickets'),
       icon: <FileTextOutlined />,
       label: t('menu.tickets'),
-      visible: !user?.is_admin, // Only for senders and handlers, not admins
+      visible: true, // Visible for everyone including admins
     },
     {
       key: '/stations',

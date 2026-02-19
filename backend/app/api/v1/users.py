@@ -317,7 +317,12 @@ async def delete_user(
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("users.delete"))],
 ):
-    """Permanently delete a user."""
+    """Permanently delete a user by cleaning all references first via raw SQL."""
+    from sqlalchemy import text
+    import logging
+    logger = logging.getLogger(__name__)
+
+    # Check user exists
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
 
@@ -333,11 +338,41 @@ async def delete_user(
             detail="Cannot delete yourself",
         )
 
-    # Permanently delete the user
-    await db.delete(user)
-    await db.commit()
+    try:
+        # Expunge user from session to avoid ORM conflicts
+        await db.execute(text("SET CONSTRAINTS ALL DEFERRED"))
 
-    return {"message": "User deleted successfully"}
+        # 1. SET NULL on all referencing columns
+        await db.execute(text("UPDATE tickets SET assigned_user_id = NULL WHERE assigned_user_id = :uid"), {"uid": user_id})
+        await db.execute(text("UPDATE tickets SET created_by_id = NULL WHERE created_by_id = :uid"), {"uid": user_id})
+        await db.execute(text("UPDATE ticket_comments SET user_id = NULL WHERE user_id = :uid"), {"uid": user_id})
+        await db.execute(text("UPDATE ticket_attachments SET uploaded_by_id = NULL WHERE uploaded_by_id = :uid"), {"uid": user_id})
+        await db.execute(text("UPDATE ticket_history SET user_id = NULL WHERE user_id = :uid"), {"uid": user_id})
+        await db.execute(text("UPDATE audit_logs SET user_id = NULL WHERE user_id = :uid"), {"uid": user_id})
+        await db.execute(text("UPDATE departments SET head_user_id = NULL WHERE head_user_id = :uid"), {"uid": user_id})
+        await db.execute(text("UPDATE knowledge_articles SET author_id = NULL WHERE author_id = :uid"), {"uid": user_id})
+        await db.execute(text("UPDATE knowledge_articles SET last_editor_id = NULL WHERE last_editor_id = :uid"), {"uid": user_id})
+        await db.execute(text("UPDATE knowledge_article_versions SET editor_id = NULL WHERE editor_id = :uid"), {"uid": user_id})
+
+        # 2. CASCADE deletes
+        await db.execute(text("DELETE FROM notifications WHERE user_id = :uid"), {"uid": user_id})
+        await db.execute(text("DELETE FROM user_notification_settings WHERE user_id = :uid"), {"uid": user_id})
+        await db.execute(text("DELETE FROM user_roles WHERE user_id = :uid"), {"uid": user_id})
+
+        # 3. Delete the user
+        await db.execute(text("DELETE FROM users WHERE id = :uid"), {"uid": user_id})
+
+        await db.commit()
+        logger.info(f"Successfully deleted user {user_id}")
+        return {"message": "User deleted successfully"}
+
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error deleting user {user_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete user: {str(e)}",
+        )
 
 
 @router.put("/{user_id}/password")

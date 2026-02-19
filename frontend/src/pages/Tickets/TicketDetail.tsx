@@ -795,7 +795,28 @@ export default function TicketDetail() {
               </Space>
             }
           >
-            <Title level={5}>{ticket.title}</Title>
+            {user?.is_admin ? (
+              <Title
+                level={5}
+                editable={{
+                  onChange: async (newTitle: string) => {
+                    if (!id || !ticket || !newTitle.trim()) return
+                    try {
+                      await ticketsApi.update(parseInt(id), { title: newTitle })
+                      setTicket({ ...ticket, title: newTitle })
+                      message.success(t('messages.updated', 'Заголовок оновлено'))
+                    } catch (error) {
+                      message.error(t('messages.updateError', 'Помилка оновлення'))
+                    }
+                  },
+                  tooltip: t('actions.editTitle', 'Редагувати заголовок'),
+                }}
+              >
+                {ticket.title}
+              </Title>
+            ) : (
+              <Title level={5}>{ticket.title}</Title>
+            )}
             <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{ticket.description}</Paragraph>
 
             <Divider />
