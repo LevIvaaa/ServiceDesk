@@ -1,8 +1,8 @@
 """set null on user delete
 
-Revision ID: 013
-Revises: 012
-Create Date: 2026-02-18 16:10:00.000000
+Revision ID: 014
+Revises: 013
+Create Date: 2026-02-19 15:42:00.000000
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '013'
-down_revision = '012'
+revision = '014'
+down_revision = '013'
 branch_labels = None
 depends_on = None
 
