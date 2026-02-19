@@ -82,6 +82,51 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   const navigate = useNavigate()
   const { i18n } = useTranslation('tickets')
 
+  // Auto focus on first field when modal opens
+  useEffect(() => {
+    if (isModal) {
+      setTimeout(() => {
+        const firstInput = document.querySelector('[tabindex="1"]') as HTMLElement
+        if (firstInput) {
+          firstInput.focus()
+        }
+      }, 100)
+    }
+  }, [isModal])
+
+  // Trap focus inside modal - make tab navigation cyclic
+  useEffect(() => {
+    if (!isModal) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+
+      const focusableElements = document.querySelectorAll(
+        '[tabindex="1"], [tabindex="2"], [tabindex="3"], [tabindex="4"], [tabindex="5"], [tabindex="6"], [tabindex="7"], [tabindex="8"], [tabindex="9"], [tabindex="10"], [tabindex="11"], [tabindex="12"], [tabindex="13"]'
+      )
+      
+      if (focusableElements.length === 0) return
+
+      const firstElement = focusableElements[0] as HTMLElement
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+      const activeElement = document.activeElement as HTMLElement
+
+      // If shift+tab on first element, go to last
+      if (e.shiftKey && activeElement === firstElement) {
+        e.preventDefault()
+        lastElement.focus()
+      }
+      // If tab on last element, go to first
+      else if (!e.shiftKey && activeElement === lastElement) {
+        e.preventDefault()
+        firstElement.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isModal])
+
   // Load saved form data from localStorage on mount
   useEffect(() => {
     const savedFormData = localStorage.getItem('ticketFormDraft')
@@ -378,19 +423,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   optionFilterProp="children"
                   style={{ fontSize: 13 }}
                   autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      // Закриваємо dropdown і переходимо на наступне поле
-                      setTimeout(() => {
-                        const departmentSelect = document.querySelector('[id*="assigned_department_id"]') as HTMLElement
-                        if (departmentSelect) {
-                          departmentSelect.focus()
-                          departmentSelect.click()
-                        }
-                      }, 100)
-                    }
-                  }}
+                  tabIndex={1}
                 >
                   {INCIDENT_TYPES.map((type) => (
                     <Select.Option key={type} value={type}>
@@ -426,18 +459,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   showSearch
                   optionFilterProp="children"
                   style={{ fontSize: 13 }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      setTimeout(() => {
-                        const stationSelect = document.querySelector('[id*="station_id"]') as HTMLElement
-                        if (stationSelect) {
-                          stationSelect.focus()
-                          stationSelect.click()
-                        }
-                      }, 100)
-                    }
-                  }}
+                  tabIndex={2}
                 >
                   {departments.map((dept) => (
                     <Select.Option key={dept.id} value={dept.id}>
@@ -463,18 +485,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   filterOption={false}
                   notFoundContent={stationSearchLoading ? <Spin size="small" /> : null}
                   style={{ fontSize: 13 }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      setTimeout(() => {
-                        const portSelect = document.querySelector('[id*="port_type"]') as HTMLElement
-                        if (portSelect) {
-                          portSelect.focus()
-                          portSelect.click()
-                        }
-                      }, 100)
-                    }
-                  }}
+                  tabIndex={3}
                 >
                   {stationOptions.map((option) => (
                     <Select.Option key={option.value} value={option.value}>
@@ -497,17 +508,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   disabled={!selectedStation || stationPorts.length === 0}
                   notFoundContent={selectedStation && stationPorts.length === 0 ? "У станції немає портів" : null}
                   style={{ fontSize: 13 }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      setTimeout(() => {
-                        const nameInput = document.querySelector('[id*="reporter_name"]') as HTMLElement
-                        if (nameInput) {
-                          nameInput.focus()
-                        }
-                      }, 100)
-                    }
-                  }}
+                  tabIndex={4}
                 >
                   {stationPorts.map((port) => (
                     <Select.Option 
@@ -532,17 +533,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                 <Input 
                   placeholder="Введіть модель авто..." 
                   style={{ fontSize: 13 }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      setTimeout(() => {
-                        const nameInput = document.querySelector('[id*="reporter_name"]') as HTMLElement
-                        if (nameInput) {
-                          nameInput.focus()
-                        }
-                      }, 100)
-                    }
-                  }}
+                  tabIndex={5}
                 />
               </Form.Item>
 
@@ -557,7 +548,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   name="reporter_name"
                   style={{ marginBottom: 12 }}
                 >
-                  <Input placeholder="---" style={{ fontSize: 13 }} />
+                  <Input placeholder="---" style={{ fontSize: 13 }} tabIndex={6} />
                 </Form.Item>
 
                 <Form.Item
@@ -565,7 +556,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   name="reporter_phone"
                   style={{ marginBottom: 12 }}
                 >
-                  <Input placeholder="---" style={{ fontSize: 13 }} />
+                  <Input placeholder="---" style={{ fontSize: 13 }} tabIndex={7} />
                 </Form.Item>
 
                 <Form.Item
@@ -573,7 +564,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   name="contact_source"
                   style={{ marginBottom: 0 }}
                 >
-                  <Select placeholder="---" style={{ fontSize: 13 }}>
+                  <Select placeholder="---" style={{ fontSize: 13 }} tabIndex={8}>
                     {CONTACT_SOURCES.map((source) => (
                       <Select.Option key={source.value} value={source.value}>
                         {source.label}
@@ -642,6 +633,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                     rows={3}
                     placeholder="Детальний опис інциденту..."
                     style={{ fontSize: 13 }}
+                    tabIndex={9}
                   />
                 </Form.Item>
 
@@ -653,7 +645,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                     beforeUpload={() => false}
                     multiple
                   >
-                    <Button icon={<UploadOutlined />} size="small">
+                    <Button icon={<UploadOutlined />} size="small" tabIndex={10}>
                       Додати файли
                     </Button>
                   </Upload>
@@ -676,6 +668,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                       saveFormDraft()
                     }}
                     style={{ fontSize: 13 }}
+                    tabIndex={11}
                   />
                   <div style={{ marginTop: 6 }}>
                     <Button
@@ -685,6 +678,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                       disabled={!stationLogs.trim()}
                       size="small"
                       style={{ backgroundColor: '#f0f5ff', borderColor: '#adc6ff', color: '#2f54eb' }}
+                      tabIndex={12}
                     >
                       Розпізнати AI
                     </Button>
@@ -704,6 +698,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                         color: '#000',
                         fontSize: 12
                       }}
+                      tabIndex={-1}
                     />
                   </Form.Item>
                 )}
@@ -713,7 +708,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
               <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
                 <Space>
                   {!isModal && (
-                    <Button onClick={() => navigate('/tickets')} size="middle">
+                    <Button onClick={() => navigate('/tickets')} size="middle" tabIndex={14}>
                       Скасувати
                     </Button>
                   )}
@@ -722,6 +717,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                     htmlType="submit" 
                     loading={loading}
                     size="middle"
+                    tabIndex={13}
                   >
                     Зберегти
                   </Button>

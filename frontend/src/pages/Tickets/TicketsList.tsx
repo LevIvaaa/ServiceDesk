@@ -492,13 +492,12 @@ export default function TicketsList() {
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
         footer={null}
-        width="min(90vw, 900px)"
-        style={{ top: '5vh', maxHeight: '90vh' }}
+        width={900}
+        style={{ top: 20 }}
         styles={{ 
           body: { 
-            maxHeight: '80vh',
-            overflowY: 'auto',
-            overflowX: 'hidden',
+            maxHeight: 'calc(100vh - 100px)', 
+            overflow: 'auto',
             padding: '0 !important',
             borderRadius: 0,
             scrollbarWidth: 'none',
@@ -508,13 +507,23 @@ export default function TicketsList() {
             borderRadius: '15px',
             overflow: 'hidden',
             padding: 0,
-            maxHeight: '90vh',
           }
         }}
         className="hide-scrollbar"
         destroyOnHidden
         centered={false}
         maskClosable={false}
+        keyboard={true}
+        modalRender={(modal) => {
+          // Set tabIndex=-1 on close button after render
+          setTimeout(() => {
+            const closeBtn = document.querySelector('.ant-modal-close') as HTMLElement
+            if (closeBtn) {
+              closeBtn.setAttribute('tabindex', '-1')
+            }
+          }, 0)
+          return modal
+        }}
       >
         <CreateTicketNew onSuccess={handleTicketCreated} isModal={true} />
       </Modal>

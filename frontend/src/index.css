@@ -82,11 +82,43 @@ body {
   scrollbar-width: none;
 }
 
-.ant-modal-body::-webkit-scrollbar {
-  display: none;
+/* Custom blue scrollbar for modal */
+.modal-blue-scrollbar .ant-modal-body::-webkit-scrollbar {
+  width: 6px;
 }
 
-.ant-modal-body {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.modal-blue-scrollbar .ant-modal-body::-webkit-scrollbar-track {
+  background: #f0f5ff;
+  border-radius: 3px;
 }
+
+.modal-blue-scrollbar .ant-modal-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #096dd9 0%, #1890ff 100%);
+  border-radius: 3px;
+}
+
+.modal-blue-scrollbar .ant-modal-body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #1890ff 0%, #40a9ff 100%);
+}
+
+/* Firefox scrollbar */
+.modal-blue-scrollbar .ant-modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: #1890ff #f0f5ff;
+}
+
+/* Exclude modal close button from tab navigation */
+.ant-modal-close {
+  outline: none !important;
+}
+
+.ant-modal-close:focus {
+  outline: none !important;
+}
+
+.ant-modal-close-x {
+  outline: none !important;
+}
+
+
+
