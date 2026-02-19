@@ -78,6 +78,8 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   const [stationLogs, setStationLogs] = useState('')
   const [analyzingLog, setAnalyzingLog] = useState(false)
   const [aiAnalysis, setAiAnalysis] = useState('')
+  const [descriptionImages, setDescriptionImages] = useState<File[]>([])
+  const [descriptionText, setDescriptionText] = useState('')
   
   const navigate = useNavigate()
   const { i18n } = useTranslation('tickets')
@@ -137,6 +139,9 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
         if (parsedData.station_logs) {
           setStationLogs(parsedData.station_logs)
         }
+        if (parsedData.description) {
+          setDescriptionText(parsedData.description)
+        }
         if (parsedData.station_id) {
           // Reload station data if station was selected
           handleStationSelect(parsedData.station_id)
@@ -153,6 +158,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
     const draftData = {
       ...formValues,
       station_logs: stationLogs,
+      description: descriptionText,
     }
     localStorage.setItem('ticketFormDraft', JSON.stringify(draftData))
   }
@@ -160,6 +166,8 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   // Clear draft after successful submission
   const clearFormDraft = () => {
     localStorage.removeItem('ticketFormDraft')
+    setDescriptionImages([])
+    setDescriptionText('')
   }
 
   // Load departments
@@ -274,6 +282,73 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
     }
   }
 
+  // Handle paste event for description field (screenshots)
+  const handleDescriptionPaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      
+      // Check if it's an image
+      if (item.type.indexOf('image') !== -1) {
+        e.preventDefault()
+        
+        const file = item.getAsFile()
+        if (!file) continue
+
+        // Generate a unique filename
+        const timestamp = Date.now()
+        const fileName = `screenshot-${timestamp}.png`
+        const renamedFile = new File([file], fileName, { type: file.type })
+
+        // Add to description images
+        setDescriptionImages(prev => [...prev, renamedFile])
+        
+        // Add placeholder text in description
+        const textarea = e.currentTarget
+        const cursorPos = textarea.selectionStart
+        const textBefore = descriptionText.substring(0, cursorPos)
+        const textAfter = descriptionText.substring(cursorPos)
+        const newText = `${textBefore}\n[Скріншот: ${fileName}]\n${textAfter}`
+        
+        setDescriptionText(newText)
+        form.setFieldValue('description', newText)
+        
+        message.success('Скріншот додано')
+      }
+    }
+  }
+
+  // Handle drag and drop for description field
+  const handleDescriptionDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
+    e.preventDefault()
+    
+    const files = e.dataTransfer?.files
+    if (!files || files.length === 0) return
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      
+      // Check if it's an image
+      if (file.type.indexOf('image') !== -1) {
+        // Add to description images
+        setDescriptionImages(prev => [...prev, file])
+        
+        // Add placeholder text in description
+        const newText = `${descriptionText}\n[Скріншот: ${file.name}]\n`
+        setDescriptionText(newText)
+        form.setFieldValue('description', newText)
+        
+        message.success(`Зображення ${file.name} додано`)
+      }
+    }
+  }
+
+  const handleDescriptionDragOver = (e: React.DragEvent<HTMLTextAreaElement>) => {
+    e.preventDefault()
+  }
+
   // Handle form submit
   const handleSubmit = async (values: any) => {
     try {
@@ -297,7 +372,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
       const ticketData: any = {
         title: values.incident_type || 'Новий інцидент',
-        description: values.description,
+        description: descriptionText || values.description,
         category: category,
         priority: 'medium',
         incident_type: values.incident_type,
@@ -313,12 +388,19 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
       const ticket = await ticketsApi.create(ticketData)
 
-      // Upload attachments if any
+      // Upload attachments from file picker
       if (attachmentFiles.length > 0) {
         for (const file of attachmentFiles) {
           if (file.originFileObj) {
             await ticketsApi.uploadAttachment(ticket.id, file.originFileObj)
           }
+        }
+      }
+
+      // Upload images from description (pasted screenshots)
+      if (descriptionImages.length > 0) {
+        for (const imageFile of descriptionImages) {
+          await ticketsApi.uploadAttachment(ticket.id, imageFile)
         }
       }
 
@@ -623,6 +705,14 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   Опис проблеми
                 </Text>
 
+                <Alert
+                  message="💡 Підказка: Ви можете вставити скріншоти прямо в опис за допомогою Ctrl+V або перетягнути зображення"
+                  type="info"
+                  showIcon
+                  closable
+                  style={{ marginBottom: 12, fontSize: 12 }}
+                />
+
                 <Form.Item
                   label={<span style={{ fontSize: 13 }}>Опис</span>}
                   name="description"
@@ -631,14 +721,63 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                 >
                   <TextArea
                     rows={3}
-                    placeholder="Детальний опис інциденту..."
+                    placeholder="Детальний опис інциденту... (Ctrl+V для вставки скріншотів)"
                     style={{ fontSize: 13 }}
                     tabIndex={9}
+                    value={descriptionText}
+                    onChange={(e) => {
+                      setDescriptionText(e.target.value)
+                      saveFormDraft()
+                    }}
+                    onPaste={handleDescriptionPaste}
+                    onDrop={handleDescriptionDrop}
+                    onDragOver={handleDescriptionDragOver}
                   />
                 </Form.Item>
 
+                {/* Show pasted images preview */}
+                {descriptionImages.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
+                      Вставлені зображення ({descriptionImages.length}):
+                    </Text>
+                    <Space wrap size={8}>
+                      {descriptionImages.map((img, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            position: 'relative',
+                            display: 'inline-block',
+                            padding: 4,
+                            border: '1px solid #d9d9d9',
+                            borderRadius: 4,
+                            backgroundColor: '#fafafa',
+                          }}
+                        >
+                          <Text style={{ fontSize: 11 }}>📷 {img.name}</Text>
+                          <Button
+                            type="text"
+                            size="small"
+                            danger
+                            style={{ marginLeft: 4, padding: '0 4px', height: 20 }}
+                            onClick={() => {
+                              setDescriptionImages(prev => prev.filter((_, i) => i !== idx))
+                              // Remove placeholder from description
+                              const newText = descriptionText.replace(`[Скріншот: ${img.name}]`, '')
+                              setDescriptionText(newText)
+                              form.setFieldValue('description', newText)
+                            }}
+                          >
+                            ✕
+                          </Button>
+                        </div>
+                      ))}
+                    </Space>
+                  </div>
+                )}
+
                 {/* Вкладення */}
-                <Form.Item label={<span style={{ fontSize: 13 }}>Вкладення</span>} style={{ marginBottom: 0 }}>
+                <Form.Item label={<span style={{ fontSize: 13 }}>Додаткові файли</span>} style={{ marginBottom: 0 }}>
                   <Upload
                     fileList={attachmentFiles}
                     onChange={({ fileList }) => setAttachmentFiles(fileList)}
