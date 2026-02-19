@@ -101,8 +101,8 @@ class TicketCommentCreate(BaseModel):
 class TicketCommentResponse(BaseModel):
     id: int
     ticket_id: int
-    user_id: int
-    user: UserShort
+    user_id: Optional[int]
+    user: Optional[UserShort]
     content: str
     is_internal: bool
     created_at: datetime
@@ -114,8 +114,8 @@ class TicketCommentResponse(BaseModel):
 class TicketHistoryResponse(BaseModel):
     id: int
     ticket_id: int
-    user_id: int
-    user: UserShort
+    user_id: Optional[int]
+    user: Optional[UserShort]
     action: str
     old_value: Optional[str]
     new_value: Optional[str]
@@ -130,7 +130,7 @@ class TicketAttachmentResponse(BaseModel):
     filename: str
     file_size: int
     mime_type: str
-    uploaded_by: UserShort
+    uploaded_by: Optional[UserShort]
     uploaded_at: datetime
 
     class Config:
@@ -169,8 +169,8 @@ class TicketResponse(BaseModel):
     assigned_user: Optional[UserShort]
     assigned_department_id: Optional[int]
     assigned_department: Optional[DepartmentShort]
-    created_by_id: int
-    created_by: UserShort
+    created_by_id: Optional[int]
+    created_by: Optional[UserShort]
     created_at: datetime
     updated_at: datetime
     resolved_at: Optional[datetime]
@@ -201,7 +201,7 @@ class TicketListResponse(BaseModel):
     station: Optional[StationShort]
     assigned_user: Optional[UserShort]
     assigned_department: Optional[DepartmentShort]
-    created_by: UserShort
+    created_by: Optional[UserShort]
     created_at: datetime
     sla_due_date: Optional[datetime]
     sla_breached: bool

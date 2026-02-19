@@ -27,11 +27,11 @@ class KnowledgeArticle(Base):
     station_models: Mapped[Optional[list[str]]] = mapped_column(ARRAY(String(100)), nullable=True)
 
     # Metadata
-    author_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
+    author_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     last_editor_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=True
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -51,7 +51,7 @@ class KnowledgeArticle(Base):
     qdrant_id: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
     # Relationships
-    author: Mapped["User"] = relationship("User", foreign_keys=[author_id])
+    author: Mapped[Optional["User"]] = relationship("User", foreign_keys=[author_id])
     last_editor: Mapped[Optional["User"]] = relationship("User", foreign_keys=[last_editor_id])
     versions: Mapped[list["KnowledgeArticleVersion"]] = relationship(
         "KnowledgeArticleVersion", back_populates="article", cascade="all, delete-orphan"
@@ -68,8 +68,8 @@ class KnowledgeArticleVersion(Base):
     version: Mapped[int] = mapped_column(Integer, nullable=False)
     title: Mapped[str] = mapped_column(String(300), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    editor_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
+    editor_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     change_summary: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -78,4 +78,4 @@ class KnowledgeArticleVersion(Base):
 
     # Relationships
     article: Mapped["KnowledgeArticle"] = relationship("KnowledgeArticle", back_populates="versions")
-    editor: Mapped["User"] = relationship("User")
+    editor: Mapped[Optional["User"]] = relationship("User")
