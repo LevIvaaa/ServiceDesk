@@ -47,15 +47,15 @@ class Ticket(Base):
 
     # Assignment
     assigned_user_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=True
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     assigned_department_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("departments.id"), nullable=True
     )
 
     # Author and dates
-    created_by_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
+    created_by_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -87,7 +87,7 @@ class Ticket(Base):
     assigned_department: Mapped[Optional["Department"]] = relationship(
         "Department", back_populates="assigned_tickets"
     )
-    created_by: Mapped["User"] = relationship(
+    created_by: Mapped[Optional["User"]] = relationship(
         "User", back_populates="created_tickets", foreign_keys=[created_by_id]
     )
     comments: Mapped[list["TicketComment"]] = relationship(
@@ -111,8 +111,8 @@ class TicketComment(Base):
     ticket_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("tickets.id", ondelete="CASCADE"), nullable=False
     )
-    user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
+    user_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
     is_internal: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -122,7 +122,7 @@ class TicketComment(Base):
 
     # Relationships
     ticket: Mapped["Ticket"] = relationship("Ticket", back_populates="comments")
-    user: Mapped["User"] = relationship("User")
+    user: Mapped[Optional["User"]] = relationship("User")
 
 
 class TicketAttachment(Base):
@@ -136,8 +136,8 @@ class TicketAttachment(Base):
     file_path: Mapped[str] = mapped_column(String(500), nullable=False)
     file_size: Mapped[int] = mapped_column(Integer, nullable=False)
     mime_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    uploaded_by_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
+    uploaded_by_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     uploaded_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -145,7 +145,7 @@ class TicketAttachment(Base):
 
     # Relationships
     ticket: Mapped["Ticket"] = relationship("Ticket", back_populates="attachments")
-    uploaded_by: Mapped["User"] = relationship("User")
+    uploaded_by: Mapped[Optional["User"]] = relationship("User")
 
 
 class TicketHistory(Base):
@@ -155,8 +155,8 @@ class TicketHistory(Base):
     ticket_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("tickets.id", ondelete="CASCADE"), nullable=False
     )
-    user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
+    user_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     action: Mapped[str] = mapped_column(String(50), nullable=False)  # created, status_changed, assigned, commented, etc.
     old_value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON
@@ -167,7 +167,7 @@ class TicketHistory(Base):
 
     # Relationships
     ticket: Mapped["Ticket"] = relationship("Ticket", back_populates="history")
-    user: Mapped["User"] = relationship("User")
+    user: Mapped[Optional["User"]] = relationship("User")
 
 
 class TicketLog(Base):
