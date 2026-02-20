@@ -117,7 +117,7 @@ export default function UsersList() {
     setIsAdminChecked(user.is_admin || false)
     form.setFieldsValue({
       ...user,
-      role_ids: roleIds,
+      role_ids: (user.roles || []).map(r => r.id),
     })
     setModalVisible(true)
   }
