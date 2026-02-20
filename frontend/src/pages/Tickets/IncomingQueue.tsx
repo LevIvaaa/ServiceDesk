@@ -18,7 +18,6 @@ import {
   Badge,
   Tooltip,
   Tabs,
-  Popconfirm,
 } from 'antd'
 import {
   InboxOutlined,
@@ -32,8 +31,6 @@ import {
   SearchOutlined,
   DownloadOutlined,
   ClearOutlined,
-  EditOutlined,
-  DeleteOutlined,
 } from '@ant-design/icons'
 import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
@@ -75,7 +72,6 @@ export default function IncomingQueue() {
   const [activeTab, setActiveTab] = useState('all')
   const [stats, setStats] = useState({ new: 0, unassigned: 0, urgent: 0, total: 0, inProgress: 0 })
   const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState<number | undefined>(undefined)
-  const [departments, setDepartments] = useState<Department[]>([])
   
   // Assignment modal
   const [assignModalVisible, setAssignModalVisible] = useState(false)
@@ -126,19 +122,6 @@ export default function IncomingQueue() {
       } catch (error) {}
     }
     loadFilterDepartments()
-  }, [i18n.language])
-
-  // Load departments for filter
-  useEffect(() => {
-    const loadDepartments = async () => {
-      try {
-        const response = await departmentsApi.list({ is_active: true, per_page: 100, lang: i18n.language })
-        setDepartments(response.items)
-      } catch (error) {
-        console.error('Failed to load departments:', error)
-      }
-    }
-    loadDepartments()
   }, [i18n.language])
 
   const fetchTickets = async () => {
@@ -306,16 +289,6 @@ export default function IncomingQueue() {
       fetchTickets()
     } catch (error) {
       message.error(t('messages.statusError'))
-    }
-  }
-
-  const handleDelete = async (ticketId: number) => {
-    try {
-      await ticketsApi.delete(ticketId)
-      message.success(t('messages.deleted', 'Тікет видалено'))
-      fetchTickets()
-    } catch (error) {
-      message.error(t('messages.deleteError', 'Помилка видалення'))
     }
   }
 
