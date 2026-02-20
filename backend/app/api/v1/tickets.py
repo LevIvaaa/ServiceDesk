@@ -101,6 +101,7 @@ async def list_tickets(
     station_id: Optional[int] = None,
     created_by_id: Optional[int] = None,
     my_tickets: bool = False,
+    delegated_to_me: bool = False,
 ):
     """List tickets with pagination and filters."""
     query = select(Ticket).options(
@@ -147,6 +148,20 @@ async def list_tickets(
                 Ticket.assigned_user_id == current_user.id,
                 Ticket.created_by_id == current_user.id,
             )
+        )
+    if delegated_to_me:
+        # Tickets delegated to current user or to their department
+        delegated_subq = (
+            select(TicketHistory.ticket_id)
+            .where(TicketHistory.action == "delegated")
+            .distinct()
+        )
+        query = query.where(
+            Ticket.id.in_(delegated_subq),
+            or_(
+                Ticket.assigned_user_id == current_user.id,
+                Ticket.assigned_department_id == current_user.department_id,
+            ),
         )
 
     # Count total

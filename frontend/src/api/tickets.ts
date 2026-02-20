@@ -157,6 +157,7 @@ export interface TicketListParams {
   station_id?: number
   created_by_id?: number
   my_tickets?: boolean
+  delegated_to_me?: boolean
 }
 
 export interface PaginatedResponse<T> {

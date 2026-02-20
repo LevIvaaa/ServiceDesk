@@ -72,6 +72,7 @@ export default function IncomingQueue() {
   const [page, setPage] = useState(1)
   const [activeTab, setActiveTab] = useState('all')
   const [stats, setStats] = useState({ new: 0, unassigned: 0, urgent: 0, total: 0, inProgress: 0 })
+  const [delegatedCount, setDelegatedCount] = useState(0)
   const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState<number | undefined>(undefined)
   
   // Assignment modal
@@ -148,6 +149,10 @@ export default function IncomingQueue() {
         // My tickets: all active tickets assigned to current user
         statusFilter = 'new,in_progress,pending,reviewing'
         departmentFilter = undefined // Don't filter by department, filter by user below
+      } else if (activeTab === 'delegated') {
+        // Delegated: tickets delegated to me
+        statusFilter = ''
+        departmentFilter = undefined
       } else {
         // Completed: reviewing and closed for current user's department
         statusFilter = 'reviewing,closed'
@@ -164,6 +169,7 @@ export default function IncomingQueue() {
         priority: activeTab === 'all' ? filters.priority : undefined,
         category: activeTab === 'all' ? filters.category : undefined,
         created_by_id: activeTab === 'all' ? filters.created_by_id : undefined,
+        delegated_to_me: activeTab === 'delegated' ? true : undefined,
       })
       
       setTickets(response.items)
@@ -188,6 +194,10 @@ export default function IncomingQueue() {
         const inProgressCount = response.items.filter(t => t.status === 'in_progress').length
         const urgentCount = response.items.filter(t => t.priority === 'high' || t.priority === 'critical').length
         setStats({ new: 0, unassigned: 0, urgent: urgentCount, total: response.total, inProgress: inProgressCount })
+      } else if (activeTab === 'delegated') {
+        const inProgressCount = response.items.filter(t => t.status === 'in_progress').length
+        const urgentCount = response.items.filter(t => t.priority === 'high' || t.priority === 'critical').length
+        setStats({ new: 0, unassigned: 0, urgent: urgentCount, total: response.total, inProgress: inProgressCount })
       } else {
         // Completed tab
         const resolvedCount = response.items.filter(t => t.status === 'reviewing').length
@@ -200,9 +210,17 @@ export default function IncomingQueue() {
     }
   }
 
+  const fetchDelegatedCount = async () => {
+    try {
+      const response = await ticketsApi.list({ delegated_to_me: true, per_page: 1 })
+      setDelegatedCount(response.total)
+    } catch {}
+  }
+
   useEffect(() => {
     fetchTickets()
-    const interval = setInterval(fetchTickets, 3000)
+    fetchDelegatedCount()
+    const interval = setInterval(() => { fetchTickets(); fetchDelegatedCount() }, 3000)
     return () => clearInterval(interval)
   }, [page, activeTab, selectedDepartmentFilter, filters])
 
@@ -488,7 +506,7 @@ export default function IncomingQueue() {
               </Button>
             </>
           )}
-          {(activeTab === 'inProgress' || activeTab === 'myTickets' || activeTab === 'completed') && (
+          {(activeTab === 'inProgress' || activeTab === 'myTickets' || activeTab === 'completed' || activeTab === 'delegated') && (
             <Button
               type="default"
               size="small"
@@ -845,6 +863,44 @@ export default function IncomingQueue() {
                       title={i18n.language === 'en' ? 'Urgent' : 'Термінові'}
                       value={stats.urgent}
                       prefix={<FireOutlined />}
+                      valueStyle={{ color: '#ff4d4f' }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+            ),
+          },
+          {
+            key: 'delegated',
+            label: `${i18n.language === 'en' ? 'Delegated' : 'Делеговані'} (${delegatedCount})`,
+            children: (
+              <Row gutter={16} style={{ marginBottom: 16 }}>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Delegated to me' : 'Делеговані мені'}
+                      value={stats.total}
+                      prefix={<UserAddOutlined />}
+                      valueStyle={{ color: '#722ed1' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'In Progress' : 'В процесі'}
+                      value={stats.inProgress}
+                      prefix={<ClockCircleOutlined />}
+                      valueStyle={{ color: '#52c41a' }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Card>
+                    <Statistic
+                      title={i18n.language === 'en' ? 'Urgent' : 'Термінові'}
+                      value={stats.urgent}
+                      prefix={<WarningOutlined />}
                       valueStyle={{ color: '#ff4d4f' }}
                     />
                   </Card>
