@@ -781,6 +781,7 @@ async def _build_ticket_response(ticket: Ticket, db: AsyncSession) -> TicketResp
         "contact_source": ticket.contact_source,
         "station_logs": ticket.station_logs,
         "vehicle": ticket.vehicle,
+        "client_type": ticket.client_type,
     }
 
     if ticket.station:
@@ -850,6 +851,7 @@ async def _build_ticket_detail_response(
         "contact_source": ticket.contact_source,
         "station_logs": ticket.station_logs,
         "vehicle": ticket.vehicle,
+        "client_type": ticket.client_type,
     }
 
     if ticket.station:

@@ -44,6 +44,7 @@ class Ticket(Base):
     contact_source: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     station_logs: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     vehicle: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)  # Vehicle info
+    client_type: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)  # B2C or B2B
 
     # Assignment
     assigned_user_id: Mapped[Optional[int]] = mapped_column(

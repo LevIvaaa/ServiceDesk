@@ -923,6 +923,11 @@ export default function TicketDetail() {
                   {ticket.incident_type}
                 </Descriptions.Item>
               )}
+              {ticket.client_type && (
+                <Descriptions.Item label="Тип клієнта">
+                  <Tag color={ticket.client_type === 'B2B' ? 'blue' : 'green'}>{ticket.client_type}</Tag>
+                </Descriptions.Item>
+              )}
               <Descriptions.Item label={t('category.label')}>
                 {t(`category.${ticket.category}`)}
               </Descriptions.Item>

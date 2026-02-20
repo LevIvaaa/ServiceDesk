@@ -390,6 +390,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
         contact_source: values.contact_source,
         station_logs: stationLogs,
         assigned_department_id: values.assigned_department_id,
+        client_type: values.client_type,
       }
 
       const ticket = await ticketsApi.create(ticketData)
@@ -556,6 +557,22 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                       {dept.name}
                     </Select.Option>
                   ))}
+                </Select>
+              </Form.Item>
+
+              {/* Тип клієнта */}
+              <Form.Item
+                label={<span style={{ fontSize: 13 }}>Тип клієнта</span>}
+                name="client_type"
+                style={{ marginBottom: 14 }}
+              >
+                <Select
+                  placeholder="Оберіть тип клієнта..."
+                  allowClear
+                  style={{ fontSize: 13 }}
+                >
+                  <Select.Option value="B2C">B2C</Select.Option>
+                  <Select.Option value="B2B">B2B</Select.Option>
                 </Select>
               </Form.Item>
 

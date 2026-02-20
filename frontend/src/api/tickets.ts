@@ -64,6 +64,7 @@ export interface Ticket {
   contact_source: string | null
   station_logs: string | null
   vehicle: string | null  // Car model
+  client_type: string | null  // B2C or B2B
 }
 
 export interface TicketComment {
@@ -184,6 +185,7 @@ export interface CreateTicketData {
   port_type?: string
   contact_source?: string
   station_logs?: string
+  client_type?: string
 }
 
 export const ticketsApi = {

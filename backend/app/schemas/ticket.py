@@ -20,6 +20,7 @@ class TicketBase(BaseModel):
     contact_source: Optional[str] = Field(None, max_length=50)
     station_logs: Optional[str] = None
     vehicle: Optional[str] = Field(None, max_length=200)  # Vehicle info
+    client_type: Optional[str] = Field(None, pattern="^(B2C|B2B)$")
 
 
 class AILogAnalysis(BaseModel):
@@ -186,6 +187,7 @@ class TicketResponse(BaseModel):
     contact_source: Optional[str] = None
     station_logs: Optional[str] = None
     vehicle: Optional[str] = None  # Vehicle info
+    client_type: Optional[str] = None  # B2C or B2B
 
     class Config:
         from_attributes = True
