@@ -150,7 +150,7 @@ async def list_tickets(
             )
         )
     if delegated_to_me:
-        # Tickets delegated to current user or to their department
+        # Only tickets delegated specifically to the current user
         delegated_subq = (
             select(TicketHistory.ticket_id)
             .where(TicketHistory.action == "delegated")
@@ -158,10 +158,7 @@ async def list_tickets(
         )
         query = query.where(
             Ticket.id.in_(delegated_subq),
-            or_(
-                Ticket.assigned_user_id == current_user.id,
-                Ticket.assigned_department_id == current_user.department_id,
-            ),
+            Ticket.assigned_user_id == current_user.id,
         )
 
     # Count total
