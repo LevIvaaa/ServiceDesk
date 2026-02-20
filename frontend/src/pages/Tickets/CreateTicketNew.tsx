@@ -489,29 +489,29 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
         )}
 
         {/* Form Content */}
-        <div style={{ padding: '20px' }}>
+        <div style={{ padding: isModal ? '12px 16px' : '20px' }}>
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
           requiredMark={false}
           onValuesChange={saveFormDraft}
+          size={isModal ? 'small' : 'middle'}
         >
-          <Row gutter={20}>
+          <Row gutter={16}>
             {/* LEFT COLUMN */}
             <Col span={12}>
-              {/* Заголовок інциденту */}
               <Form.Item
-                label={<span style={{ fontSize: 13 }}><span style={{ color: 'red' }}>* </span>Заголовок інциденту</span>}
+                label={<span style={{ fontSize: 12 }}><span style={{ color: 'red' }}>* </span>Заголовок інциденту</span>}
                 name="incident_type"
                 rules={[{ required: true, message: 'Оберіть тип проблеми' }]}
-                style={{ marginBottom: 14 }}
+                style={{ marginBottom: 8 }}
               >
                 <Select
                   placeholder="Оберіть тип проблеми..."
                   showSearch
                   optionFilterProp="children"
-                  style={{ fontSize: 13 }}
+                  style={{ fontSize: 12 }}
                   autoFocus
                   tabIndex={1}
                   loading={incidentTypesLoading}
@@ -524,64 +524,53 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                 </Select>
               </Form.Item>
 
-              {/* Номер інциденту */}
-              <Form.Item 
-                label={<span style={{ fontSize: 13 }}>Номер інциденту</span>}
-                style={{ marginBottom: 14 }}
-              >
-                <Input 
-                  value="Автогенерація" 
-                  disabled 
-                  style={{ color: '#1890ff', fontStyle: 'italic', fontSize: 13 }}
-                  tabIndex={-1}
-                />
-              </Form.Item>
+              <Row gutter={8}>
+                <Col span={12}>
+                  <Form.Item
+                    label={<span style={{ fontSize: 12 }}><span style={{ color: 'red' }}>* </span>Відділ</span>}
+                    name="assigned_department_id"
+                    rules={[{ required: true, message: 'Оберіть відділ' }]}
+                    style={{ marginBottom: 8 }}
+                  >
+                    <Select
+                      placeholder="Оберіть відділ..."
+                      loading={departmentsLoading}
+                      showSearch
+                      optionFilterProp="children"
+                      style={{ fontSize: 12 }}
+                      tabIndex={2}
+                    >
+                      {departments.map((dept) => (
+                        <Select.Option key={dept.id} value={dept.id}>
+                          {dept.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label={<span style={{ fontSize: 12 }}>Тип клієнта</span>}
+                    name="client_type"
+                    style={{ marginBottom: 8 }}
+                  >
+                    <Select
+                      placeholder="B2C / B2B"
+                      allowClear
+                      style={{ fontSize: 12 }}
+                    >
+                      <Select.Option value="B2C">B2C</Select.Option>
+                      <Select.Option value="B2B">B2B</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
 
-              {/* Відділ */}
               <Form.Item
-                label={<span style={{ fontSize: 13 }}><span style={{ color: 'red' }}>* </span>Відділ</span>}
-                name="assigned_department_id"
-                rules={[{ required: true, message: 'Оберіть відділ' }]}
-                style={{ marginBottom: 14 }}
-              >
-                <Select
-                  placeholder="Оберіть відділ..."
-                  loading={departmentsLoading}
-                  showSearch
-                  optionFilterProp="children"
-                  style={{ fontSize: 13 }}
-                  tabIndex={2}
-                >
-                  {departments.map((dept) => (
-                    <Select.Option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-
-              {/* Тип клієнта */}
-              <Form.Item
-                label={<span style={{ fontSize: 13 }}>Тип клієнта</span>}
-                name="client_type"
-                style={{ marginBottom: 14 }}
-              >
-                <Select
-                  placeholder="Оберіть тип клієнта..."
-                  allowClear
-                  style={{ fontSize: 13 }}
-                >
-                  <Select.Option value="B2C">B2C</Select.Option>
-                  <Select.Option value="B2B">B2B</Select.Option>
-                </Select>
-              </Form.Item>
-
-              {/* Станція */}
-              <Form.Item
-                label={<span style={{ fontSize: 13 }}><span style={{ color: 'red' }}>* </span>Станція</span>}
+                label={<span style={{ fontSize: 12 }}><span style={{ color: 'red' }}>* </span>Станція</span>}
                 name="station_id"
                 rules={[{ required: true, message: 'Оберіть станцію' }]}
-                style={{ marginBottom: 14 }}
+                style={{ marginBottom: 8 }}
               >
                 <Select
                   showSearch
@@ -591,7 +580,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   onChange={handleStationSelect}
                   filterOption={false}
                   notFoundContent={stationSearchLoading ? <Spin size="small" /> : null}
-                  style={{ fontSize: 13 }}
+                  style={{ fontSize: 12 }}
                   tabIndex={3}
                 >
                   {stationOptions.map((option) => (
@@ -602,76 +591,84 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                 </Select>
               </Form.Item>
 
-              {/* Тип порту */}
-              <Form.Item
-                label={<span style={{ fontSize: 13 }}>Тип порту</span>}
-                name="port_type"
-                style={{ marginBottom: 14 }}
-              >
-                <Select
-                  placeholder={selectedStation ? "Оберіть тип порту..." : "Спочатку оберіть станцію"}
-                  showSearch
-                  optionFilterProp="children"
-                  disabled={!selectedStation || stationPorts.length === 0}
-                  notFoundContent={selectedStation && stationPorts.length === 0 ? "У станції немає портів" : null}
-                  style={{ fontSize: 13 }}
-                  tabIndex={4}
-                >
-                  {stationPorts.map((port) => (
-                    <Select.Option 
-                      key={port.id} 
-                      value={port.connector_type || `Порт ${port.port_number}`}
+              <Row gutter={8}>
+                <Col span={12}>
+                  <Form.Item
+                    label={<span style={{ fontSize: 12 }}>Тип порту</span>}
+                    name="port_type"
+                    style={{ marginBottom: 8 }}
+                  >
+                    <Select
+                      placeholder={selectedStation ? "Тип порту..." : "Оберіть станцію"}
+                      showSearch
+                      optionFilterProp="children"
+                      disabled={!selectedStation || stationPorts.length === 0}
+                      notFoundContent={selectedStation && stationPorts.length === 0 ? "Немає портів" : null}
+                      style={{ fontSize: 12 }}
+                      tabIndex={4}
                     >
-                      {port.connector_type 
-                        ? `${port.connector_type}${port.power_kw ? ` (${port.power_kw} kW)` : ''} - Порт ${port.port_number}`
-                        : `Порт ${port.port_number}`
-                      }
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-
-              {/* Модель авто */}
-              <Form.Item
-                label={<span style={{ fontSize: 13 }}>Модель авто</span>}
-                name="vehicle"
-                style={{ marginBottom: 14 }}
-              >
-                <Input 
-                  placeholder="Введіть модель авто..." 
-                  style={{ fontSize: 13 }}
-                  tabIndex={5}
-                />
-              </Form.Item>
+                      {stationPorts.map((port) => (
+                        <Select.Option 
+                          key={port.id} 
+                          value={port.connector_type || `Порт ${port.port_number}`}
+                        >
+                          {port.connector_type 
+                            ? `${port.connector_type}${port.power_kw ? ` (${port.power_kw} kW)` : ''}`
+                            : `Порт ${port.port_number}`
+                          }
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label={<span style={{ fontSize: 12 }}>Модель авто</span>}
+                    name="vehicle"
+                    style={{ marginBottom: 8 }}
+                  >
+                    <Input 
+                      placeholder="Модель авто..." 
+                      style={{ fontSize: 12 }}
+                      tabIndex={5}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
 
               {/* Контактна інформація */}
-              <div style={{ marginTop: 20, marginBottom: 14 }}>
-                <Text strong style={{ display: 'block', marginBottom: 12, fontSize: 14 }}>
+              <div style={{ marginTop: 4, marginBottom: 0 }}>
+                <Text strong style={{ display: 'block', marginBottom: 6, fontSize: 13 }}>
                   Контактна інформація
                 </Text>
 
-                <Form.Item
-                  label={<span style={{ fontSize: 13 }}>Ім'я клієнта</span>}
-                  name="reporter_name"
-                  style={{ marginBottom: 12 }}
-                >
-                  <Input placeholder="---" style={{ fontSize: 13 }} tabIndex={6} />
-                </Form.Item>
+                <Row gutter={8}>
+                  <Col span={12}>
+                    <Form.Item
+                      label={<span style={{ fontSize: 12 }}>Ім'я клієнта</span>}
+                      name="reporter_name"
+                      style={{ marginBottom: 8 }}
+                    >
+                      <Input placeholder="---" style={{ fontSize: 12 }} tabIndex={6} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      label={<span style={{ fontSize: 12 }}>Телефон</span>}
+                      name="reporter_phone"
+                      style={{ marginBottom: 8 }}
+                    >
+                      <Input placeholder="---" style={{ fontSize: 12 }} tabIndex={7} />
+                    </Form.Item>
+                  </Col>
+                </Row>
 
                 <Form.Item
-                  label={<span style={{ fontSize: 13 }}>Телефон клієнта</span>}
-                  name="reporter_phone"
-                  style={{ marginBottom: 12 }}
-                >
-                  <Input placeholder="---" style={{ fontSize: 13 }} tabIndex={7} />
-                </Form.Item>
-
-                <Form.Item
-                  label={<span style={{ fontSize: 13 }}>Джерело</span>}
+                  label={<span style={{ fontSize: 12 }}>Джерело</span>}
                   name="contact_source"
                   style={{ marginBottom: 0 }}
                 >
-                  <Select placeholder="---" style={{ fontSize: 13 }} tabIndex={8}>
+                  <Select placeholder="---" style={{ fontSize: 12 }} tabIndex={8}>
                     {CONTACT_SOURCES.map((source) => (
                       <Select.Option key={source.value} value={source.value}>
                         {source.label}
@@ -688,185 +685,141 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
               {selectedStation && (
                 <Alert
                   message={
-                    <div>
-                      <Space style={{ marginBottom: 6 }}>
-                        <span style={{ fontSize: 14 }}>🔌</span>
-                        <Text strong style={{ fontSize: 13 }}>
-                          Станція № {selectedStation.station_number || selectedStation.station_id}
-                        </Text>
-                      </Space>
-                      <div style={{ paddingLeft: 20, fontSize: 12 }}>
-                        <div style={{ marginBottom: 3 }}>
-                          <Text strong style={{ fontSize: 12 }}>ID станції:</Text> <Text style={{ fontSize: 12 }}>{selectedStation.station_id}</Text>
-                        </div>
-                        <div style={{ marginBottom: 3 }}>
-                          <EnvironmentOutlined style={{ color: '#1890ff', marginRight: 6, fontSize: 12 }} />
-                          <Text strong style={{ fontSize: 12 }}>Адреса:</Text> <Text style={{ fontSize: 12 }}>{selectedStation.address || 'Не вказано'}</Text>
-                        </div>
-                        <div style={{ marginBottom: 3 }}>
-                          <UserOutlined style={{ color: '#1890ff', marginRight: 6, fontSize: 12 }} />
-                          <Text strong style={{ fontSize: 12 }}>Власник:</Text> <Text style={{ fontSize: 12 }}>{selectedStation.operator?.name || 'Не вказано'}</Text>
-                        </div>
-                        <div>
-                          <ToolOutlined style={{ color: '#1890ff', marginRight: 6, fontSize: 12 }} />
-                          <Text strong style={{ fontSize: 12 }}>Виробник:</Text> <Text style={{ fontSize: 12 }}>ECOFACTOR</Text>
-                        </div>
-                      </div>
+                    <div style={{ fontSize: 11 }}>
+                      <Text strong style={{ fontSize: 12 }}>
+                        🔌 Станція № {selectedStation.station_number || selectedStation.station_id}
+                      </Text>
+                      <span style={{ marginLeft: 8 }}>{selectedStation.address || ''}</span>
+                      {selectedStation.operator?.name && <span> · {selectedStation.operator.name}</span>}
                     </div>
                   }
                   type="warning"
                   style={{ 
-                    marginBottom: 14,
+                    marginBottom: 8,
                     backgroundColor: '#fff7e6',
                     border: '1px solid #ffd591',
-                    padding: '6px 10px'
+                    padding: '4px 8px'
                   }}
                 />
               )}
 
-              {/* Опис проблеми */}
-              <div style={{ marginBottom: 14 }}>
-                <Text strong style={{ display: 'block', marginBottom: 12, fontSize: 14 }}>
-                  Опис проблеми
-                </Text>
-
-                <Alert
-                  message="💡 Підказка: Ви можете вставити скріншоти прямо в опис за допомогою Ctrl+V або перетягнути зображення"
-                  type="info"
-                  showIcon
-                  closable
-                  style={{ marginBottom: 12, fontSize: 12 }}
+              <Form.Item
+                label={<span style={{ fontSize: 12 }}><span style={{ color: 'red' }}>* </span>Опис проблеми</span>}
+                name="description"
+                rules={[{ required: true, message: 'Введіть опис проблеми' }]}
+                style={{ marginBottom: 8 }}
+              >
+                <TextArea
+                  rows={3}
+                  placeholder="Детальний опис інциденту... (Ctrl+V для скріншотів)"
+                  style={{ fontSize: 12 }}
+                  tabIndex={9}
+                  value={descriptionText}
+                  onChange={(e) => {
+                    setDescriptionText(e.target.value)
+                    saveFormDraft()
+                  }}
+                  onPaste={handleDescriptionPaste}
+                  onDrop={handleDescriptionDrop}
+                  onDragOver={handleDescriptionDragOver}
                 />
+              </Form.Item>
 
-                <Form.Item
-                  label={<span style={{ fontSize: 13 }}>Опис</span>}
-                  name="description"
-                  rules={[{ required: true, message: 'Введіть опис проблеми' }]}
-                  style={{ marginBottom: 12 }}
-                >
-                  <TextArea
-                    rows={3}
-                    placeholder="Детальний опис інциденту... (Ctrl+V для вставки скріншотів)"
-                    style={{ fontSize: 13 }}
-                    tabIndex={9}
-                    value={descriptionText}
-                    onChange={(e) => {
-                      setDescriptionText(e.target.value)
-                      saveFormDraft()
-                    }}
-                    onPaste={handleDescriptionPaste}
-                    onDrop={handleDescriptionDrop}
-                    onDragOver={handleDescriptionDragOver}
-                  />
-                </Form.Item>
-
-                {/* Show pasted images preview */}
-                {descriptionImages.length > 0 && (
-                  <div style={{ marginBottom: 12 }}>
-                    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
-                      Вставлені зображення ({descriptionImages.length}):
-                    </Text>
-                    <Space wrap size={8}>
-                      {descriptionImages.map((img, idx) => (
-                        <div
-                          key={idx}
-                          style={{
-                            position: 'relative',
-                            display: 'inline-block',
-                            padding: 4,
-                            border: '1px solid #d9d9d9',
-                            borderRadius: 4,
-                            backgroundColor: '#fafafa',
+              {/* Show pasted images preview */}
+              {descriptionImages.length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  <Space wrap size={4}>
+                    {descriptionImages.map((img, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'inline-block',
+                          padding: '2px 6px',
+                          border: '1px solid #d9d9d9',
+                          borderRadius: 4,
+                          backgroundColor: '#fafafa',
+                          fontSize: 11,
+                        }}
+                      >
+                        📷 {img.name}
+                        <Button
+                          type="text"
+                          size="small"
+                          danger
+                          style={{ marginLeft: 4, padding: '0 2px', height: 16, fontSize: 10 }}
+                          onClick={() => {
+                            setDescriptionImages(prev => prev.filter((_, i) => i !== idx))
+                            const newText = descriptionText.replace(`[Скріншот: ${img.name}]`, '')
+                            setDescriptionText(newText)
+                            form.setFieldValue('description', newText)
                           }}
                         >
-                          <Text style={{ fontSize: 11 }}>📷 {img.name}</Text>
-                          <Button
-                            type="text"
-                            size="small"
-                            danger
-                            style={{ marginLeft: 4, padding: '0 4px', height: 20 }}
-                            onClick={() => {
-                              setDescriptionImages(prev => prev.filter((_, i) => i !== idx))
-                              // Remove placeholder from description
-                              const newText = descriptionText.replace(`[Скріншот: ${img.name}]`, '')
-                              setDescriptionText(newText)
-                              form.setFieldValue('description', newText)
-                            }}
-                          >
-                            ✕
-                          </Button>
-                        </div>
-                      ))}
-                    </Space>
-                  </div>
-                )}
+                          ✕
+                        </Button>
+                      </div>
+                    ))}
+                  </Space>
+                </div>
+              )}
 
-                {/* Вкладення */}
-                <Form.Item label={<span style={{ fontSize: 13 }}>Додаткові файли</span>} style={{ marginBottom: 0 }}>
-                  <Upload
-                    fileList={attachmentFiles}
-                    onChange={({ fileList }) => setAttachmentFiles(fileList)}
-                    beforeUpload={() => false}
-                    multiple
-                  >
-                    <Button icon={<UploadOutlined />} size="small" tabIndex={10}>
-                      Додати файли
-                    </Button>
-                  </Upload>
-                </Form.Item>
-              </div>
+              <Form.Item label={<span style={{ fontSize: 12 }}>Файли</span>} style={{ marginBottom: 8 }}>
+                <Upload
+                  fileList={attachmentFiles}
+                  onChange={({ fileList }) => setAttachmentFiles(fileList)}
+                  beforeUpload={() => false}
+                  multiple
+                >
+                  <Button icon={<UploadOutlined />} size="small" tabIndex={10}>
+                    Додати файли
+                  </Button>
+                </Upload>
+              </Form.Item>
 
               {/* Логи станції */}
-              <div style={{ marginBottom: 14 }}>
-                <Text strong style={{ display: 'block', marginBottom: 12, fontSize: 14 }}>
-                  Логи станції
-                </Text>
+              <Form.Item label={<span style={{ fontSize: 12 }}>Логи станції</span>} style={{ marginBottom: 8 }}>
+                <TextArea
+                  rows={2}
+                  placeholder="Вставте OCPP логи або текст..."
+                  value={stationLogs}
+                  onChange={(e) => {
+                    setStationLogs(e.target.value)
+                    saveFormDraft()
+                  }}
+                  style={{ fontSize: 12 }}
+                  tabIndex={11}
+                />
+                <div style={{ marginTop: 4 }}>
+                  <Button
+                    icon={<RobotOutlined />}
+                    onClick={handleAnalyzeLog}
+                    loading={analyzingLog}
+                    disabled={!stationLogs.trim()}
+                    size="small"
+                    style={{ backgroundColor: '#f0f5ff', borderColor: '#adc6ff', color: '#2f54eb', fontSize: 12 }}
+                    tabIndex={12}
+                  >
+                    Розпізнати AI
+                  </Button>
+                </div>
+              </Form.Item>
 
-                <Form.Item label={<span style={{ fontSize: 13 }}>Текст логу</span>} style={{ marginBottom: 0 }}>
+              {/* AI Analysis Result */}
+              {aiAnalysis && (
+                <Form.Item label={<span style={{ fontSize: 12 }}>AI Розшифровка</span>} style={{ marginBottom: 8 }}>
                   <TextArea
-                    rows={3}
-                    placeholder="Вставте OCPP логи або текст..."
-                    value={stationLogs}
-                    onChange={(e) => {
-                      setStationLogs(e.target.value)
-                      saveFormDraft()
+                    rows={4}
+                    value={aiAnalysis}
+                    readOnly
+                    style={{ 
+                      backgroundColor: '#f6ffed', 
+                      border: '1px solid #b7eb8f',
+                      color: '#000',
+                      fontSize: 11
                     }}
-                    style={{ fontSize: 13 }}
-                    tabIndex={11}
+                    tabIndex={-1}
                   />
-                  <div style={{ marginTop: 6 }}>
-                    <Button
-                      icon={<RobotOutlined />}
-                      onClick={handleAnalyzeLog}
-                      loading={analyzingLog}
-                      disabled={!stationLogs.trim()}
-                      size="small"
-                      style={{ backgroundColor: '#f0f5ff', borderColor: '#adc6ff', color: '#2f54eb' }}
-                      tabIndex={12}
-                    >
-                      Розпізнати AI
-                    </Button>
-                  </div>
                 </Form.Item>
-
-                {/* AI Analysis Result */}
-                {aiAnalysis && (
-                  <Form.Item label={<span style={{ fontSize: 13 }}>AI Розшифровка</span>} style={{ marginTop: 12 }}>
-                    <TextArea
-                      rows={8}
-                      value={aiAnalysis}
-                      readOnly
-                      style={{ 
-                        backgroundColor: '#f6ffed', 
-                        border: '1px solid #b7eb8f',
-                        color: '#000',
-                        fontSize: 12
-                      }}
-                      tabIndex={-1}
-                    />
-                  </Form.Item>
-                )}
-              </div>
+              )}
 
               {/* Buttons */}
               <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
