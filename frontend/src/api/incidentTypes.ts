@@ -4,6 +4,7 @@ export interface IncidentType {
   id: number
   name: string
   is_active: boolean
+  sort_order: number
   created_at: string
 }
 
@@ -29,6 +30,11 @@ export const incidentTypesApi = {
 
   update: async (id: number, payload: IncidentTypeUpdate): Promise<IncidentType> => {
     const { data } = await client.put(`/incident-types/${id}`, payload)
+    return data
+  },
+
+  reorder: async (ids: number[]): Promise<IncidentType[]> => {
+    const { data } = await client.put('/incident-types/reorder', { ids })
     return data
   },
 

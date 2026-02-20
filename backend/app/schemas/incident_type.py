@@ -13,10 +13,15 @@ class IncidentTypeUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
+class IncidentTypeReorder(BaseModel):
+    ids: list[int] = Field(..., description="Ordered list of incident type IDs")
+
+
 class IncidentTypeResponse(BaseModel):
     id: int
     name: str
     is_active: bool
+    sort_order: int
     created_at: datetime
 
     class Config:

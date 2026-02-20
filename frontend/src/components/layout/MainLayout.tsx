@@ -151,7 +151,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: user?.is_admin ? '/tickets' : (hasPermission('tickets.assign') && !hasPermission('tickets.create') ? '/tickets/queue' : '/tickets'),
       icon: <FileTextOutlined />,
       label: t('menu.tickets'),
-      visible: true, // Visible for everyone including admins
+      visible: !user?.is_admin, // Hidden for admins - tickets are in "Редагування тікетів"
     },
     {
       key: '/tickets/incident-types',
