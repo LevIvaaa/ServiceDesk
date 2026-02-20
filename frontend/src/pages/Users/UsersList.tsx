@@ -46,8 +46,6 @@ export default function UsersList() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [form] = Form.useForm()
 
-  const [isAdminChecked, setIsAdminChecked] = useState(false)
-
   // Check if user is ticket handler (has assign but not create permission)
   const isTicketHandler = hasPermission('tickets.assign') && !hasPermission('tickets.create')
 
@@ -88,9 +86,7 @@ export default function UsersList() {
   const fetchRoles = async () => {
     try {
       const response = await rolesApi.list()
-      // Filter to only show user role (admin is set via switch)
-      const validRoles = response.filter(r => ['user'].includes(r.name))
-      setRoles(validRoles)
+      setRoles(response)
     } catch (error) {
       // Ignore
     }
@@ -108,16 +104,19 @@ export default function UsersList() {
   const handleCreate = () => {
     setEditingUser(null)
     form.resetFields()
-    setIsAdminChecked(false)
     setModalVisible(true)
   }
 
   const handleEdit = (user: User) => {
     setEditingUser(user)
-    setIsAdminChecked(user.is_admin || false)
+    // Build role_ids: include actual roles + synthetic admin selection
+    const roleIds = (user.roles || []).map(r => r.id)
+    if (user.is_admin) {
+      roleIds.push(-1) // -1 = admin pseudo-role
+    }
     form.setFieldsValue({
       ...user,
-      role_ids: (user.roles || []).map(r => r.id),
+      role_ids: roleIds,
     })
     setModalVisible(true)
   }
@@ -136,6 +135,11 @@ export default function UsersList() {
 
   const handleSubmit = async (values: any) => {
     try {
+      // Derive is_admin from role selection (-1 = admin pseudo-role)
+      const selectedRoleIds: number[] = values.role_ids || []
+      const isAdmin = selectedRoleIds.includes(-1)
+      const realRoleIds = selectedRoleIds.filter(id => id !== -1)
+
       if (editingUser) {
         const updateData: UpdateUserData = {
           email: values.email,
@@ -144,8 +148,8 @@ export default function UsersList() {
           phone: values.phone,
           department_id: values.department_id,
           is_active: values.is_active,
-          is_admin: values.is_admin,
-          role_ids: values.role_ids,
+          is_admin: isAdmin,
+          role_ids: realRoleIds,
         }
         await usersApi.update(editingUser.id, updateData)
         
@@ -164,8 +168,8 @@ export default function UsersList() {
           phone: values.phone,
           department_id: values.department_id,
           is_active: values.is_active ?? true,
-          is_admin: values.is_admin ?? false,
-          role_ids: values.role_ids,
+          is_admin: isAdmin,
+          role_ids: realRoleIds,
         }
         await usersApi.create(createData)
         message.success(t('messages.created'))
@@ -314,7 +318,7 @@ export default function UsersList() {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
-          initialValues={{ is_active: true, is_admin: false }}
+          initialValues={{ is_active: true }}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -377,12 +381,18 @@ export default function UsersList() {
             <Input />
           </Form.Item>
 
-          <Form.Item name="role_ids" label={t('fields.roles')}>
+          <Form.Item 
+            name="role_ids" 
+            label={t('fields.roles')}
+            rules={[{ required: true, message: t('validation.roleRequired', 'Оберіть роль') }]}
+          >
             <Select
               mode="multiple"
               placeholder={t('placeholders.selectRoles')}
-              options={roles.map(r => ({ value: r.id, label: t(`roles.${r.name}`) }))}
-              disabled={isAdminChecked}
+              options={[
+                ...roles.map(r => ({ value: r.id, label: t(`roles.${r.name}`) })),
+                { value: -1, label: t('roles.admin', 'Адміністратор') },
+              ]}
             />
           </Form.Item>
 
@@ -394,27 +404,9 @@ export default function UsersList() {
             />
           </Form.Item>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="is_active" label={t('fields.status')} valuePropName="checked">
-                <Switch checkedChildren={t('switches.active')} unCheckedChildren={t('switches.inactive')} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="is_admin" label={t('fields.isAdmin')} valuePropName="checked">
-                <Switch 
-                  checkedChildren={t('switches.yes')} 
-                  unCheckedChildren={t('switches.no')}
-                  onChange={(checked) => {
-                    setIsAdminChecked(checked)
-                    if (checked) {
-                      form.setFieldsValue({ role_ids: [] })
-                    }
-                  }}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item name="is_active" label={t('fields.status')} valuePropName="checked">
+            <Switch checkedChildren={t('switches.active')} unCheckedChildren={t('switches.inactive')} />
+          </Form.Item>
 
           <Form.Item>
             <Space>
