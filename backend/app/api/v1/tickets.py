@@ -498,7 +498,7 @@ async def assign_ticket(
             ticket_id=ticket.id,
             user_id=current_user.id,
             content=assign_data.comment,
-            is_internal=True,
+            is_internal=False,
         )
         db.add(comment)
 
@@ -595,7 +595,7 @@ async def delegate_ticket(
             ticket_id=ticket.id,
             user_id=current_user.id,
             content=delegate_data.comment,
-            is_internal=True,
+            is_internal=False,
         )
         db.add(comment)
 
