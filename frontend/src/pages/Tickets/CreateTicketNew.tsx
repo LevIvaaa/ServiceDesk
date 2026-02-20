@@ -783,17 +783,42 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
               {/* Логи станції */}
               <Form.Item label={<span style={{ fontSize: 12 }}>Логи станції</span>} style={{ marginBottom: 8 }}>
-                <TextArea
-                  rows={2}
-                  placeholder="Вставте OCPP логи або текст..."
-                  value={stationLogs}
-                  onChange={(e) => {
-                    setStationLogs(e.target.value)
-                    saveFormDraft()
+                <div
+                  onDrop={async (e) => {
+                    e.preventDefault()
+                    const files = e.dataTransfer?.files
+                    if (!files || files.length === 0) return
+                    const texts: string[] = []
+                    for (let i = 0; i < files.length; i++) {
+                      const file = files[i]
+                      try {
+                        const text = await file.text()
+                        texts.push(`--- ${file.name} ---\n${text}`)
+                      } catch {
+                        message.error(`Не вдалося прочитати файл ${file.name}`)
+                      }
+                    }
+                    if (texts.length > 0) {
+                      const combined = stationLogs ? stationLogs + '\n' + texts.join('\n\n') : texts.join('\n\n')
+                      setStationLogs(combined)
+                      saveFormDraft()
+                      message.success(`Додано ${texts.length} файл(ів) з логами`)
+                    }
                   }}
-                  style={{ fontSize: 12 }}
-                  tabIndex={11}
-                />
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  <TextArea
+                    rows={2}
+                    placeholder="Вставте OCPP логи або перетягніть файли з логами..."
+                    value={stationLogs}
+                    onChange={(e) => {
+                      setStationLogs(e.target.value)
+                      saveFormDraft()
+                    }}
+                    style={{ fontSize: 12 }}
+                    tabIndex={11}
+                  />
+                </div>
                 <div style={{ marginTop: 4 }}>
                   <Button
                     icon={<RobotOutlined />}
