@@ -18,7 +18,6 @@ import type { UploadFile } from 'antd'
 import {
   ArrowLeftOutlined,
   UploadOutlined,
-  RobotOutlined,
   FileTextOutlined,
 } from '@ant-design/icons'
 import { ticketsApi } from '../../api/tickets'
@@ -64,9 +63,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   const [departmentsLoading, setDepartmentsLoading] = useState(false)
   const [incidentTypes, setIncidentTypes] = useState<IncidentType[]>([])
   const [incidentTypesLoading, setIncidentTypesLoading] = useState(false)
-  const [stationLogs, setStationLogs] = useState('')
-  const [analyzingLog, setAnalyzingLog] = useState(false)
-  const [aiAnalysis, setAiAnalysis] = useState('')
+  const [logFiles, setLogFiles] = useState<UploadFile[]>([])
   const [descriptionImages, setDescriptionImages] = useState<File[]>([])
   const [descriptionText, setDescriptionText] = useState('')
   
@@ -125,9 +122,6 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
       try {
         const parsedData = JSON.parse(savedFormData)
         form.setFieldsValue(parsedData)
-        if (parsedData.station_logs) {
-          setStationLogs(parsedData.station_logs)
-        }
         if (parsedData.description) {
           setDescriptionText(parsedData.description)
         }
@@ -146,7 +140,6 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
     const formValues = form.getFieldsValue()
     const draftData = {
       ...formValues,
-      station_logs: stationLogs,
       description: descriptionText,
     }
     localStorage.setItem('ticketFormDraft', JSON.stringify(draftData))
@@ -236,51 +229,6 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
     } catch (error) {
       console.error('Failed to load station details:', error)
       message.error('Помилка завантаження інформації про станцію')
-    }
-  }
-
-  // Handle AI log analysis
-  const handleAnalyzeLog = async () => {
-    if (!stationLogs.trim()) {
-      message.warning('Введіть логи для розпізнавання')
-      return
-    }
-
-    try {
-      setAnalyzingLog(true)
-      
-      // Simulate AI analysis (replace with actual API call later)
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Mock AI analysis result
-      const analysisResult = `🤖 AI Розшифровка логу:
-
-📊 Виявлені проблеми:
-• Помилка GroundFailure - виявлено замикання на землю
-• Зарядка аварійно зупинена (EmergencyStop)
-• Втрачено зв'язок з станцією (Heartbeat timeout)
-
-⚡ Технічні деталі:
-• Порт: CCS 2
-• Транзакція #78945 перервана
-• Передано енергії: 2.34 kWh
-• Час роботи: ~2 хвилини
-
-🔧 Рекомендації:
-1. Перевірити заземлення станції
-2. Перевірити кабель CCS 2 на пошкодження
-3. Перезавантажити станцію
-4. Якщо проблема повторюється - викликати технічного спеціаліста
-
-⚠️ Пріоритет: Високий
-Станція потребує негайної перевірки через помилку заземлення.`
-      
-      setAiAnalysis(analysisResult)
-      
-    } catch (error) {
-      message.error('Помилка розпізнавання логів')
-    } finally {
-      setAnalyzingLog(false)
     }
   }
 
@@ -384,7 +332,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
         reporter_name: values.reporter_name,
         reporter_phone: values.reporter_phone,
         contact_source: values.contact_source,
-        station_logs: stationLogs,
+        station_logs: undefined,
         assigned_department_id: values.assigned_department_id,
         client_type: values.client_type,
       }
@@ -394,6 +342,15 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
       // Upload attachments from file picker
       if (attachmentFiles.length > 0) {
         for (const file of attachmentFiles) {
+          if (file.originFileObj) {
+            await ticketsApi.uploadAttachment(ticket.id, file.originFileObj)
+          }
+        }
+      }
+
+      // Upload log files as attachments
+      if (logFiles.length > 0) {
+        for (const file of logFiles) {
           if (file.originFileObj) {
             await ticketsApi.uploadAttachment(ticket.id, file.originFileObj)
           }
@@ -783,74 +740,18 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
               {/* Логи станції */}
               <Form.Item label={<span style={{ fontSize: 12 }}>Логи станції</span>} style={{ marginBottom: 8 }}>
-                <div
-                  onDrop={async (e) => {
-                    e.preventDefault()
-                    const files = e.dataTransfer?.files
-                    if (!files || files.length === 0) return
-                    const texts: string[] = []
-                    for (let i = 0; i < files.length; i++) {
-                      const file = files[i]
-                      try {
-                        const text = await file.text()
-                        texts.push(`--- ${file.name} ---\n${text}`)
-                      } catch {
-                        message.error(`Не вдалося прочитати файл ${file.name}`)
-                      }
-                    }
-                    if (texts.length > 0) {
-                      const combined = stationLogs ? stationLogs + '\n' + texts.join('\n\n') : texts.join('\n\n')
-                      setStationLogs(combined)
-                      saveFormDraft()
-                      message.success(`Додано ${texts.length} файл(ів) з логами`)
-                    }
-                  }}
-                  onDragOver={(e) => e.preventDefault()}
+                <Upload.Dragger
+                  fileList={logFiles}
+                  onChange={({ fileList }) => setLogFiles(fileList)}
+                  beforeUpload={() => false}
+                  multiple
+                  style={{ padding: '8px', fontSize: 12 }}
                 >
-                  <TextArea
-                    rows={2}
-                    placeholder="Вставте OCPP логи або перетягніть файли з логами..."
-                    value={stationLogs}
-                    onChange={(e) => {
-                      setStationLogs(e.target.value)
-                      saveFormDraft()
-                    }}
-                    style={{ fontSize: 12 }}
-                    tabIndex={11}
-                  />
-                </div>
-                <div style={{ marginTop: 4 }}>
-                  <Button
-                    icon={<RobotOutlined />}
-                    onClick={handleAnalyzeLog}
-                    loading={analyzingLog}
-                    disabled={!stationLogs.trim()}
-                    size="small"
-                    style={{ backgroundColor: '#f0f5ff', borderColor: '#adc6ff', color: '#2f54eb', fontSize: 12 }}
-                    tabIndex={12}
-                  >
-                    Розпізнати AI
-                  </Button>
-                </div>
+                  <p style={{ margin: 0, fontSize: 12, color: '#999' }}>
+                    📂 Перетягніть файли логів сюди або натисніть для вибору
+                  </p>
+                </Upload.Dragger>
               </Form.Item>
-
-              {/* AI Analysis Result */}
-              {aiAnalysis && (
-                <Form.Item label={<span style={{ fontSize: 12 }}>AI Розшифровка</span>} style={{ marginBottom: 8 }}>
-                  <TextArea
-                    rows={4}
-                    value={aiAnalysis}
-                    readOnly
-                    style={{ 
-                      backgroundColor: '#f6ffed', 
-                      border: '1px solid #b7eb8f',
-                      color: '#000',
-                      fontSize: 11
-                    }}
-                    tabIndex={-1}
-                  />
-                </Form.Item>
-              )}
 
               {/* Buttons */}
               <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
