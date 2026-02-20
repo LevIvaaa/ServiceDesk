@@ -32,7 +32,7 @@ class Ticket(Base):
     # Classification
     category: Mapped[str] = mapped_column(String(20), nullable=False)  # hardware, software, network, billing, other
     priority: Mapped[str] = mapped_column(String(10), default="medium")  # low, medium, high, critical
-    status: Mapped[str] = mapped_column(String(20), default="new", index=True)  # new, open, in_progress, pending, resolved, closed
+    status: Mapped[str] = mapped_column(String(20), default="new", index=True)  # new, in_progress, pending, reviewing, closed
 
     # Content
     title: Mapped[str] = mapped_column(String(300), nullable=False)

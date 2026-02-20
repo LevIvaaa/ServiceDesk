@@ -126,10 +126,9 @@ export default function TicketsList() {
 
   const statusColors: Record<string, string> = {
     new: 'blue',
-    open: 'purple',
     in_progress: 'cyan',
     pending: 'gold',
-    resolved: 'green',
+    reviewing: 'green',
     closed: 'default',
   }
 
@@ -363,7 +362,7 @@ export default function TicketsList() {
               value={filters.status}
               onChange={(value) => setFilters({ ...filters, status: value })}
             >
-              {['new', 'open', 'in_progress', 'pending', 'resolved', 'closed'].map(
+              {['new', 'in_progress', 'pending', 'reviewing', 'closed'].map(
                 (status) => (
                   <Option key={status} value={status}>
                     {t(`status.${status}`)}

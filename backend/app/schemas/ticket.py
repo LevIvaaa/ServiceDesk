@@ -49,7 +49,7 @@ class TicketUpdate(BaseModel):
 
 
 class TicketStatusUpdate(BaseModel):
-    status: str = Field(..., pattern="^(new|open|in_progress|pending|resolved|closed)$")
+    status: str = Field(..., pattern="^(new|in_progress|pending|reviewing|closed)$")
     comment: Optional[str] = None
 
 

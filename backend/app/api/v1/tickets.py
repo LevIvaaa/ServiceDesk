@@ -398,7 +398,7 @@ async def update_ticket_status(
     ticket.status = status_data.status
 
     # Set timestamps
-    if status_data.status == "resolved":
+    if status_data.status == "reviewing":
         ticket.resolved_at = datetime.utcnow()
     elif status_data.status == "closed":
         ticket.closed_at = datetime.utcnow()
@@ -425,8 +425,8 @@ async def update_ticket_status(
 
     await db.commit()
 
-    # Send notification if status changed to resolved or closed
-    if status_data.status in ["resolved", "closed"] and old_status != status_data.status:
+    # Send notification on any status change
+    if old_status != status_data.status:
         from app.services.notification_service import NotificationService
         notification_service = NotificationService(db)
         await notification_service.notify_ticket_status_changed(
@@ -480,7 +480,7 @@ async def assign_ticket(
 
     # Update status if new
     if ticket.status == "new":
-        ticket.status = "open"
+        ticket.status = "in_progress"
 
     # Add history entry
     history = TicketHistory(
@@ -567,11 +567,11 @@ async def delegate_ticket(
     assigned_user_id = delegate_data.assigned_user_id
     ticket.assigned_user_id = assigned_user_id
     
-    # If delegating to a different department, reset status to 'open' if it was 'in_progress'
+    # If delegating to a different department, reset status to 'new' if it was 'in_progress'
     # This allows the new department to see it in their incoming queue
     if old_dept != delegate_data.assigned_department_id:
         if ticket.status == 'in_progress':
-            ticket.status = 'open'
+            ticket.status = 'new'
 
     # Add history entry
     history = TicketHistory(
@@ -615,6 +615,18 @@ async def delegate_ticket(
             ticket_for_notif = result.scalar_one()
             await notification_service.notify_ticket_assigned(ticket_for_notif, assigned_user)
 
+    # Notify new department about delegated ticket
+    if old_dept != delegate_data.assigned_department_id:
+        notification_service = NotificationService(db)
+        # Reload ticket for notification
+        result = await db.execute(
+            select(Ticket)
+            .options(selectinload(Ticket.created_by), selectinload(Ticket.assigned_department))
+            .where(Ticket.id == ticket.id)
+        )
+        ticket_for_notif = result.scalar_one()
+        await notification_service.notify_ticket_created(ticket_for_notif)
+
     # Reload ticket with all relationships properly loaded (including Station.operator)
     result = await db.execute(
         select(Ticket)
@@ -640,8 +652,13 @@ async def add_comment(
 ):
     """Add a comment to a ticket."""
     # Verify ticket exists
-    ticket_result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
-    if not ticket_result.scalar_one_or_none():
+    ticket_result = await db.execute(
+        select(Ticket)
+        .options(selectinload(Ticket.created_by))
+        .where(Ticket.id == ticket_id)
+    )
+    ticket = ticket_result.scalar_one_or_none()
+    if not ticket:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Ticket not found",
@@ -666,6 +683,10 @@ async def add_comment(
 
     await db.commit()
     await db.refresh(comment, ["user"])
+
+    # Send notification about new comment
+    notification_service = NotificationService(db)
+    await notification_service.notify_ticket_commented(ticket, current_user, comment_data.is_internal)
 
     return TicketCommentResponse.model_validate(comment)
 

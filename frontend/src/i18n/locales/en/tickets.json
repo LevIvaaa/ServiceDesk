@@ -44,10 +44,9 @@
     "changeTitle": "Change Status",
     "changeTo": "Change status to",
     "new": "New",
-    "open": "Open",
     "in_progress": "In Progress",
     "pending": "Pending",
-    "resolved": "Resolved",
+    "reviewing": "Reviewing",
     "closed": "Closed"
   },
   "priority": {

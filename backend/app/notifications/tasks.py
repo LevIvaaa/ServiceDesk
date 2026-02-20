@@ -65,7 +65,7 @@ async def _check_sla_warnings_async():
                 Ticket.sla_due_date.isnot(None),
                 Ticket.sla_due_date <= warning_threshold,
                 Ticket.sla_breached == False,
-                Ticket.status.not_in(["resolved", "closed"]),
+                Ticket.status.not_in(["reviewing", "closed"]),
             )
         )
         tickets = result.scalars().all()
@@ -109,7 +109,7 @@ async def _send_daily_digest_async():
                 select(func.count())
                 .where(
                     Ticket.assigned_department_id == dept.id,
-                    Ticket.status.not_in(["resolved", "closed"]),
+                    Ticket.status.not_in(["reviewing", "closed"]),
                 )
             )
             open_count = tickets_result.scalar()
@@ -120,7 +120,7 @@ async def _send_daily_digest_async():
                 .where(
                     Ticket.assigned_department_id == dept.id,
                     Ticket.sla_breached == True,
-                    Ticket.status.not_in(["resolved", "closed"]),
+                    Ticket.status.not_in(["reviewing", "closed"]),
                 )
             )
             sla_breached_count = sla_result.scalar()
@@ -185,7 +185,7 @@ async def _update_sla_breached_async():
                 Ticket.sla_due_date.isnot(None),
                 Ticket.sla_due_date < now,
                 Ticket.sla_breached == False,
-                Ticket.status.not_in(["resolved", "closed"]),
+                Ticket.status.not_in(["reviewing", "closed"]),
             )
         )
         tickets = result.scalars().all()

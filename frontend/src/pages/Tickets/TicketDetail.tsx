@@ -106,7 +106,7 @@ export default function TicketDetail() {
 
   // Визначаємо доступні статуси
   const getAvailableStatuses = () => {
-    return ['new', 'open', 'in_progress', 'pending', 'resolved', 'closed']
+    return ['new', 'in_progress', 'pending', 'reviewing', 'closed']
   }
 
   const statuses = getAvailableStatuses()
@@ -496,10 +496,9 @@ export default function TicketDetail() {
 
   const statusColors: Record<string, string> = {
     new: 'blue',
-    open: 'purple',
     in_progress: 'cyan',
     pending: 'gold',
-    resolved: 'green',
+    reviewing: 'green',
     closed: 'default',
   }
 
@@ -829,7 +828,7 @@ export default function TicketDetail() {
                   <Select
                     value={ticket.status}
                     onChange={(val) => {
-                      if (val === 'resolved' || val === 'closed') {
+                      if (val === 'reviewing' || val === 'closed') {
                         setPendingStatus(val)
                         setStatusModalVisible(true)
                       } else {
@@ -878,7 +877,7 @@ export default function TicketDetail() {
               {/* Close Ticket Button for ticket creator when status is resolved */}
               {user && 
                ticket.created_by_id === user.id && 
-               ticket.status === 'resolved' && (
+               ticket.status === 'reviewing' && (
                 <div>
                   <Button
                     type="primary"

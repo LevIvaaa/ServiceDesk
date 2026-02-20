@@ -37,10 +37,9 @@
   "status": {
     "label": "Статус",
     "new": "Новий",
-    "open": "Відкритий",
     "in_progress": "В роботі",
     "pending": "Очікування",
-    "resolved": "Вирішено",
+    "reviewing": "Перевіряється",
     "closed": "Закритий"
   },
   "priority": {

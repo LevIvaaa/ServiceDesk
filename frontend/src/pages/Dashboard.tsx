@@ -80,10 +80,9 @@ export default function Dashboard() {
 
   const statusColors: Record<string, string> = {
     new: 'blue',
-    open: 'purple',
     in_progress: 'cyan',
     pending: 'gold',
-    resolved: 'green',
+    reviewing: 'green',
     closed: 'default',
   }
 

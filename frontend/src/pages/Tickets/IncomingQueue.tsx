@@ -136,8 +136,8 @@ export default function IncomingQueue() {
         statusFilter = filters.status || ''
         departmentFilter = filters.assigned_department_id || selectedDepartmentFilter
       } else if (activeTab === 'incoming') {
-        // Incoming: ALL new and open tickets for current user's department (not just assigned to user)
-        statusFilter = 'new,open'
+        // Incoming: ALL new tickets for current user's department
+        statusFilter = 'new'
         departmentFilter = currentUser?.department_id || undefined
       } else if (activeTab === 'inProgress') {
         // In progress: in_progress and pending for current user's department
@@ -148,8 +148,8 @@ export default function IncomingQueue() {
         statusFilter = 'in_progress,pending'
         departmentFilter = undefined // Don't filter by department, filter by user below
       } else {
-        // Completed: resolved and closed for current user's department
-        statusFilter = 'resolved,closed'
+        // Completed: reviewing and closed for current user's department
+        statusFilter = 'reviewing,closed'
         departmentFilter = currentUser?.department_id || undefined
       }
       
@@ -189,7 +189,7 @@ export default function IncomingQueue() {
         setStats({ new: 0, unassigned: 0, urgent: urgentCount, total: response.total, inProgress: inProgressCount })
       } else {
         // Completed tab
-        const resolvedCount = response.items.filter(t => t.status === 'resolved').length
+        const resolvedCount = response.items.filter(t => t.status === 'reviewing').length
         setStats({ new: 0, unassigned: 0, urgent: 0, total: response.total, inProgress: resolvedCount })
       }
     } catch (error) {
@@ -264,7 +264,7 @@ export default function IncomingQueue() {
       }
 
       if (selectedTicket.status === 'new') {
-        await ticketsApi.updateStatus(selectedTicket.id, 'open')
+        await ticketsApi.updateStatus(selectedTicket.id, 'in_progress')
       }
 
       setAssignModalVisible(false)
@@ -342,10 +342,9 @@ export default function IncomingQueue() {
 
   const statusColors: Record<string, string> = {
     new: 'blue',
-    open: 'purple',
     in_progress: 'cyan',
-    pending: 'orange',
-    resolved: 'green',
+    pending: 'gold',
+    reviewing: 'green',
     closed: 'default',
   }
 
@@ -449,7 +448,7 @@ export default function IncomingQueue() {
         <Space size="small">
           {activeTab === 'incoming' && (
             <>
-              {(record.status === 'new' || record.status === 'open') && (
+              {(record.status === 'new') && (
                 <Button
                   type="primary"
                   size="small"
@@ -471,7 +470,7 @@ export default function IncomingQueue() {
           )}
           {activeTab === 'all' && (
             <>
-              {(record.status === 'new' || record.status === 'open') && 
+              {(record.status === 'new') && 
                record.assigned_department_id === currentUser?.department_id && (
                 <Button
                   type="primary"
@@ -559,7 +558,7 @@ export default function IncomingQueue() {
               value={filters.status}
               onChange={(value) => setFilters({ ...filters, status: value })}
             >
-              {['new', 'open', 'in_progress', 'pending', 'resolved', 'closed'].map(
+              {['new', 'in_progress', 'pending', 'reviewing', 'closed'].map(
                 (status) => (
                   <Option key={status} value={status}>
                     {t(`status.${status}`)}
@@ -849,7 +848,7 @@ export default function IncomingQueue() {
                 <Col xs={24} sm={12} md={8}>
                   <Card>
                     <Statistic
-                      title={i18n.language === 'en' ? 'Resolved' : 'Вирішено'}
+                      title={i18n.language === 'en' ? 'Reviewing' : 'Перевіряється'}
                       value={stats.inProgress}
                       prefix={<CheckCircleOutlined />}
                       valueStyle={{ color: '#52c41a' }}

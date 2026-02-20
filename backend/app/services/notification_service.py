@@ -137,7 +137,7 @@ class NotificationService:
             self.db.add(notification)
         
         # If status changed to resolved or closed, notify ticket handlers from the assigned department
-        if new_status in ["resolved", "closed"] and ticket.assigned_department_id:
+        if new_status in ["reviewing", "closed"] and ticket.assigned_department_id:
             from app.models.role import Role
             from sqlalchemy.orm import selectinload
             
@@ -322,10 +322,9 @@ class NotificationService:
         """Translate status to Ukrainian."""
         translations = {
             "new": "Новий",
-            "open": "Відкритий",
             "in_progress": "В роботі",
             "pending": "Очікування",
-            "resolved": "Вирішено",
+            "reviewing": "Перевіряється",
             "closed": "Закритий",
         }
         return translations.get(status, status)

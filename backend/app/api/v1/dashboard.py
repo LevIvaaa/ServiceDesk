@@ -22,7 +22,7 @@ async def get_dashboard_stats(
     """Get dashboard statistics."""
     # Tickets by status
     status_counts = {}
-    for status in ["new", "open", "in_progress", "pending", "resolved", "closed"]:
+    for status in ["new", "in_progress", "pending", "reviewing", "closed"]:
         result = await db.execute(
             select(func.count()).where(Ticket.status == status)
         )
@@ -34,7 +34,7 @@ async def get_dashboard_stats(
         result = await db.execute(
             select(func.count()).where(
                 Ticket.priority == priority,
-                Ticket.status.not_in(["resolved", "closed"]),
+                Ticket.status.not_in(["reviewing", "closed"]),
             )
         )
         priority_counts[priority] = result.scalar()
@@ -45,7 +45,7 @@ async def get_dashboard_stats(
 
     # Open tickets
     open_result = await db.execute(
-        select(func.count()).where(Ticket.status.not_in(["resolved", "closed"]))
+        select(func.count()).where(Ticket.status.not_in(["reviewing", "closed"]))
     )
     open_tickets = open_result.scalar()
 
@@ -53,7 +53,7 @@ async def get_dashboard_stats(
     sla_result = await db.execute(
         select(func.count()).where(
             Ticket.sla_breached == True,
-            Ticket.status.not_in(["resolved", "closed"]),
+            Ticket.status.not_in(["reviewing", "closed"]),
         )
     )
     sla_breached = sla_result.scalar()
@@ -114,7 +114,7 @@ async def get_my_tickets(
         )
         .where(
             Ticket.assigned_user_id == current_user.id,
-            Ticket.status.not_in(["resolved", "closed"]),
+            Ticket.status.not_in(["reviewing", "closed"]),
         )
         .order_by(
             # Critical first, then by SLA due date

@@ -40,7 +40,7 @@ class TicketService:
             count_result = await self.db.execute(
                 select(func.count(Ticket.id)).where(
                     Ticket.assigned_user_id == user.id,
-                    Ticket.status.in_(["new", "open", "in_progress"]),
+                    Ticket.status.in_(["new", "in_progress"]),
                 )
             )
             user_loads[user.id] = count_result.scalar()
@@ -88,7 +88,7 @@ class TicketService:
         if not ticket.sla_due_date:
             return False
 
-        if ticket.status in ["resolved", "closed"]:
+        if ticket.status in ["reviewing", "closed"]:
             return False
 
         return datetime.utcnow() > ticket.sla_due_date
