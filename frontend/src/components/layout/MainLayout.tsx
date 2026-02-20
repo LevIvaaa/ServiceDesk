@@ -145,13 +145,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/',
       icon: <DashboardOutlined />,
       label: t('menu.dashboard'),
-      visible: !user?.is_admin, // Dashboard for all non-admins
+      visible: true,
     },
     {
       key: '/tickets',
       icon: <FileTextOutlined />,
       label: t('menu.tickets'),
-      visible: !user?.is_admin, // Tickets for all non-admins
+      visible: true,
     },
     {
       key: '/tickets/incident-types',
@@ -181,7 +181,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/log-analysis',
       icon: <FileTextOutlined />,
       label: t('menu.logAnalysis'),
-      visible: !user?.is_admin,
+      visible: true,
     },
     {
       key: '/users',

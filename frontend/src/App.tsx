@@ -39,13 +39,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function DashboardRedirect() {
-  const { user } = useAuthStore()
-  
-  // Redirect admins to users page instead of dashboard
-  if (user?.is_admin) {
-    return <Navigate to="/users" replace />
-  }
-  
   return <Dashboard />
 }
 
