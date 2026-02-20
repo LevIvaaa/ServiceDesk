@@ -893,6 +893,37 @@ export default function TicketDetail() {
                 </div>
               )}
 
+              {/* Delete Ticket - admin only */}
+              {user?.is_admin && (
+                <div>
+                  <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      Modal.confirm({
+                        title: 'Видалити тікет?',
+                        content: 'Цю дію неможливо скасувати.',
+                        okText: 'Видалити',
+                        cancelText: 'Скасувати',
+                        okButtonProps: { danger: true },
+                        onOk: async () => {
+                          try {
+                            await ticketsApi.delete(parseInt(id!))
+                            message.success('Тікет видалено')
+                            navigate('/tickets')
+                          } catch {
+                            message.error('Помилка видалення тікету')
+                          }
+                        },
+                      })
+                    }}
+                    style={{ marginTop: 8 }}
+                  >
+                    Видалити тікет
+                  </Button>
+                </div>
+              )}
+
               {/* Assignment */}
               {hasPermission('tickets.assign') && canEditTicket() && (
                 <div>

@@ -31,6 +31,7 @@ import {
   SearchOutlined,
   DownloadOutlined,
   ClearOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons'
 import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
@@ -500,6 +501,31 @@ export default function IncomingQueue() {
             >
               {i18n.language === 'en' ? 'View' : 'Переглянути'}
             </Button>
+          )}
+          {currentUser?.is_admin && (
+            <Button
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Видалити тікет?',
+                  content: 'Цю дію неможливо скасувати.',
+                  okText: 'Видалити',
+                  cancelText: 'Скасувати',
+                  okButtonProps: { danger: true },
+                  onOk: async () => {
+                    try {
+                      await ticketsApi.delete(record.id)
+                      message.success('Тікет видалено')
+                      fetchTickets()
+                    } catch {
+                      message.error('Помилка видалення')
+                    }
+                  },
+                })
+              }}
+            />
           )}
         </Space>
       ),

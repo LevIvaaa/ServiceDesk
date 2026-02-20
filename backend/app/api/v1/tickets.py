@@ -346,12 +346,13 @@ async def delete_ticket(
             detail="Ticket not found",
         )
 
-    # Only allow deletion of new or closed tickets
-    if ticket.status not in ["new", "closed"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only new or closed tickets can be deleted",
-        )
+    # Admins can delete any ticket; others only new/closed
+    if not current_user.is_admin:
+        if ticket.status not in ["new", "closed"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only new or closed tickets can be deleted",
+            )
 
     await db.delete(ticket)
     await db.commit()
