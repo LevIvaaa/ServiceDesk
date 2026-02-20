@@ -745,27 +745,60 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
               {/* Логи станції */}
               <Form.Item label={<span style={{ fontSize: 12 }}>Логи станції</span>} style={{ marginBottom: 8 }}>
-                <TextArea
-                  rows={2}
-                  placeholder="Вставте OCPP логи або текст..."
-                  value={stationLogs}
-                  onChange={(e) => {
-                    setStationLogs(e.target.value)
-                    saveFormDraft()
+                <div
+                  style={{
+                    border: '1px solid #d9d9d9',
+                    borderRadius: 6,
+                    overflow: 'hidden',
+                    transition: 'border-color 0.3s',
                   }}
-                  style={{ fontSize: 12, marginBottom: 6 }}
-                  tabIndex={11}
-                />
-                <Upload
-                  fileList={logFiles}
-                  onChange={({ fileList }) => setLogFiles(fileList)}
-                  beforeUpload={() => false}
-                  multiple
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    const files = e.dataTransfer?.files
+                    if (!files || files.length === 0) return
+                    const newFiles: UploadFile[] = []
+                    for (let i = 0; i < files.length; i++) {
+                      const f = files[i]
+                      newFiles.push({
+                        uid: `log-${Date.now()}-${i}`,
+                        name: f.name,
+                        size: f.size,
+                        type: f.type,
+                        originFileObj: f as any,
+                        status: 'done',
+                      })
+                    }
+                    setLogFiles(prev => [...prev, ...newFiles])
+                    message.success(`Додано ${files.length} файл(ів)`)
+                  }}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
                 >
-                  <Button icon={<UploadOutlined />} size="small" tabIndex={12}>
-                    Прикріпити файли логів
-                  </Button>
-                </Upload>
+                  {logFiles.length > 0 && (
+                    <div style={{ padding: '6px 8px', borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
+                      {logFiles.map((file, idx) => (
+                        <div key={file.uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, padding: '2px 0' }}>
+                          <span>📄 {file.name} {file.size ? `(${(file.size / 1024).toFixed(1)} KB)` : ''}</span>
+                          <Button
+                            type="text" size="small" danger
+                            style={{ padding: '0 4px', height: 18, fontSize: 10 }}
+                            onClick={() => setLogFiles(prev => prev.filter((_, i) => i !== idx))}
+                          >✕</Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <TextArea
+                    rows={2}
+                    placeholder="Вставте OCPP логи, текст або перетягніть файли..."
+                    value={stationLogs}
+                    onChange={(e) => {
+                      setStationLogs(e.target.value)
+                      saveFormDraft()
+                    }}
+                    style={{ fontSize: 12, border: 'none', boxShadow: 'none', resize: 'none' }}
+                    tabIndex={11}
+                  />
+                </div>
               </Form.Item>
 
               {/* Buttons */}
