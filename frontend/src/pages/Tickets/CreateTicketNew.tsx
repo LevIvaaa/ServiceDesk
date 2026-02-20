@@ -20,9 +20,6 @@ import {
   ArrowLeftOutlined,
   UploadOutlined,
   RobotOutlined,
-  EnvironmentOutlined,
-  UserOutlined,
-  ToolOutlined,
   FileTextOutlined,
 } from '@ant-design/icons'
 import { ticketsApi } from '../../api/tickets'
