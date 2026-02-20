@@ -1,233 +1,200 @@
 import { Typography, Card, Collapse, Divider, Table, Tag } from 'antd'
 import {
-  ToolOutlined,
-  TeamOutlined,
+  UserOutlined,
   SettingOutlined,
   FileTextOutlined,
   CheckCircleOutlined,
 } from '@ant-design/icons'
+import { useAuthStore } from '../../store/authStore'
 
 const { Title, Paragraph, Text } = Typography
 const { Panel } = Collapse
 
 export default function HelpPage() {
+  const user = useAuthStore(state => state.user)
+  const isAdmin = user?.is_admin
+
   const rolesData = [
     {
       key: '1',
-      role: 'Диспетчер',
-      icon: <FileTextOutlined style={{ color: '#1890ff' }} />,
-      description: 'Створює тікети, заповнює форму, призначає відповідальних, відстежує статус, додає коментарі.',
+      role: 'Користувач',
+      icon: <UserOutlined style={{ color: '#1890ff' }} />,
+      description: 'Створює тікети, приймає в роботу, делегує іншим користувачам, змінює статус, додає коментарі та вкладення, експортує дані.',
     },
     {
       key: '2',
-      role: 'Інженер / Технік',
-      icon: <ToolOutlined style={{ color: '#52c41a' }} />,
-      description: 'Отримує призначені тікети, оновлює статус виконання, додає результати діагностики та коментарі.',
-    },
-    {
-      key: '3',
-      role: 'Менеджер / Супервайзер',
-      icon: <TeamOutlined style={{ color: '#faad14' }} />,
-      description: 'Переглядає всі тікети, контролює виконання, змінює пріоритети, перепризначає тікети, має доступ до експорту та звітності.',
-    },
-    {
-      key: '4',
       role: 'Адміністратор',
       icon: <SettingOutlined style={{ color: '#f5222d' }} />,
-      description: 'Керує користувачами та ролями, налаштовує систему, додає нових кореспондентів, керує довідниками (станції, моделі авто тощо).',
+      description: 'Має всі можливості користувача + керує користувачами, відділами, операторами, станціями, типами інцидентів, може видаляти будь-які тікети та редагувати заголовки.',
     },
   ]
 
   const rolesColumns = [
-    {
-      title: '',
-      dataIndex: 'icon',
-      key: 'icon',
-      width: 50,
-    },
-    {
-      title: 'Роль',
-      dataIndex: 'role',
-      key: 'role',
-      width: 200,
-      render: (text: string) => <Text strong>{text}</Text>,
-    },
-    {
-      title: 'Опис можливостей',
-      dataIndex: 'description',
-      key: 'description',
-    },
+    { title: '', dataIndex: 'icon', key: 'icon', width: 50 },
+    { title: 'Роль', dataIndex: 'role', key: 'role', width: 200, render: (text: string) => <Text strong>{text}</Text> },
+    { title: 'Опис можливостей', dataIndex: 'description', key: 'description' },
   ]
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       <Title level={2}>
-        <FileTextOutlined /> Інструкція використання тікет-системи ECOFACTOR
+        <FileTextOutlined /> Довідка — ECOFACTOR Service Desk
       </Title>
-      
       <Paragraph>
-        Ця інструкція допоможе вам швидко розібратися з основними функціями системи обробки інцидентів.
+        Система обробки інцидентів для зарядних станцій. Нижче описані основні функції та інструкції.
       </Paragraph>
 
       <Divider />
 
-      {/* Ролі в системі */}
       <Card title={<Title level={3}>Ролі в системі</Title>} style={{ marginBottom: 24 }}>
         <Paragraph>
-          Кожна роль має свій набір прав та обов'язків. Кожна наступна роль має більш розширений доступ до компонентів системи.
+          У системі є дві ролі. Адміністратор має всі можливості користувача плюс доступ до управління системою.
         </Paragraph>
-        <Table
-          dataSource={rolesData}
-          columns={rolesColumns}
-          pagination={false}
-          size="middle"
-        />
+        <Table dataSource={rolesData} columns={rolesColumns} pagination={false} size="middle" />
       </Card>
 
-      {/* Інструкції */}
+      <Card title={<Title level={3}>Вкладки тікетів</Title>} style={{ marginBottom: 24 }}>
+        <Paragraph>На сторінці "Тікети" доступні наступні вкладки:</Paragraph>
+        <ul style={{ paddingLeft: 20 }}>
+          <li><Text strong>Всі</Text> — всі тікети в системі з фільтрами (пошук, статус, пріоритет, категорія, відділ, створив)</li>
+          <li><Text strong>Вхідні</Text> — нові тікети для вашого відділу, які ще не прийняті в роботу</li>
+          <li><Text strong>В роботі</Text> — тікети вашого відділу зі статусом "В роботі" або "Очікує"</li>
+          <li><Text strong>Мої тікети</Text> — тікети, призначені особисто вам</li>
+          <li><Text strong>Делеговані</Text> — тікети, які вам делегували інші користувачі (з лічильником)</li>
+          <li><Text strong>Завершені</Text> — тікети зі статусом "Перевіряється" або "Закрито"</li>
+        </ul>
+      </Card>
+
+      <Card title={<Title level={3}>Статуси тікетів</Title>} style={{ marginBottom: 24 }}>
+        <ul style={{ paddingLeft: 20 }}>
+          <li><Tag color="blue">Новий</Tag> — тікет щойно створений, очікує прийняття</li>
+          <li><Tag color="cyan">В роботі</Tag> — тікет прийнятий, ведеться робота</li>
+          <li><Tag color="gold">Очікує</Tag> — робота призупинена, потрібна додаткова інформація</li>
+          <li><Tag color="green">Перевіряється</Tag> — рішення знайдене, очікується підтвердження</li>
+          <li><Tag>Закрито</Tag> — проблему вирішено</li>
+        </ul>
+      </Card>
+
       <Card title={<Title level={3}>Покрокові інструкції</Title>} style={{ marginBottom: 24 }}>
         <Collapse accordion>
-          {/* Як створити тікет */}
-          <Panel header={<Text strong>Як створити тікет</Text>} key="1">
+          <Panel header={<Text strong>Як створити тікет</Text>} key="create">
             <ol style={{ paddingLeft: 20 }}>
-              <li>Натисніть кнопку <Tag color="blue">Створити тікет</Tag></li>
-              <li>Оберіть відділ, який буде обробляти тікет</li>
-              <li>Введіть номер станції — система автоматично підтягне назву та адресу</li>
-              <li>Оберіть тип порту (необов'язково)</li>
-              <li>Заповніть модель авто (необов'язково)</li>
-              <li>Вкажіть контактну інформацію клієнта (ім'я, телефон)</li>
-              <li>Оберіть джерело звернення (телефон, email, тощо)</li>
-              <li>Опишіть проблему у полі коментаря</li>
-              <li>За потреби додайте вкладення та логи станції</li>
-              <li>Натисніть <Tag color="blue">Зберегти</Tag> — номер тікету згенерується автоматично</li>
+              <li>Натисніть <Tag color="blue">Створити тікет</Tag></li>
+              <li>Оберіть відділ для обробки тікету</li>
+              <li>Оберіть тип інциденту</li>
+              <li>Введіть номер або назву станції — система підтягне дані автоматично</li>
+              <li>За потреби оберіть тип порту та модель авто</li>
+              <li>Оберіть тип клієнта (B2B / B2C)</li>
+              <li>Вкажіть контактні дані клієнта</li>
+              <li>Опишіть проблему</li>
+              <li>Додайте логи станції (текст або файли перетягуванням)</li>
+              <li>За потреби оберіть виконавця з обраного відділу</li>
+              <li>Натисніть <Tag color="blue">Зберегти</Tag></li>
+            </ol>
+          </Panel>
+
+          <Panel header={<Text strong>Як прийняти тікет в роботу</Text>} key="accept">
+            <ol style={{ paddingLeft: 20 }}>
+              <li>Перейдіть на вкладку "Вхідні"</li>
+              <li>Натисніть <Tag color="green">Прийняти</Tag> біля потрібного тікету</li>
+              <li>Тікет автоматично перейде у статус "В роботі" та буде призначений вам</li>
+            </ol>
+          </Panel>
+
+          <Panel header={<Text strong>Як делегувати тікет</Text>} key="delegate">
+            <ol style={{ paddingLeft: 20 }}>
+              <li>Відкрийте тікет</li>
+              <li>Натисніть кнопку "Призначити" у блоці "Дії"</li>
+              <li>Оберіть відділ та конкретного користувача</li>
+              <li>За потреби додайте коментар</li>
+              <li>Натисніть "Зберегти"</li>
             </ol>
             <Paragraph type="secondary">
-              <CheckCircleOutlined style={{ color: '#52c41a' }} /> Форма автоматично зберігається при заповненні, тому ви не втратите дані при випадковому закритті.
+              <CheckCircleOutlined style={{ color: '#52c41a' }} /> Делегувати можна в будь-якому статусі тікету, будь-якому користувачу.
             </Paragraph>
           </Panel>
 
-          {/* Як працювати з тікетом */}
-          <Panel header={<Text strong>Як працювати з тікетом</Text>} key="2">
-            <Paragraph><Text strong>Відкриття тікету:</Text></Paragraph>
-            <ul style={{ paddingLeft: 20 }}>
-              <li>Клікніть на будь-яке місце в рядку тікету в таблиці</li>
-              <li>Або натисніть на номер тікету</li>
-            </ul>
-
-            <Paragraph style={{ marginTop: 16 }}><Text strong>Зміна статусу:</Text></Paragraph>
-            <ul style={{ paddingLeft: 20 }}>
-              <li><Tag color="green">Прийняти в роботу</Tag> — для нових тікетів</li>
-              <li><Tag>На аналіз</Tag> — якщо потрібен додатковий час на вирішення</li>
-              <li><Tag color="blue">Перевіряється</Tag> — рішення знайдене, очікується підтвердження</li>
-              <li><Tag color="red">Закрити тікет</Tag> — проблему вирішено</li>
-            </ul>
-
-            <Paragraph style={{ marginTop: 16 }}><Text strong>Додавання коментарів:</Text></Paragraph>
-            <ul style={{ paddingLeft: 20 }}>
-              <li>Прокрутіть до розділу "Коментарі"</li>
-              <li>Введіть текст коментаря</li>
-              <li>Натисніть <Tag color="blue">Надіслати</Tag></li>
-              <li>Коментар буде видимий для всіх учасників</li>
-            </ul>
-          </Panel>
-
-          {/* Навігація клавіатурою */}
-          <Panel header={<Text strong>Навігація клавіатурою</Text>} key="3">
-            <Paragraph>
-              Для швидкого заповнення форми створення тікету використовуйте клавіатуру:
-            </Paragraph>
-            <ul style={{ paddingLeft: 20 }}>
-              <li><Tag>Tab</Tag> — перехід до наступного поля</li>
-              <li><Tag>Shift + Tab</Tag> — перехід до попереднього поля</li>
-              <li><Tag>Enter</Tag> — вибір значення зі списку та перехід до наступного поля</li>
-              <li><Tag>↑ ↓</Tag> — навігація по списку опцій у випадаючих меню</li>
-            </ul>
-          </Panel>
-
-          {/* Експорт даних */}
-          <Panel header={<Text strong>Експорт даних</Text>} key="4">
-            <Paragraph>
-              Для експорту списку тікетів у файл Excel:
-            </Paragraph>
+          <Panel header={<Text strong>Як змінити статус тікету</Text>} key="status">
             <ol style={{ paddingLeft: 20 }}>
-              <li>Перейдіть на сторінку "Тікети"</li>
-              <li>За потреби застосуйте фільтри (статус, пріоритет, відділ тощо)</li>
-              <li>Натисніть кнопку <Tag>Експорт</Tag></li>
-              <li>Файл автоматично завантажиться на ваш комп'ютер</li>
+              <li>Відкрийте тікет</li>
+              <li>У блоці "Дії" оберіть новий статус зі списку</li>
+              <li>Для статусів "Перевіряється" та "Закрито" потрібно додати коментар</li>
             </ol>
-            <Paragraph type="secondary">
-              Файл містить всі дані про тікети, включаючи детальну інформацію про станції (номер, назва, адреса, власник).
-            </Paragraph>
           </Panel>
 
-          {/* Пошук станцій */}
-          <Panel header={<Text strong>Пошук станцій</Text>} key="5">
-            <Paragraph>
-              При створенні тікету ви можете шукати станцію за:
-            </Paragraph>
+          <Panel header={<Text strong>Експорт тікетів</Text>} key="export">
+            <ol style={{ paddingLeft: 20 }}>
+              <li>Перейдіть на вкладку "Всі" на сторінці тікетів</li>
+              <li>Застосуйте потрібні фільтри</li>
+              <li>Натисніть <Tag>Експорт</Tag></li>
+              <li>Файл Excel завантажиться автоматично</li>
+            </ol>
+          </Panel>
+
+          <Panel header={<Text strong>Пошук станцій</Text>} key="stations">
+            <Paragraph>При створенні тікету можна шукати станцію за:</Paragraph>
             <ul style={{ paddingLeft: 20 }}>
-              <li><Text strong>Номером станції</Text> (наприклад: 879)</li>
-              <li><Text strong>Назвою станції</Text> (наприклад: IONITY)</li>
-              <li><Text strong>Адресою</Text></li>
+              <li>Номером станції</li>
+              <li>Назвою станції</li>
+              <li>Адресою</li>
             </ul>
-            <Paragraph style={{ marginTop: 16 }}>
-              Після вибору станції автоматично відобразиться інформаційний блок з деталями:
-            </Paragraph>
-            <ul style={{ paddingLeft: 20 }}>
-              <li>Номер станції у локації</li>
-              <li>ID станції (серійний номер вендора)</li>
-              <li>Адреса</li>
-              <li>Власник</li>
-              <li>Виробник</li>
-            </ul>
+            <Paragraph>Після вибору станції відобразиться блок з деталями: номер, ID, адреса, власник.</Paragraph>
           </Panel>
         </Collapse>
       </Card>
 
-      {/* Сценарії роботи */}
-      <Card title={<Title level={3}>Типові сценарії роботи</Title>}>
-        <Collapse accordion>
-          <Panel header={<Text strong>Диспетчер</Text>} key="dispatcher">
-            <ol style={{ paddingLeft: 20 }}>
-              <li>Приймає дзвінок від клієнта</li>
-              <li>Створює тікет з описом проблеми</li>
-              <li>Призначає виконавця або відділ</li>
-              <li>Відстежує статус виконання</li>
-              <li>Додає коментарі при необхідності</li>
-            </ol>
-          </Panel>
+      {isAdmin && (
+        <Card title={<Title level={3}>Функції адміністратора</Title>} style={{ marginBottom: 24 }}>
+          <Collapse accordion>
+            <Panel header={<Text strong>Управління користувачами</Text>} key="users">
+              <ul style={{ paddingLeft: 20 }}>
+                <li>Перейдіть у розділ "Користувачі" в бічному меню</li>
+                <li>Додавайте нових користувачів кнопкою "Створити"</li>
+                <li>Призначайте роль: Користувач або Адміністратор</li>
+                <li>Прив'язуйте користувача до відділу</li>
+                <li>Деактивуйте користувачів за потреби</li>
+              </ul>
+            </Panel>
 
-          <Panel header={<Text strong>Інженер / Технік</Text>} key="engineer">
-            <ol style={{ paddingLeft: 20 }}>
-              <li>Отримує призначений тікет</li>
-              <li>Натискає <Tag color="green">Прийняти в роботу</Tag></li>
-              <li>Виїжджає на станцію або проводить діагностику</li>
-              <li>Оновлює статус (<Tag>На аналіз</Tag> або <Tag color="blue">Перевіряється</Tag>)</li>
-              <li>Додає коментар з результатами</li>
-              <li>Закриває тікет після вирішення проблеми</li>
-            </ol>
-          </Panel>
+            <Panel header={<Text strong>Управління відділами</Text>} key="departments">
+              <ul style={{ paddingLeft: 20 }}>
+                <li>Розділ "Відділи" — створення, редагування, деактивація відділів</li>
+                <li>Кожен відділ має свій набір користувачів</li>
+                <li>Тікети призначаються на відділ або конкретного користувача відділу</li>
+              </ul>
+            </Panel>
 
-          <Panel header={<Text strong>Менеджер / Супервайзер</Text>} key="manager">
-            <ol style={{ paddingLeft: 20 }}>
-              <li>Переглядає дашборд з усіма тікетами</li>
-              <li>Контролює прострочені тікети</li>
-              <li>Перепризначає тікети при потребі</li>
-              <li>Змінює пріоритети</li>
-              <li>Експортує дані для звітності</li>
-            </ol>
-          </Panel>
+            <Panel header={<Text strong>Редагування типів інцидентів</Text>} key="incidents">
+              <ul style={{ paddingLeft: 20 }}>
+                <li>Розділ "Редагування тікетів" у бічному меню</li>
+                <li>Додавайте, редагуйте та видаляйте типи інцидентів</li>
+                <li>Змінюйте порядок перетягуванням</li>
+              </ul>
+            </Panel>
 
-          <Panel header={<Text strong>Адміністратор</Text>} key="admin">
-            <ol style={{ paddingLeft: 20 }}>
-              <li>Додає нових користувачів</li>
-              <li>Налаштовує права доступу</li>
-              <li>Оновлює довідники (станції, оператори)</li>
-              <li>Керує відділами</li>
-              <li>Налаштовує інтеграції</li>
-            </ol>
-          </Panel>
-        </Collapse>
+            <Panel header={<Text strong>Управління станціями та операторами</Text>} key="stations-admin">
+              <ul style={{ paddingLeft: 20 }}>
+                <li>Розділ "Станції" — перегляд, створення, редагування станцій</li>
+                <li>Розділ "Оператори" — управління операторами зарядних станцій</li>
+              </ul>
+            </Panel>
+
+            <Panel header={<Text strong>Видалення тікетів</Text>} key="delete">
+              <Paragraph>
+                Адміністратор може видалити будь-який тікет у будь-якому статусі. Кнопка видалення доступна у списку тікетів та на сторінці тікету.
+              </Paragraph>
+            </Panel>
+          </Collapse>
+        </Card>
+      )}
+
+      <Card title={<Title level={3}>Гарячі клавіші</Title>}>
+        <ul style={{ paddingLeft: 20 }}>
+          <li><Tag>Tab</Tag> — перехід до наступного поля</li>
+          <li><Tag>Shift + Tab</Tag> — повернення до попереднього поля</li>
+          <li><Tag>Enter</Tag> — вибір значення зі списку</li>
+          <li><Tag>↑ ↓</Tag> — навігація по випадаючих списках</li>
+        </ul>
       </Card>
     </div>
   )
