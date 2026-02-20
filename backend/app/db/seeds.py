@@ -40,33 +40,16 @@ async def seed_roles(db: AsyncSession):
     logger.info("Seeding roles...")
 
     roles_config = {
-        "operator": {
-            "description": "Оператор підтримки",
-            "permissions": [
-                "tickets.view", "tickets.create", "tickets.add_comment",
-                "stations.view", "operators.view", "knowledge.view",
-            ],
-        },
-        "technician": {
-            "description": "Технічний спеціаліст",
+        "user": {
+            "description": "Користувач - створення та обробка тікетів",
             "permissions": [
                 "tickets.view", "tickets.view_all", "tickets.create",
-                "tickets.edit", "tickets.change_status", "tickets.add_comment",
-                "tickets.view_internal_comments", "tickets.collect_logs",
-                "stations.view", "operators.view", "knowledge.view",
-            ],
-        },
-        "manager": {
-            "description": "Керівник відділу",
-            "permissions": [
-                "tickets.view", "tickets.view_all", "tickets.create",
-                "tickets.edit", "tickets.assign", "tickets.change_status",
+                "tickets.edit", "tickets.delete", "tickets.assign",
+                "tickets.delegate", "tickets.change_status",
                 "tickets.add_comment", "tickets.view_internal_comments",
-                "tickets.delegate", "tickets.collect_logs",
-                "users.view", "departments.view",
+                "tickets.collect_logs",
                 "stations.view", "operators.view",
-                "knowledge.view", "knowledge.create", "knowledge.edit",
-                "reports.view", "reports.export",
+                "knowledge.view", "departments.view", "users.view",
             ],
         },
     }

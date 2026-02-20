@@ -35,17 +35,17 @@ class NotificationService:
             await self.db.commit()
             return
         
-        # Find handler role
+        # Find user role (unified role for all non-admin users)
         role_result = await self.db.execute(
             select(Role)
             .options(selectinload(Role.users))
-            .where(Role.name == "handler")
+            .where(Role.name == "user")
         )
-        handler_role = role_result.scalar_one_or_none()
+        user_role = role_result.scalar_one_or_none()
         
-        if handler_role and handler_role.users:
-            # Create notifications only for handlers in the assigned department
-            for user in handler_role.users:
+        if user_role and user_role.users:
+            # Create notifications only for users in the assigned department
+            for user in user_role.users:
                 # Don't notify the creator
                 if user.id == ticket.created_by_id:
                     continue
@@ -141,17 +141,17 @@ class NotificationService:
             from app.models.role import Role
             from sqlalchemy.orm import selectinload
             
-            # Find handler role
+            # Find user role (unified role)
             role_result = await self.db.execute(
                 select(Role)
                 .options(selectinload(Role.users))
-                .where(Role.name == "handler")
+                .where(Role.name == "user")
             )
-            handler_role = role_result.scalar_one_or_none()
+            user_role = role_result.scalar_one_or_none()
             
-            if handler_role and handler_role.users:
-                # Create notifications only for handlers in the assigned department
-                for user in handler_role.users:
+            if user_role and user_role.users:
+                # Create notifications only for users in the assigned department
+                for user in user_role.users:
                     # Don't notify if already in recipients
                     if any(u.id == user.id for u, _ in recipients):
                         continue

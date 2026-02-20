@@ -104,16 +104,9 @@ export default function TicketDetail() {
     return false
   }
 
-  // Визначаємо доступні статуси залежно від ролі
+  // Визначаємо доступні статуси
   const getAvailableStatuses = () => {
-    const allStatuses = ['new', 'open', 'in_progress', 'pending', 'resolved', 'closed']
-    
-    // Якщо користувач має роль handler, прибираємо статус 'closed'
-    if (user && !user.is_admin && user.roles.some(role => role.name === 'handler')) {
-      return allStatuses.filter(status => status !== 'closed')
-    }
-    
-    return allStatuses
+    return ['new', 'open', 'in_progress', 'pending', 'resolved', 'closed']
   }
 
   const statuses = getAvailableStatuses()
@@ -882,9 +875,8 @@ export default function TicketDetail() {
                 )}
               </div>
 
-              {/* Close Ticket Button for Senders when status is resolved */}
+              {/* Close Ticket Button for ticket creator when status is resolved */}
               {user && 
-               user.roles.some(role => role.name === 'sender') && 
                ticket.created_by_id === user.id && 
                ticket.status === 'resolved' && (
                 <div>

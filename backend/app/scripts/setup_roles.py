@@ -59,39 +59,14 @@ ADMIN_PERMISSIONS = [
     ('roles.delete', 'Видалення ролей', 'roles'),
 ]
 
-# Роль: Відправник (Ticket Creator)
-SENDER_PERMISSIONS = [
-    # Tickets - create and view own
-    ('tickets.view', 'Перегляд тікетів', 'tickets'),
-    ('tickets.create', 'Створення тікетів', 'tickets'),
-    ('tickets.delete', 'Видалення тікетів', 'tickets'),
-    ('tickets.change_status', 'Зміна статусу тікетів', 'tickets'),
-    ('tickets.comment', 'Коментування тікетів', 'tickets'),
-    ('tickets.view_attachments', 'Перегляд вкладень', 'tickets'),
-    ('tickets.upload_attachments', 'Завантаження вкладень', 'tickets'),
-    
-    # Stations - view only
-    ('stations.view', 'Перегляд станцій', 'stations'),
-    
-    # Operators - view only
-    ('operators.view', 'Перегляд операторів', 'operators'),
-    
-    # Departments - view only
-    ('departments.view', 'Перегляд відділів', 'departments'),
-    
-    # Users - view only
-    ('users.view', 'Перегляд користувачів', 'users'),
-    
-    # Knowledge base - view only
-    ('knowledge_base.view', 'Перегляд бази знань', 'knowledge_base'),
-]
-
-# Роль: Обробник (Ticket Handler)
-HANDLER_PERMISSIONS = [
-    # Tickets - process and manage
+# Роль: Користувач (unified sender + handler)
+USER_PERMISSIONS = [
+    # Tickets - full user access (create + process)
     ('tickets.view', 'Перегляд тікетів', 'tickets'),
     ('tickets.view_all', 'Перегляд всіх тікетів', 'tickets'),
+    ('tickets.create', 'Створення тікетів', 'tickets'),
     ('tickets.edit', 'Редагування тікетів', 'tickets'),
+    ('tickets.delete', 'Видалення тікетів', 'tickets'),
     ('tickets.assign', 'Призначення тікетів', 'tickets'),
     ('tickets.delegate', 'Делегування тікетів', 'tickets'),
     ('tickets.change_status', 'Зміна статусу тікетів', 'tickets'),
@@ -196,8 +171,7 @@ async def main():
         # Collect all unique permissions
         all_permissions = set()
         all_permissions.update(ADMIN_PERMISSIONS)
-        all_permissions.update(SENDER_PERMISSIONS)
-        all_permissions.update(HANDLER_PERMISSIONS)
+        all_permissions.update(USER_PERMISSIONS)
         
         # Create all permissions
         print("\n📋 Створення дозволів...")
@@ -214,20 +188,12 @@ async def main():
             ADMIN_PERMISSIONS
         )
         
-        # 2. Відправник
+        # 2. Користувач (unified sender + handler)
         await create_role(
             session,
-            'sender',
-            'Відправник - створення та перегляд власних тікетів',
-            SENDER_PERMISSIONS
-        )
-        
-        # 3. Обробник
-        await create_role(
-            session,
-            'handler',
-            'Обробник - обробка та управління тікетами',
-            HANDLER_PERMISSIONS
+            'user',
+            'Користувач - створення та обробка тікетів',
+            USER_PERMISSIONS
         )
         
         await session.commit()
@@ -236,9 +202,8 @@ async def main():
         print("✅ НАЛАШТУВАННЯ ЗАВЕРШЕНО")
         print("="*70)
         print("\nСтворено ролі:")
-        print("  1. admin     - Адміністратор (повний доступ)")
-        print("  2. sender    - Відправник (створення тікетів)")
-        print("  3. handler   - Обробник (обробка тікетів)")
+        print("  1. admin  - Адміністратор (повний доступ)")
+        print("  2. user   - Користувач (створення + обробка тікетів)")
         print("="*70)
 
 

@@ -81,8 +81,7 @@
   "roles": {
     "title": "Roles",
     "admin": "Administrator",
-    "sender": "Sender",
-    "handler": "Handler"
+    "user": "User"
   },
   "notifications": {
     "title": "Notification Settings",

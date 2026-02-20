@@ -145,13 +145,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/',
       icon: <DashboardOutlined />,
       label: t('menu.dashboard'),
-      visible: hasPermission('tickets.create') && !user?.is_admin, // Only for senders, not admins
+      visible: !user?.is_admin, // Dashboard for all non-admins
     },
     {
-      key: user?.is_admin ? '/tickets' : (hasPermission('tickets.assign') && !hasPermission('tickets.create') ? '/tickets/queue' : '/tickets'),
+      key: '/tickets',
       icon: <FileTextOutlined />,
       label: t('menu.tickets'),
-      visible: !user?.is_admin, // Hidden for admins - tickets are in "Редагування тікетів"
+      visible: !user?.is_admin, // Tickets for all non-admins
+    },
+    {
+      key: '/tickets/queue',
+      icon: <FileTextOutlined />,
+      label: 'Черга тікетів',
+      visible: !user?.is_admin, // Queue for all non-admins
     },
     {
       key: '/tickets/incident-types',
@@ -163,13 +169,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/stations',
       icon: <ThunderboltOutlined />,
       label: t('menu.stations'),
-      visible: true, // Visible for everyone
+      visible: true,
     },
     {
       key: '/operators',
       icon: <TeamOutlined />,
       label: t('menu.operators'),
-      visible: hasPermission('operators.view') && hasPermission('tickets.create'), // Only for senders with permission
+      visible: hasPermission('operators.view'),
     },
     {
       key: '/knowledge',
@@ -181,19 +187,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/log-analysis',
       icon: <FileTextOutlined />,
       label: t('menu.logAnalysis'),
-      visible: !user?.is_admin, // Only for senders and handlers, not admins
+      visible: !user?.is_admin,
     },
     {
       key: '/users',
       icon: <UserOutlined />,
       label: t('menu.users'),
-      visible: hasPermission('users.view'), // Visible for all with permission
+      visible: hasPermission('users.view'),
     },
     {
       key: '/departments',
       icon: <ApartmentOutlined />,
       label: t('menu.departments'),
-      visible: hasPermission('departments.view'), // Visible for all with permission
+      visible: hasPermission('departments.view'),
     },
     {
       key: '/settings',
@@ -205,7 +211,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       key: '/help',
       icon: <QuestionCircleOutlined />,
       label: 'Довідка',
-      visible: true, // Visible for everyone
+      visible: true,
     },
   ]
     .filter((item) => item.visible !== false)

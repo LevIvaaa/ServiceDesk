@@ -385,18 +385,10 @@ async def update_ticket_status(
             detail="Ticket not found",
         )
 
-    # Перевірка: обробники не можуть ставити статус "closed", тільки "resolved"
-    # Відправники та адміни можуть закривати тікети
+    # Перевірка: звичайні користувачі можуть закривати тільки свої тікети
+    # Адміни можуть закривати будь-які
     if status_data.status == "closed":
-        user_roles = [role.name for role in current_user.roles]
-        # Заборонити обробникам закривати тікети
-        if "handler" in user_roles and not current_user.is_admin:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Handlers cannot set status to 'closed'. You can set status to 'resolved' instead. Only ticket creator can close the ticket.",
-            )
-        # Дозволити відправникам закривати тільки свої тікети
-        if "sender" in user_roles and ticket.created_by_id != current_user.id:
+        if not current_user.is_admin and ticket.created_by_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only close your own tickets.",

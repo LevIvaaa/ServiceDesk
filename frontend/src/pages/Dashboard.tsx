@@ -36,13 +36,6 @@ export default function Dashboard() {
   const { t, i18n } = useTranslation('tickets')
   const { hasPermission, user } = useAuthStore()
 
-  // Redirect ticket handlers to queue page
-  useEffect(() => {
-    if (hasPermission('tickets.assign') && !hasPermission('tickets.create')) {
-      navigate('/tickets/queue', { replace: true })
-    }
-  }, [hasPermission, navigate])
-
   const handleDelete = async (ticketId: number) => {
     try {
       await ticketsApi.delete(ticketId)
@@ -55,11 +48,8 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      // Для отправителей показываем только их тикеты
-      const ticketParams: any = { page: 1, per_page: 10 }
-      if (user && user.roles.some(role => role.name === 'sender')) {
-        ticketParams.created_by_id = user.id
-      }
+      // Показываем тикеты пользователя (созданные им или назначенные ему)
+      const ticketParams: any = { page: 1, per_page: 10, my_tickets: true }
       
       const [statsRes, ticketsRes] = await Promise.all([
         client.get('/dashboard/stats'),

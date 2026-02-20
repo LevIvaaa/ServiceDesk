@@ -80,15 +80,10 @@ export default function DepartmentsList() {
     try {
       const response = await usersApi.list({ 
         per_page: 100, 
-        is_active: true,  // Only active users
+        is_active: true,
         lang: i18n.language 
       })
-      // Filter out users with sender role (they don't belong to departments)
-      const filteredUsers = response.items.filter(user => {
-        const hasSenderRole = user.roles?.some(role => role.name === 'sender')
-        return !hasSenderRole
-      })
-      setUsers(filteredUsers)
+      setUsers(response.items)
     } catch (error) {
       // Ignore
     }
@@ -499,22 +494,16 @@ export default function DepartmentsList() {
               key: 'actions',
               width: 200,
               render: (_: any, record: User) => {
-                const hasSenderRole = record.roles?.some(role => role.name === 'sender')
                 return (
                   <Space>
-                    {!hasSenderRole && (
-                      <Select
-                        size="small"
-                        style={{ width: 120 }}
-                        placeholder={t('fields.department')}
-                        value={record.department_id}
-                        onChange={(value) => handleUpdateUser(record.id, value)}
-                        options={departments.map(d => ({ value: d.id, label: d.name }))}
-                      />
-                    )}
-                    {hasSenderRole && (
-                      <Tag color="orange">{t('roles.sender')}</Tag>
-                    )}
+                    <Select
+                      size="small"
+                      style={{ width: 120 }}
+                      placeholder={t('fields.department')}
+                      value={record.department_id}
+                      onChange={(value) => handleUpdateUser(record.id, value)}
+                      options={departments.map(d => ({ value: d.id, label: d.name }))}
+                    />
                     <Popconfirm
                       title={t('messages.deleteConfirm')}
                       description={t('messages.deleteDescription')}

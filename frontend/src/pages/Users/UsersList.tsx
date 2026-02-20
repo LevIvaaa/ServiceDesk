@@ -52,12 +52,6 @@ export default function UsersList() {
   // Check if user is ticket handler (has assign but not create permission)
   const isTicketHandler = hasPermission('tickets.assign') && !hasPermission('tickets.create')
 
-  // Check if sender role is selected
-  const isSenderSelected = selectedRoles.some(roleId => {
-    const role = roles.find(r => r.id === roleId)
-    return role?.name === 'sender'
-  })
-
   const fetchUsers = async () => {
     setLoading(true)
     try {
@@ -95,13 +89,8 @@ export default function UsersList() {
   const fetchRoles = async () => {
     try {
       const response = await rolesApi.list()
-      // Filter to only show sender and handler roles (admin is set via switch)
-      const validRoles = response.filter(r => ['sender', 'handler'].includes(r.name))
-      // Sort: sender first, then handler
-      validRoles.sort((a, b) => {
-        const order = { sender: 1, handler: 2 }
-        return (order[a.name as keyof typeof order] || 999) - (order[b.name as keyof typeof order] || 999)
-      })
+      // Filter to only show user role (admin is set via switch)
+      const validRoles = response.filter(r => ['user'].includes(r.name))
       setRoles(validRoles)
     } catch (error) {
       // Ignore
@@ -402,15 +391,13 @@ export default function UsersList() {
             />
           </Form.Item>
 
-          {!isSenderSelected && (
-            <Form.Item name="department_id" label={t('fields.department')}>
-              <Select
-                allowClear
-                placeholder={t('placeholders.selectDepartment')}
-                options={departments.map(d => ({ value: d.id, label: d.name }))}
-              />
-            </Form.Item>
-          )}
+          <Form.Item name="department_id" label={t('fields.department')}>
+            <Select
+              allowClear
+              placeholder={t('placeholders.selectDepartment')}
+              options={departments.map(d => ({ value: d.id, label: d.name }))}
+            />
+          </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
