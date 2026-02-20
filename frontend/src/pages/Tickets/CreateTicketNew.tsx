@@ -700,7 +700,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                       <div>⚡ Статус: <span style={{ 
                         color: selectedStation.status === 'active' ? '#52c41a' : '#faad14',
                         fontWeight: 500
-                      }}>{selectedStation.status === 'active' ? 'Активна' : selectedStation.status}</span></div>
+                      }}>{selectedStation.status === 'active' ? 'Активна' : selectedStation.status === 'inactive' ? 'Неактивна' : selectedStation.status}</span></div>
                     )}
                     {stationPorts.length > 0 && (
                       <div>🔗 Порти: {stationPorts.map(p => p.connector_type || `#${p.port_number}`).join(', ')}</div>
