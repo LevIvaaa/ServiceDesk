@@ -8,6 +8,7 @@ from app.models.knowledge_base import KnowledgeArticle, KnowledgeArticleVersion
 from app.models.audit_log import AuditLog
 from app.models.integration import Integration, IntegrationLog
 from app.models.notification import Notification
+from app.models.incident_type import IncidentType
 
 __all__ = [
     "User",
@@ -31,4 +32,5 @@ __all__ = [
     "Integration",
     "IntegrationLog",
     "Notification",
+    "IncidentType",
 ]

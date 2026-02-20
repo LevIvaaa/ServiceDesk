@@ -28,21 +28,12 @@ import {
 import { ticketsApi } from '../../api/tickets'
 import { stationsApi, StationListItem, Station, StationPort } from '../../api/stations'
 import { departmentsApi, Department } from '../../api/departments'
+import { incidentTypesApi, IncidentType } from '../../api/incidentTypes'
 
 const { Text } = Typography
 const { TextArea } = Input
 
-// Типи інцидентів
-const INCIDENT_TYPES = [
-  'Софтовий баг',
-  'Фізична поломка',
-  'Не може зарядитись',
-  'Перерахунок',
-  'Поганий зв\'язок',
-  'ДВС',
-  'Зламалось авто',
-  'Інше',
-]
+// Типи інцидентів завантажуються з API
 
 // Джерела звернення
 const CONTACT_SOURCES = [
@@ -75,6 +66,8 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   const [attachmentFiles, setAttachmentFiles] = useState<UploadFile[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [departmentsLoading, setDepartmentsLoading] = useState(false)
+  const [incidentTypes, setIncidentTypes] = useState<IncidentType[]>([])
+  const [incidentTypesLoading, setIncidentTypesLoading] = useState(false)
   const [stationLogs, setStationLogs] = useState('')
   const [analyzingLog, setAnalyzingLog] = useState(false)
   const [aiAnalysis, setAiAnalysis] = useState('')
@@ -184,6 +177,19 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
       console.error('Failed to load departments:', error)
     } finally {
       setDepartmentsLoading(false)
+    }
+  }
+
+  // Load incident types from API
+  const loadIncidentTypes = async () => {
+    try {
+      setIncidentTypesLoading(true)
+      const data = await incidentTypesApi.list(true)
+      setIncidentTypes(data)
+    } catch (error) {
+      console.error('Failed to load incident types:', error)
+    } finally {
+      setIncidentTypesLoading(false)
     }
   }
 
@@ -423,6 +429,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
   useEffect(() => {
     loadDepartments()
+    loadIncidentTypes()
   }, [i18n.language])
 
   return (
@@ -506,10 +513,11 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                   style={{ fontSize: 13 }}
                   autoFocus
                   tabIndex={1}
+                  loading={incidentTypesLoading}
                 >
-                  {INCIDENT_TYPES.map((type) => (
-                    <Select.Option key={type} value={type}>
-                      {type}
+                  {incidentTypes.map((type) => (
+                    <Select.Option key={type.id} value={type.name}>
+                      {type.name}
                     </Select.Option>
                   ))}
                 </Select>

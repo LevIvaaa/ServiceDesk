@@ -19,6 +19,7 @@ import KnowledgeBase from './pages/KnowledgeBase/KnowledgeBase'
 import Settings from './pages/Settings/Settings'
 import LogAnalysis from './pages/LogAnalysis/LogAnalysis'
 import HelpPage from './pages/Help/HelpPage'
+import IncidentTypesManagement from './pages/Tickets/IncidentTypesManagement'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuthStore()
@@ -81,6 +82,7 @@ function App() {
                   <Route path="/tickets" element={<TicketsList />} />
                   <Route path="/tickets/queue" element={<IncomingQueue />} />
                   <Route path="/tickets/:id" element={<TicketDetail />} />
+                  <Route path="/tickets/incident-types" element={<IncidentTypesManagement />} />
                   <Route path="/users" element={<UsersList />} />
                   <Route path="/departments" element={<DepartmentsList />} />
                   <Route path="/stations" element={<StationsList />} />

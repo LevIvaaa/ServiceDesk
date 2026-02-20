@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import auth, users, departments, roles, operators, stations, tickets, knowledge_base, dashboard, notifications, log_analysis
+from app.api.v1 import auth, users, departments, roles, operators, stations, tickets, knowledge_base, dashboard, notifications, log_analysis, incident_types
 
 api_router = APIRouter()
 
@@ -15,3 +15,4 @@ api_router.include_router(knowledge_base.router, prefix="/knowledge", tags=["Kno
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(log_analysis.router, prefix="/log-analysis", tags=["Log Analysis"])
+api_router.include_router(incident_types.router, prefix="/incident-types", tags=["Incident Types"])

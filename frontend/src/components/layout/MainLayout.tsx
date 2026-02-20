@@ -154,6 +154,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
       visible: true, // Visible for everyone including admins
     },
     {
+      key: '/tickets/incident-types',
+      icon: <SettingOutlined />,
+      label: 'Редагування тікетів',
+      visible: user?.is_admin,
+    },
+    {
       key: '/stations',
       icon: <ThunderboltOutlined />,
       label: t('menu.stations'),
