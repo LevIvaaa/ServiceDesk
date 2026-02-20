@@ -535,7 +535,7 @@ export default function TicketDetail() {
                   title={
                     <Space>
                       <Text strong>
-                        {comment.user.first_name} {comment.user.last_name}
+                        {comment.user ? `${comment.user.first_name} ${comment.user.last_name}` : 'Видалений користувач'}
                       </Text>
                       <Text type="secondary">
                         {dayjs(comment.created_at).format('DD.MM.YYYY HH:mm')}
@@ -706,7 +706,7 @@ export default function TicketDetail() {
               children: (
                 <div>
                   <Text strong>
-                    {item.user.first_name} {item.user.last_name}
+                    {item.user ? `${item.user.first_name} ${item.user.last_name}` : 'Видалений користувач'}
                   </Text>
                   <Text type="secondary" style={{ marginLeft: 8 }}>
                     {dayjs(item.created_at).format('DD.MM.YYYY HH:mm')}
@@ -981,7 +981,7 @@ export default function TicketDetail() {
                 {ticket.assigned_department?.name || '-'}
               </Descriptions.Item>
               <Descriptions.Item label={t('fields.createdBy')}>
-                {ticket.created_by.first_name} {ticket.created_by.last_name}
+                {ticket.created_by ? `${ticket.created_by.first_name} ${ticket.created_by.last_name}` : '-'}
               </Descriptions.Item>
               <Descriptions.Item label={t('fields.createdAt')}>
                 {dayjs(ticket.created_at).format('DD.MM.YYYY HH:mm')}
