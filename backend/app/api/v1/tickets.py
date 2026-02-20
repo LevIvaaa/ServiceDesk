@@ -1246,7 +1246,7 @@ async def upload_ticket_attachment(
     current_user: Annotated[User, Depends(PermissionRequired("tickets.upload_attachments"))],
     file: UploadFile = File(...),
 ):
-    """Upload an attachment (image/video) to a ticket."""
+    """Upload an attachment to a ticket."""
     # Verify ticket exists
     ticket_result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
     ticket = ticket_result.scalar_one_or_none()
@@ -1256,24 +1256,13 @@ async def upload_ticket_attachment(
             detail="Ticket not found",
         )
 
-    # Check file size (100MB for videos)
+    # Check file size (100MB)
     content = await file.read()
     max_size = 100 * 1024 * 1024  # 100MB
     if len(content) > max_size:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="File too large. Maximum size is 100MB",
-        )
-
-    # Validate file type (images and videos only)
-    allowed_types = [
-        "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp",
-        "video/mp4", "video/quicktime", "video/x-msvideo", "video/webm", "video/mpeg"
-    ]
-    if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only image and video files are allowed",
         )
 
     # Create storage directory
