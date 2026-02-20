@@ -144,8 +144,8 @@ export default function IncomingQueue() {
         statusFilter = 'in_progress,pending'
         departmentFilter = currentUser?.department_id || undefined
       } else if (activeTab === 'myTickets') {
-        // My tickets: tickets assigned to current user
-        statusFilter = 'in_progress,pending'
+        // My tickets: all active tickets assigned to current user
+        statusFilter = 'new,in_progress,pending,reviewing'
         departmentFilter = undefined // Don't filter by department, filter by user below
       } else {
         // Completed: reviewing and closed for current user's department
