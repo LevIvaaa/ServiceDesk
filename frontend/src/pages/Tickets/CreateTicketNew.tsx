@@ -136,7 +136,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
         title: values.incident_type || 'Новий інцидент',
         description: values.description,
         category,
-        priority: 'medium',
+        priority: values.priority || 'medium',
         incident_type: values.incident_type,
         station_id: values.station_id,
         port_type: values.port_type,
@@ -290,6 +290,16 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
             <Form.Item label={<span style={labelStyle}>Проблема</span>} name="incident_type" rules={[{ required: true, message: 'Оберіть проблему' }]} style={{ marginBottom: 12 }}>
               <Select placeholder="---" showSearch optionFilterProp="children" loading={incidentTypesLoading}>
                 {incidentTypes.map(t => <Select.Option key={t.id} value={t.name}>{t.name}</Select.Option>)}
+              </Select>
+            </Form.Item>
+
+            {/* Пріоритет */}
+            <Form.Item label={<span style={labelStyle}>Пріоритет</span>} name="priority" initialValue="medium" style={{ marginBottom: 12 }}>
+              <Select>
+                <Select.Option value="low">Низький</Select.Option>
+                <Select.Option value="medium">Середній</Select.Option>
+                <Select.Option value="high">Високий</Select.Option>
+                <Select.Option value="critical">Критичний</Select.Option>
               </Select>
             </Form.Item>
 
