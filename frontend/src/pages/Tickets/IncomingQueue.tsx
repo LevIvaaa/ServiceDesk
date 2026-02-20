@@ -967,7 +967,7 @@ export default function IncomingQueue() {
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
         footer={null}
-        width={900}
+        width={580}
         styles={{ 
           body: { 
             maxHeight: 'calc(100vh - 120px)', 
