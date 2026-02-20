@@ -386,14 +386,8 @@ async def update_ticket_status(
             detail="Ticket not found",
         )
 
-    # Перевірка: звичайні користувачі можуть закривати тільки свої тікети
-    # Адміни можуть закривати будь-які
-    if status_data.status == "closed":
-        if not current_user.is_admin and ticket.created_by_id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You can only close your own tickets.",
-            )
+    # Перевірка: звичайні користувачі можуть закривати будь-які тікети
+    # (раніше було обмеження тільки на свої)
 
     old_status = ticket.status
     ticket.status = status_data.status
