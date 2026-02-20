@@ -10,7 +10,6 @@ import {
   message,
   Upload,
   Space,
-  Alert,
   Spin,
   Row,
   Col,
@@ -680,24 +679,34 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
             <Col span={12}>
               {/* Station details */}
               {selectedStation && (
-                <Alert
-                  message={
-                    <div style={{ fontSize: 11 }}>
-                      <Text strong style={{ fontSize: 12 }}>
-                        🔌 Станція № {selectedStation.station_number || selectedStation.station_id}
-                      </Text>
-                      <span style={{ marginLeft: 8 }}>{selectedStation.address || ''}</span>
-                      {selectedStation.operator?.name && <span> · {selectedStation.operator.name}</span>}
-                    </div>
-                  }
-                  type="warning"
+                <div
                   style={{ 
                     marginBottom: 8,
-                    backgroundColor: '#fff7e6',
-                    border: '1px solid #ffd591',
-                    padding: '4px 8px'
+                    backgroundColor: '#f6ffed',
+                    border: '1px solid #b7eb8f',
+                    borderRadius: 6,
+                    padding: '8px 12px',
+                    fontSize: 12,
                   }}
-                />
+                >
+                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, color: '#389e0d' }}>
+                    🔌 Станція № {selectedStation.station_number || selectedStation.station_id}
+                  </div>
+                  <div style={{ color: '#595959' }}>
+                    {selectedStation.address && <div>📍 {selectedStation.address}{selectedStation.city ? `, ${selectedStation.city}` : ''}</div>}
+                    {selectedStation.operator?.name && <div>🏢 {selectedStation.operator.name}</div>}
+                    {selectedStation.model && <div>📦 {selectedStation.model}</div>}
+                    {selectedStation.status && (
+                      <div>⚡ Статус: <span style={{ 
+                        color: selectedStation.status === 'active' ? '#52c41a' : '#faad14',
+                        fontWeight: 500
+                      }}>{selectedStation.status === 'active' ? 'Активна' : selectedStation.status}</span></div>
+                    )}
+                    {stationPorts.length > 0 && (
+                      <div>🔗 Порти: {stationPorts.map(p => p.connector_type || `#${p.port_number}`).join(', ')}</div>
+                    )}
+                  </div>
+                </div>
               )}
 
               <Form.Item

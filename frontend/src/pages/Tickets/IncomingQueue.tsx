@@ -969,10 +969,9 @@ export default function IncomingQueue() {
         onCancel={() => setCreateModalOpen(false)}
         footer={null}
         width={900}
-        style={{ top: 20 }}
         styles={{ 
           body: { 
-            maxHeight: 'calc(100vh - 100px)', 
+            maxHeight: 'calc(100vh - 120px)', 
             overflow: 'auto',
             padding: '0 !important',
             borderRadius: 0,
@@ -987,7 +986,7 @@ export default function IncomingQueue() {
         }}
         className="hide-scrollbar"
         destroyOnHidden
-        centered={false}
+        centered={true}
         maskClosable={false}
         keyboard={true}
         modalRender={(modal) => {
