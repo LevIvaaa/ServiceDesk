@@ -64,6 +64,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
   const [incidentTypes, setIncidentTypes] = useState<IncidentType[]>([])
   const [incidentTypesLoading, setIncidentTypesLoading] = useState(false)
   const [logFiles, setLogFiles] = useState<UploadFile[]>([])
+  const [stationLogs, setStationLogs] = useState('')
   const [descriptionImages, setDescriptionImages] = useState<File[]>([])
   const [descriptionText, setDescriptionText] = useState('')
   
@@ -122,6 +123,9 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
       try {
         const parsedData = JSON.parse(savedFormData)
         form.setFieldsValue(parsedData)
+        if (parsedData.station_logs) {
+          setStationLogs(parsedData.station_logs)
+        }
         if (parsedData.description) {
           setDescriptionText(parsedData.description)
         }
@@ -140,6 +144,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
     const formValues = form.getFieldsValue()
     const draftData = {
       ...formValues,
+      station_logs: stationLogs,
       description: descriptionText,
     }
     localStorage.setItem('ticketFormDraft', JSON.stringify(draftData))
@@ -332,7 +337,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
         reporter_name: values.reporter_name,
         reporter_phone: values.reporter_phone,
         contact_source: values.contact_source,
-        station_logs: undefined,
+        station_logs: stationLogs || undefined,
         assigned_department_id: values.assigned_department_id,
         client_type: values.client_type,
       }
@@ -740,17 +745,27 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
               {/* Логи станції */}
               <Form.Item label={<span style={{ fontSize: 12 }}>Логи станції</span>} style={{ marginBottom: 8 }}>
-                <Upload.Dragger
+                <TextArea
+                  rows={2}
+                  placeholder="Вставте OCPP логи або текст..."
+                  value={stationLogs}
+                  onChange={(e) => {
+                    setStationLogs(e.target.value)
+                    saveFormDraft()
+                  }}
+                  style={{ fontSize: 12, marginBottom: 6 }}
+                  tabIndex={11}
+                />
+                <Upload
                   fileList={logFiles}
                   onChange={({ fileList }) => setLogFiles(fileList)}
                   beforeUpload={() => false}
                   multiple
-                  style={{ padding: '8px', fontSize: 12 }}
                 >
-                  <p style={{ margin: 0, fontSize: 12, color: '#999' }}>
-                    📂 Перетягніть файли логів сюди або натисніть для вибору
-                  </p>
-                </Upload.Dragger>
+                  <Button icon={<UploadOutlined />} size="small" tabIndex={12}>
+                    Прикріпити файли логів
+                  </Button>
+                </Upload>
               </Form.Item>
 
               {/* Buttons */}
