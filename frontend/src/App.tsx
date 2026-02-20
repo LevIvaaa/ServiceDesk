@@ -8,7 +8,6 @@ import { useAuthStore } from './store/authStore'
 import MainLayout from './components/layout/MainLayout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
-import TicketsList from './pages/Tickets/TicketsList'
 import TicketDetail from './pages/Tickets/TicketDetail'
 import IncomingQueue from './pages/Tickets/IncomingQueue'
 import UsersList from './pages/Users/UsersList'
@@ -79,8 +78,7 @@ function App() {
               <MainLayout>
                 <Routes>
                   <Route path="/" element={<DashboardRedirect />} />
-                  <Route path="/tickets" element={<TicketsList />} />
-                  <Route path="/tickets/queue" element={<IncomingQueue />} />
+                  <Route path="/tickets" element={<IncomingQueue />} />
                   <Route path="/tickets/:id" element={<TicketDetail />} />
                   <Route path="/tickets/incident-types" element={<IncidentTypesManagement />} />
                   <Route path="/users" element={<UsersList />} />

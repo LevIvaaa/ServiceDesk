@@ -18,6 +18,7 @@ import {
   Badge,
   Tooltip,
   Tabs,
+  Popconfirm,
 } from 'antd'
 import {
   InboxOutlined,
@@ -27,11 +28,18 @@ import {
   WarningOutlined,
   FireOutlined,
   EyeOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  DownloadOutlined,
+  ClearOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons'
-import { ticketsApi, Ticket } from '../../api/tickets'
+import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
 import { useAuthStore } from '../../store/authStore'
+import CreateTicketNew from './CreateTicketNew'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/uk'
@@ -41,6 +49,23 @@ dayjs.extend(relativeTime)
 
 const { Title, Text } = Typography
 const { TextArea } = Input
+const { Option } = Select
+
+const FILTERS_STORAGE_KEY = 'tickets_list_filters'
+
+const loadSavedFilters = (): TicketListParams => {
+  try {
+    const saved = localStorage.getItem(FILTERS_STORAGE_KEY)
+    if (saved) return JSON.parse(saved)
+  } catch (error) {}
+  return {}
+}
+
+const saveFilters = (filters: TicketListParams) => {
+  try {
+    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters))
+  } catch (error) {}
+}
 
 export default function IncomingQueue() {
   const [tickets, setTickets] = useState<Ticket[]>([])
@@ -64,10 +89,43 @@ export default function IncomingQueue() {
   
   const navigate = useNavigate()
   const { t, i18n } = useTranslation('tickets')
-  const { user: currentUser } = useAuthStore()
+  const { user: currentUser, hasPermission } = useAuthStore()
+
+  // Filters & create modal state
+  const [filters, setFilters] = useState<TicketListParams>(loadSavedFilters)
+  const [filterUsers, setFilterUsers] = useState<User[]>([])
+  const [filterDepartments, setFilterDepartments] = useState<Department[]>([])
+  const [createModalOpen, setCreateModalOpen] = useState(false)
 
   useEffect(() => {
     dayjs.locale(i18n.language)
+  }, [i18n.language])
+
+  // Save filters when they change
+  useEffect(() => {
+    saveFilters(filters)
+  }, [filters])
+
+  // Load users for filters
+  useEffect(() => {
+    const loadFilterUsers = async () => {
+      try {
+        const response = await usersApi.list({ is_active: true, per_page: 100 })
+        setFilterUsers(response.items)
+      } catch (error) {}
+    }
+    loadFilterUsers()
+  }, [])
+
+  // Load departments for filters
+  useEffect(() => {
+    const loadFilterDepartments = async () => {
+      try {
+        const response = await departmentsApi.list({ is_active: true, per_page: 100, lang: i18n.language })
+        setFilterDepartments(response.items)
+      } catch (error) {}
+    }
+    loadFilterDepartments()
   }, [i18n.language])
 
   // Load departments for filter
@@ -91,9 +149,9 @@ export default function IncomingQueue() {
       let departmentFilter: number | undefined = undefined
       
       if (activeTab === 'all') {
-        // All tickets: show all statuses, optionally filter by selected department
-        statusFilter = ''
-        departmentFilter = selectedDepartmentFilter
+        // All tickets: apply user filters
+        statusFilter = filters.status || ''
+        departmentFilter = filters.assigned_department_id || selectedDepartmentFilter
       } else if (activeTab === 'incoming') {
         // Incoming: ALL new and open tickets for current user's department (not just assigned to user)
         statusFilter = 'new,open'
@@ -117,7 +175,11 @@ export default function IncomingQueue() {
         per_page: 20,
         status: statusFilter || undefined,
         department_id: departmentFilter,
-        assigned_user_id: activeTab === 'myTickets' ? currentUser?.id : undefined,
+        assigned_user_id: activeTab === 'myTickets' ? currentUser?.id : (activeTab === 'all' ? filters.assigned_user_id : undefined),
+        search: activeTab === 'all' ? filters.search : undefined,
+        priority: activeTab === 'all' ? filters.priority : undefined,
+        category: activeTab === 'all' ? filters.category : undefined,
+        created_by_id: activeTab === 'all' ? filters.created_by_id : undefined,
       })
       
       setTickets(response.items)
@@ -156,9 +218,9 @@ export default function IncomingQueue() {
 
   useEffect(() => {
     fetchTickets()
-    const interval = setInterval(fetchTickets, 3000) // Every 3 seconds
+    const interval = setInterval(fetchTickets, 3000)
     return () => clearInterval(interval)
-  }, [page, activeTab, selectedDepartmentFilter])
+  }, [page, activeTab, selectedDepartmentFilter, filters])
 
   const loadDepartments = async () => {
     try {
@@ -234,14 +296,10 @@ export default function IncomingQueue() {
 
   const handleQuickAccept = async (ticket: Ticket) => {
     try {
-      // Assign ticket to current user if not assigned
       if (!ticket.assigned_user_id && currentUser) {
         await ticketsApi.assign(ticket.id, currentUser.id, 'Прийнято в роботу')
       }
-      
-      // Change status to in_progress
       await ticketsApi.updateStatus(ticket.id, 'in_progress', 'Прийнято в роботу')
-      
       message.success(i18n.language === 'en' 
         ? 'Ticket accepted and moved to "In Progress"' 
         : 'Тікет прийнято і переміщено у "В роботі"')
@@ -250,6 +308,57 @@ export default function IncomingQueue() {
       message.error(t('messages.statusError'))
     }
   }
+
+  const handleDelete = async (ticketId: number) => {
+    try {
+      await ticketsApi.delete(ticketId)
+      message.success(t('messages.deleted', 'Тікет видалено'))
+      fetchTickets()
+    } catch (error) {
+      message.error(t('messages.deleteError', 'Помилка видалення'))
+    }
+  }
+
+  const handleResetFilters = () => {
+    setFilters({})
+    setPage(1)
+  }
+
+  const handleExport = async () => {
+    try {
+      setLoading(true)
+      const exportParams = {
+        status: filters.status,
+        priority: filters.priority,
+        category: filters.category,
+        assigned_user_id: filters.assigned_user_id,
+        assigned_department_id: filters.assigned_department_id,
+        created_by_id: filters.created_by_id,
+        search: filters.search,
+      }
+      const blob = await ticketsApi.export(exportParams)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `tickets_export_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      message.success('Експорт успішно завершено')
+    } catch (error) {
+      message.error('Помилка експорту')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleTicketCreated = () => {
+    setCreateModalOpen(false)
+    fetchTickets()
+  }
+
+  const hasActiveFilters = Object.values(filters).some(v => v !== undefined && v !== '')
 
   const priorityColors: Record<string, string> = {
     low: 'green',
@@ -430,10 +539,140 @@ export default function IncomingQueue() {
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
           <Title level={2}>
-            <InboxOutlined /> {i18n.language === 'en' ? 'Tickets Queue' : 'Черга тікетів'}
+            {t('title', 'Тікети')}
           </Title>
         </Col>
+        <Col>
+          <Space>
+            {hasPermission('tickets.create') && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setCreateModalOpen(true)}
+              >
+                {t('create')}
+              </Button>
+            )}
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={handleExport}
+              loading={loading}
+            >
+              Експорт
+            </Button>
+          </Space>
+        </Col>
       </Row>
+
+      {/* Filters */}
+      <Card style={{ marginBottom: 16 }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={5}>
+            <Input
+              placeholder={t('common:actions.search')}
+              prefix={<SearchOutlined />}
+              allowClear
+              value={filters.search || ''}
+              onChange={(e) =>
+                setFilters({ ...filters, search: e.target.value || undefined })
+              }
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={3}>
+            <Select
+              placeholder={t('status.label')}
+              allowClear
+              style={{ width: '100%' }}
+              value={filters.status}
+              onChange={(value) => setFilters({ ...filters, status: value })}
+            >
+              {['new', 'open', 'in_progress', 'pending', 'resolved', 'closed'].map(
+                (status) => (
+                  <Option key={status} value={status}>
+                    {t(`status.${status}`)}
+                  </Option>
+                )
+              )}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={3}>
+            <Select
+              placeholder={t('priority.label')}
+              allowClear
+              style={{ width: '100%' }}
+              value={filters.priority}
+              onChange={(value) => setFilters({ ...filters, priority: value })}
+            >
+              {['low', 'medium', 'high', 'critical'].map((priority) => (
+                <Option key={priority} value={priority}>
+                  {t(`priority.${priority}`)}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={3}>
+            <Select
+              placeholder={t('category.label')}
+              allowClear
+              style={{ width: '100%' }}
+              value={filters.category}
+              onChange={(value) => setFilters({ ...filters, category: value })}
+            >
+              {['hardware', 'software', 'network', 'billing', 'other'].map(
+                (category) => (
+                  <Option key={category} value={category}>
+                    {t(`category.${category}`)}
+                  </Option>
+                )
+              )}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              placeholder={t('filters.createdBy', 'Створив')}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              style={{ width: '100%' }}
+              value={filters.created_by_id}
+              onChange={(value) => setFilters({ ...filters, created_by_id: value })}
+            >
+              {filterUsers.map((user) => (
+                <Option key={user.id} value={user.id}>
+                  {user.first_name} {user.last_name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={3}>
+            <Select
+              placeholder={t('filters.department', 'Відділ')}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              style={{ width: '100%' }}
+              value={filters.assigned_department_id}
+              onChange={(value) => setFilters({ ...filters, assigned_department_id: value })}
+            >
+              {filterDepartments.map((dept) => (
+                <Option key={dept.id} value={dept.id}>
+                  {dept.name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={2}>
+            {hasActiveFilters && (
+              <Button
+                icon={<ClearOutlined />}
+                onClick={handleResetFilters}
+              >
+                {t('filters.reset', 'Скинути')}
+              </Button>
+            )}
+          </Col>
+        </Row>
+      </Card>
 
       <Tabs 
         activeKey={activeTab} 
@@ -660,31 +899,6 @@ export default function IncomingQueue() {
         ]}
       />
 
-      {/* Department filter for "All" tab */}
-      {activeTab === 'all' && (
-        <div style={{ marginBottom: 16 }}>
-          <Space>
-            <Text>{i18n.language === 'en' ? 'Filter by department:' : 'Фільтр по відділу:'}</Text>
-            <Select
-              allowClear
-              placeholder={i18n.language === 'en' ? 'All departments' : 'Всі відділи'}
-              style={{ width: 250 }}
-              value={selectedDepartmentFilter}
-              onChange={(value) => {
-                setSelectedDepartmentFilter(value)
-                setPage(1)
-              }}
-            >
-              {departments.map(dept => (
-                <Select.Option key={dept.id} value={dept.id}>
-                  {dept.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Space>
-        </div>
-      )}
-
       <Table
         columns={columns}
         dataSource={tickets}
@@ -775,6 +989,46 @@ export default function IncomingQueue() {
           background-color: #e6f7ff;
         }
       `}</style>
+
+      {/* Create Ticket Modal */}
+      <Modal
+        open={createModalOpen}
+        onCancel={() => setCreateModalOpen(false)}
+        footer={null}
+        width={900}
+        style={{ top: 20 }}
+        styles={{ 
+          body: { 
+            maxHeight: 'calc(100vh - 100px)', 
+            overflow: 'auto',
+            padding: '0 !important',
+            borderRadius: 0,
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          },
+          content: {
+            borderRadius: '15px',
+            overflow: 'hidden',
+            padding: 0,
+          }
+        }}
+        className="hide-scrollbar"
+        destroyOnHidden
+        centered={false}
+        maskClosable={false}
+        keyboard={true}
+        modalRender={(modal) => {
+          setTimeout(() => {
+            const closeBtn = document.querySelector('.ant-modal-close') as HTMLElement
+            if (closeBtn) {
+              closeBtn.setAttribute('tabindex', '-1')
+            }
+          }, 0)
+          return modal
+        }}
+      >
+        <CreateTicketNew onSuccess={handleTicketCreated} isModal={true} />
+      </Modal>
     </div>
   )
 }

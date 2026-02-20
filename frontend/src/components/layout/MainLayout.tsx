@@ -154,12 +154,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
       visible: !user?.is_admin, // Tickets for all non-admins
     },
     {
-      key: '/tickets/queue',
-      icon: <FileTextOutlined />,
-      label: 'Черга тікетів',
-      visible: !user?.is_admin, // Queue for all non-admins
-    },
-    {
       key: '/tickets/incident-types',
       icon: <SettingOutlined />,
       label: 'Редагування тікетів',
