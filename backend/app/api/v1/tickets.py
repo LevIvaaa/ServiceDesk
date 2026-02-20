@@ -1278,13 +1278,21 @@ async def upload_ticket_attachment(
     async with aiofiles.open(file_path, "wb") as f:
         await f.write(content)
 
+    # Determine mime type - fallback to extension-based detection
+    import mimetypes
+    mime = file.content_type
+    if not mime or mime == "application/octet-stream":
+        guessed, _ = mimetypes.guess_type(file.filename or "")
+        if guessed:
+            mime = guessed
+
     # Create attachment record
     attachment = TicketAttachment(
         ticket_id=ticket_id,
         filename=file.filename or unique_filename,
         file_path=str(file_path),
         file_size=len(content),
-        mime_type=file.content_type or "application/octet-stream",
+        mime_type=mime or "application/octet-stream",
         uploaded_by_id=current_user.id,
     )
     db.add(attachment)
@@ -1330,6 +1338,20 @@ async def download_ticket_attachment(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Attachment file not found on disk",
+        )
+
+    # For text/image/video/pdf files, show inline (in browser) instead of downloading
+    inline_types = [
+        "text/", "image/", "video/", "audio/",
+        "application/pdf", "application/json", "application/xml",
+    ]
+    is_inline = any(attachment.mime_type and attachment.mime_type.startswith(t) for t in inline_types)
+
+    if is_inline:
+        return FileResponse(
+            path=attachment.file_path,
+            media_type=attachment.mime_type,
+            headers={"Content-Disposition": f'inline; filename="{attachment.filename}"'},
         )
 
     return FileResponse(
