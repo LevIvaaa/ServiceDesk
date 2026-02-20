@@ -264,10 +264,6 @@ export default function IncomingQueue() {
         await ticketsApi.assign(selectedTicket.id, selectedUserId, assignComment || undefined)
       }
 
-      if (selectedTicket.status === 'new') {
-        await ticketsApi.updateStatus(selectedTicket.id, 'in_progress')
-      }
-
       setAssignModalVisible(false)
       message.success(t('messages.assigned'))
       fetchTickets()

@@ -567,12 +567,6 @@ async def delegate_ticket(
     # If not specified, leave it empty so someone from the department can accept it
     assigned_user_id = delegate_data.assigned_user_id
     ticket.assigned_user_id = assigned_user_id
-    
-    # If delegating to a different department, reset status to 'new' if it was 'in_progress'
-    # This allows the new department to see it in their incoming queue
-    if old_dept != delegate_data.assigned_department_id:
-        if ticket.status == 'in_progress':
-            ticket.status = 'new'
 
     # Add history entry
     history = TicketHistory(
