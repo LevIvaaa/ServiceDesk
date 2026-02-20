@@ -390,7 +390,7 @@ export default function UsersList() {
               mode="multiple"
               placeholder={t('placeholders.selectRoles')}
               options={[
-                ...roles.map(r => ({ value: r.id, label: t(`roles.${r.name}`) })),
+                ...roles.filter(r => r.name === 'user').map(r => ({ value: r.id, label: t(`roles.${r.name}`) })),
                 { value: -1, label: t('roles.admin', 'Адміністратор') },
               ]}
             />
