@@ -27,7 +27,7 @@ router = APIRouter()
 
 
 @router.post("/login", response_model=Token)
-@limiter.limit("5/minute")
+@limiter.limit("3/minute")
 async def login(request: Request, login_data: LoginRequest, db: DbSession):
     """Authenticate user and return JWT tokens."""
     result = await db.execute(
