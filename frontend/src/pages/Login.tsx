@@ -22,7 +22,11 @@ export default function Login() {
       message.success('Login successful')
       navigate('/')
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed')
+      if (err.response?.status === 429) {
+        setError('Забагато спроб входу. Зачекайте хвилину.')
+      } else {
+        setError(err.response?.data?.detail || 'Login failed')
+      }
     } finally {
       setLoading(false)
     }

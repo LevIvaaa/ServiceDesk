@@ -21,11 +21,9 @@ from app.schemas.auth import (
 )
 from app.schemas.user import CurrentUserResponse, UserResponse
 
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from app.core.rate_limit import limiter
 
 router = APIRouter()
-limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/login", response_model=Token)
