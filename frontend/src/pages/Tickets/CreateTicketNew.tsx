@@ -189,9 +189,20 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
           originFileObj: renamedFile as any,
         }
         setAttachmentFiles(prev => [...prev, uploadFile])
-        // Insert marker into description
-        const currentDesc = form.getFieldValue('description') || ''
-        form.setFieldsValue({ description: currentDesc + (currentDesc ? '\n' : '') + `[📎 ${filename}]` })
+        // Insert marker into description via native DOM to ensure textarea updates
+        const textarea = e.currentTarget
+        const start = textarea.selectionStart
+        const end = textarea.selectionEnd
+        const currentVal = textarea.value || ''
+        const marker = `[📎 ${filename}]`
+        const newVal = currentVal.substring(0, start) + marker + currentVal.substring(end)
+        form.setFieldsValue({ description: newVal })
+        // Force React to pick up the change
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set
+        if (nativeInputValueSetter) {
+          nativeInputValueSetter.call(textarea, newVal)
+          textarea.dispatchEvent(new Event('input', { bubbles: true }))
+        }
         message.success(`Скріншот додано: ${filename}`)
         break
       }
