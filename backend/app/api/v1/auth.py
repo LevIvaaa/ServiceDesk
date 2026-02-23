@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -21,20 +21,25 @@ from app.schemas.auth import (
 )
 from app.schemas.user import CurrentUserResponse, UserResponse
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/login", response_model=Token)
-async def login(request: LoginRequest, db: DbSession):
+@limiter.limit("5/minute")
+async def login(request: Request, login_data: LoginRequest, db: DbSession):
     """Authenticate user and return JWT tokens."""
     result = await db.execute(
         select(User)
         .options(selectinload(User.roles), selectinload(User.department))
-        .where(User.email == request.email)
+        .where(User.email == login_data.email)
     )
     user = result.scalar_one_or_none()
 
-    if user is None or not verify_password(request.password, user.password_hash):
+    if user is None or not verify_password(login_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",

@@ -81,6 +81,6 @@ export const usersApi = {
   },
 
   resetPassword: async (id: number, newPassword: string): Promise<void> => {
-    await client.put(`/users/${id}/password`, null, { params: { new_password: newPassword } })
+    await client.put(`/users/${id}/password`, { new_password: newPassword })
   },
 }

@@ -49,6 +49,10 @@ aiofiles==23.2.1
 python-magic==0.4.27
 openpyxl==3.1.2
 
+# Rate limiting
+slowapi==0.1.9
+limits==3.7.0
+
 # Utilities
 python-dateutil==2.8.2
 

@@ -1,5 +1,6 @@
 from typing import Annotated, Optional
 
+from pydantic import BaseModel as PydanticBaseModel
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -375,10 +376,14 @@ async def delete_user(
         )
 
 
+class ResetPasswordRequest(PydanticBaseModel):
+    new_password: str
+
+
 @router.put("/{user_id}/password")
 async def reset_user_password(
     user_id: int,
-    new_password: str,
+    body: ResetPasswordRequest,
     db: DbSession,
     current_user: Annotated[User, Depends(PermissionRequired("users.edit"))],
 ):
@@ -392,8 +397,7 @@ async def reset_user_password(
             detail="User not found",
         )
 
-    # Update password
-    user.password_hash = get_password_hash(new_password)
+    user.password_hash = get_password_hash(body.new_password)
     await db.commit()
 
     return {"message": "Password reset successfully"}
