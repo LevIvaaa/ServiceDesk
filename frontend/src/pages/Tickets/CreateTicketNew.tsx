@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -169,6 +169,35 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
   const labelStyle = { fontSize: 13, fontWeight: 600 as const, color: '#262626' }
 
+  // Handle paste of images into description field
+  const handleDescriptionPaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (item.type.startsWith('image/')) {
+        e.preventDefault()
+        const file = item.getAsFile()
+        if (!file) continue
+        const ext = item.type.split('/')[1] || 'png'
+        const filename = `screenshot_${Date.now()}.${ext}`
+        const renamedFile = new File([file], filename, { type: file.type })
+        const uploadFile: UploadFile = {
+          uid: `paste-${Date.now()}`,
+          name: filename,
+          status: 'done',
+          originFileObj: renamedFile as any,
+        }
+        setAttachmentFiles(prev => [...prev, uploadFile])
+        // Insert marker into description
+        const currentDesc = form.getFieldValue('description') || ''
+        form.setFieldsValue({ description: currentDesc + (currentDesc ? '\n' : '') + `[📎 ${filename}]` })
+        message.success(`Скріншот додано: ${filename}`)
+        break
+      }
+    }
+  }, [form])
+
   return (
     <div style={{ maxWidth: isModal ? '100%' : 560, margin: isModal ? 0 : '0 auto', padding: isModal ? 0 : '0 16px' }}>
       {!isModal && (
@@ -305,7 +334,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
             {/* Опис */}
             <Form.Item label={<span style={labelStyle}>Опис</span>} name="description" rules={[{ required: true, message: 'Введіть опис' }]} style={{ marginBottom: 12 }}>
-              <TextArea rows={3} placeholder="Що сталося?" />
+              <TextArea rows={3} placeholder="Що сталося? (Ctrl+V для вставки скріншоту)" onPaste={handleDescriptionPaste} />
             </Form.Item>
 
             {/* Клієнт + Телефон */}
