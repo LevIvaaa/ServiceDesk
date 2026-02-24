@@ -36,6 +36,7 @@ import {
 import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
+import { operatorsApi, Operator } from '../../api/operators'
 import { useAuthStore } from '../../store/authStore'
 import CreateTicketNew from './CreateTicketNew'
 import dayjs from 'dayjs'
@@ -93,6 +94,7 @@ export default function IncomingQueue() {
   const [filters, setFilters] = useState<TicketListParams>(loadSavedFilters)
   const [filterUsers, setFilterUsers] = useState<User[]>([])
   const [filterDepartments, setFilterDepartments] = useState<Department[]>([])
+  const [filterOperators, setFilterOperators] = useState<Operator[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false)
 
   useEffect(() => {
@@ -125,6 +127,17 @@ export default function IncomingQueue() {
     }
     loadFilterDepartments()
   }, [i18n.language])
+
+  // Load operators for filters
+  useEffect(() => {
+    const loadFilterOperators = async () => {
+      try {
+        const response = await operatorsApi.list({ is_active: true, per_page: 200 })
+        setFilterOperators(response.items)
+      } catch (error) {}
+    }
+    loadFilterOperators()
+  }, [])
 
   const fetchTickets = async () => {
     try {
@@ -169,6 +182,7 @@ export default function IncomingQueue() {
         priority: activeTab === 'all' ? filters.priority : undefined,
         category: activeTab === 'all' ? filters.category : undefined,
         created_by_id: activeTab === 'all' ? filters.created_by_id : undefined,
+        operator_id: activeTab === 'all' ? filters.operator_id : undefined,
         delegated_to_me: activeTab === 'delegated' ? true : undefined,
       })
       
@@ -322,6 +336,7 @@ export default function IncomingQueue() {
         assigned_user_id: filters.assigned_user_id,
         assigned_department_id: filters.assigned_department_id,
         created_by_id: filters.created_by_id,
+        operator_id: filters.operator_id,
         search: filters.search,
       }
       const blob = await ticketsApi.export(exportParams)
@@ -676,6 +691,23 @@ export default function IncomingQueue() {
               {filterDepartments.map((dept) => (
                 <Option key={dept.id} value={dept.id}>
                   {dept.name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={3}>
+            <Select
+              placeholder={i18n.language === 'en' ? 'Station Owner' : 'Власник станції'}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              style={{ width: '100%' }}
+              value={filters.operator_id}
+              onChange={(value) => setFilters({ ...filters, operator_id: value })}
+            >
+              {filterOperators.map((op) => (
+                <Option key={op.id} value={op.id}>
+                  {op.name}
                 </Option>
               ))}
             </Select>

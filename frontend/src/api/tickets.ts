@@ -155,6 +155,7 @@ export interface TicketListParams {
   assigned_department_id?: number
   department_id?: number
   station_id?: number
+  operator_id?: number
   created_by_id?: number
   my_tickets?: boolean
   delegated_to_me?: boolean
