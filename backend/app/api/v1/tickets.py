@@ -1454,19 +1454,30 @@ async def export_tickets(
             "Категорія",
             "Пріоритет",
             "Статус",
+            "Тип інциденту",
+            "Тип клієнта",
+            "Джерело звернення",
             "Номер станції",
             "Назва станції",
-            "Серійний номер вендора",
+            "ID станції",
             "Адреса станції",
             "Власник станції",
-            "Партнер",
+            "Номер порту",
             "Тип порту",
             "Модель авто",
+            "Ім'я заявника",
+            "Телефон заявника",
+            "Email заявника",
             "Відповідальний",
             "Відділ",
             "Створив",
             "Дата створення",
             "Дата оновлення",
+            "Дата вирішення",
+            "Дата закриття",
+            "SLA дедлайн",
+            "SLA порушено",
+            "Логи станції",
         ]
 
         # Style header row
@@ -1487,7 +1498,6 @@ async def export_tickets(
             station_id = ticket.station.station_id if ticket.station else ""
             station_address = ticket.station.address if ticket.station else ""
             station_operator = ticket.station.operator.name if ticket.station and ticket.station.operator else ""
-            partner = ""
             
             row_data = [
                 ticket.ticket_number,
@@ -1496,19 +1506,30 @@ async def export_tickets(
                 ticket.category,
                 ticket.priority,
                 ticket.status,
+                ticket.incident_type or "",
+                ticket.client_type or "",
+                ticket.contact_source or "",
                 station_number,
                 station_name,
                 station_id,
                 station_address,
                 station_operator,
-                partner,
+                ticket.port_number or "",
                 ticket.port_type or "",
                 ticket.vehicle or "",
+                ticket.reporter_name or "",
+                ticket.reporter_phone or "",
+                ticket.reporter_email or "",
                 f"{ticket.assigned_user.first_name} {ticket.assigned_user.last_name}" if ticket.assigned_user else "",
                 ticket.assigned_department.name if ticket.assigned_department else "",
-                f"{ticket.created_by.first_name} {ticket.created_by.last_name}",
+                f"{ticket.created_by.first_name} {ticket.created_by.last_name}" if ticket.created_by else "",
                 ticket.created_at.strftime("%d.%m.%Y %H:%M") if ticket.created_at else "",
                 ticket.updated_at.strftime("%d.%m.%Y %H:%M") if ticket.updated_at else "",
+                ticket.resolved_at.strftime("%d.%m.%Y %H:%M") if ticket.resolved_at else "",
+                ticket.closed_at.strftime("%d.%m.%Y %H:%M") if ticket.closed_at else "",
+                ticket.sla_due_date.strftime("%d.%m.%Y %H:%M") if ticket.sla_due_date else "",
+                "Так" if ticket.sla_breached else "Ні",
+                ticket.station_logs or "",
             ]
             
             for col_num, value in enumerate(row_data, 1):
