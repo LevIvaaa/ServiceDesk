@@ -116,9 +116,26 @@ services:
     command: celery -A app.notifications.tasks beat --loglevel=info
     restart: unless-stopped
 
+  db_backup:
+    build:
+      context: ./backup
+      dockerfile: Dockerfile
+    container_name: ecofactor_db_backup
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ecofactor_servicedesk}
+      POSTGRES_USER: ${POSTGRES_USER:-ecofactor}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - db_backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   qdrant_data:
   redis_data:
   logs_storage:
   attachments_storage:
+  db_backups:
