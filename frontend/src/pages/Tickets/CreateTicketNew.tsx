@@ -87,10 +87,11 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
 
   // Search stations
   const searchStations = async (searchValue: string) => {
-    if (!searchValue || searchValue.length < 2) { setStationOptions([]); return }
+    const trimmed = searchValue.trim()
+    if (!trimmed || trimmed.length < 2) { setStationOptions([]); return }
     try {
       setStationSearchLoading(true)
-      const response = await stationsApi.list({ search: searchValue, per_page: 20 })
+      const response = await stationsApi.list({ search: trimmed, per_page: 20 })
       setStationOptions(response.items.map((s) => ({
         value: s.id,
         label: s.station_number ? `#${s.station_number} — ${s.name}` : `${s.station_id} — ${s.name}`,
@@ -255,6 +256,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
             {/* Станція */}
             <Form.Item label={<span style={labelStyle}>Станція</span>} name="station_id" rules={[{ required: true, message: 'Оберіть станцію' }]} style={{ marginBottom: 4 }}>
               <Select showSearch placeholder="Пошук по номеру..." loading={stationSearchLoading} onSearch={searchStations} onChange={handleStationSelect} filterOption={false}
+                onInputKeyDown={(e) => { if (e.key === ' ') { e.stopPropagation() } }}
                 notFoundContent={stationSearchLoading ? <Spin size="small" /> : null}>
                 {stationOptions.map(o => <Select.Option key={o.value} value={o.value}>{o.label}</Select.Option>)}
               </Select>
