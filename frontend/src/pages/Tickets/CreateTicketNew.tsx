@@ -292,11 +292,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                       </Col>
                     </Row>
                     <Row gutter={16} style={{ marginTop: 6 }}>
-                      <Col span={12}>
-                        <div style={{ color: '#999', fontSize: 11 }}>Модель ст.</div>
-                        <div style={{ fontWeight: 500 }}>{selectedStation.model || '—'}</div>
-                      </Col>
-                      <Col span={12}>
+                      <Col span={24}>
                         <div style={{ color: '#999', fontSize: 11 }}>Порти</div>
                         <div style={{ fontWeight: 500 }}>{stationPorts.map(p => p.connector_type || `#${p.port_number}`).join(', ') || '—'}</div>
                       </Col>
