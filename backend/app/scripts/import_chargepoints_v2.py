@@ -20,10 +20,16 @@ async def main():
     rows = list(ws.iter_rows(min_row=2, values_only=True))
     print(f"Total rows in file: {len(rows)}")
 
+    def safe(row, idx):
+        """Safe access to row tuple."""
+        if idx < len(row) and row[idx] is not None:
+            return str(row[idx]).strip()
+        return None
+
     # Collect unique partners
     partners = set()
     for row in rows:
-        partner = str(row[13]).strip() if row[13] else None
+        partner = safe(row, 13)
         if partner:
             partners.add(partner)
 
@@ -64,21 +70,21 @@ async def main():
         skipped = 0
 
         for row in rows:
-            identifier = str(row[1]).strip() if row[1] else None
+            identifier = safe(row, 1)
             if not identifier:
                 skipped += 1
                 continue
 
-            name = str(row[3]).strip() if row[3] else ""
-            vendor = str(row[5]).strip() if row[5] else None
-            city = str(row[6]).strip() if row[6] else None
-            street = str(row[8]).strip() if row[8] else ""
-            house = str(row[9]).strip() if row[9] else ""
-            lat_raw = row[10]
-            lon_raw = row[11]
-            partner = str(row[13]).strip() if row[13] else None
-            kind = str(row[35]).strip() if row[35] else None
-            number = str(row[2]).strip() if row[2] else None
+            name = safe(row, 3) or ""
+            vendor = safe(row, 5)
+            city = safe(row, 6)
+            street = safe(row, 8) or ""
+            house = safe(row, 9) or ""
+            lat_raw = row[10] if 10 < len(row) else None
+            lon_raw = row[11] if 11 < len(row) else None
+            partner = safe(row, 13)
+            kind = safe(row, 35)
+            number = safe(row, 2)
 
             # Parse lat/lon
             lat = None
@@ -100,13 +106,12 @@ async def main():
             # Parse connectors
             connectors = []
             for i in range(1, 7):
-                ct_idx = 39 + (i - 1) * 5  # connector1type at 39, connector2type at 44, etc.
+                ct_idx = 39 + (i - 1) * 5
                 cs_idx = ct_idx + 1
-                if ct_idx < len(row):
-                    ct = str(row[ct_idx]).strip() if row[ct_idx] else None
-                    if ct and ct != 'None':
-                        cs = str(row[cs_idx]).strip() if cs_idx < len(row) and row[cs_idx] else 'available'
-                        connectors.append({'number': i, 'type': ct, 'status': cs})
+                ct = safe(row, ct_idx)
+                if ct and ct != 'None':
+                    cs = safe(row, cs_idx) or 'available'
+                    connectors.append({'number': i, 'type': ct, 'status': cs})
 
             if identifier in existing:
                 # Update existing station
