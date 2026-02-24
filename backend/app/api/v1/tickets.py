@@ -244,6 +244,116 @@ async def create_ticket(
     return await _build_ticket_response(ticket, db)
 
 
+@router.get("/export")
+async def export_tickets(
+    db: DbSession,
+    current_user: CurrentUser,
+):
+    """Export tickets to Excel file with all ticket data"""
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+        from io import BytesIO
+        
+        query = (
+            select(Ticket)
+            .options(
+                selectinload(Ticket.station).selectinload(Station.operator),
+                selectinload(Ticket.assigned_user),
+                selectinload(Ticket.assigned_department),
+                selectinload(Ticket.created_by),
+            )
+            .order_by(Ticket.created_at.desc())
+        )
+
+        result = await db.execute(query)
+        tickets = result.scalars().all()
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Tickets"
+
+        headers = [
+            "Номер тікету", "Заголовок", "Опис", "Категорія", "Пріоритет", "Статус",
+            "Тип інциденту", "Тип клієнта", "Джерело звернення",
+            "Номер станції", "Назва станції", "ID станції", "Адреса станції", "Власник станції",
+            "Номер порту", "Тип порту", "Модель авто",
+            "Ім'я заявника", "Телефон заявника", "Email заявника",
+            "Відповідальний", "Відділ", "Створив",
+            "Дата створення", "Дата оновлення", "Дата вирішення", "Дата закриття",
+            "SLA дедлайн", "SLA порушено", "Логи станції",
+        ]
+
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF")
+        
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        for row_num, ticket in enumerate(tickets, 2):
+            station_number = ticket.station.station_number if ticket.station else ""
+            station_name = ticket.station.name if ticket.station else ""
+            station_id = ticket.station.station_id if ticket.station else ""
+            station_address = ticket.station.address if ticket.station else ""
+            station_operator = ticket.station.operator.name if ticket.station and ticket.station.operator else ""
+            
+            row_data = [
+                ticket.ticket_number, ticket.title, ticket.description,
+                ticket.category, ticket.priority, ticket.status,
+                ticket.incident_type or "", ticket.client_type or "", ticket.contact_source or "",
+                station_number, station_name, station_id, station_address, station_operator,
+                ticket.port_number or "", ticket.port_type or "", ticket.vehicle or "",
+                ticket.reporter_name or "", ticket.reporter_phone or "", ticket.reporter_email or "",
+                f"{ticket.assigned_user.first_name} {ticket.assigned_user.last_name}" if ticket.assigned_user else "",
+                ticket.assigned_department.name if ticket.assigned_department else "",
+                f"{ticket.created_by.first_name} {ticket.created_by.last_name}" if ticket.created_by else "",
+                ticket.created_at.strftime("%d.%m.%Y %H:%M") if ticket.created_at else "",
+                ticket.updated_at.strftime("%d.%m.%Y %H:%M") if ticket.updated_at else "",
+                ticket.resolved_at.strftime("%d.%m.%Y %H:%M") if ticket.resolved_at else "",
+                ticket.closed_at.strftime("%d.%m.%Y %H:%M") if ticket.closed_at else "",
+                ticket.sla_due_date.strftime("%d.%m.%Y %H:%M") if ticket.sla_due_date else "",
+                "Так" if ticket.sla_breached else "Ні",
+                ticket.station_logs or "",
+            ]
+            
+            for col_num, value in enumerate(row_data, 1):
+                ws.cell(row=row_num, column=col_num, value=value)
+
+        for column in ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            ws.column_dimensions[column_letter].width = min(max_length + 2, 50)
+
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        from fastapi.responses import StreamingResponse
+        filename = f"tickets_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        
+        return StreamingResponse(
+            output,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Export failed: {str(e)}"
+        )
+
+
 @router.get("/{ticket_id}", response_model=TicketDetailResponse)
 async def get_ticket(
     ticket_id: int,
@@ -1403,169 +1513,4 @@ async def delete_ticket_attachment(
     return {"message": "Attachment deleted successfully"}
 
 
-@router.get("/export-test")
-async def export_tickets_test(
-    current_user: CurrentUser,
-):
-    """Test export endpoint"""
-    return {"message": "Export test works", "user": current_user.email}
 
-
-@router.get("/export")
-async def export_tickets(
-    db: DbSession,
-    current_user: CurrentUser,
-):
-    """Export tickets to Excel file with station details"""
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info(f"Export called by user: {current_user.email}")
-    
-    try:
-        from openpyxl import Workbook
-        from openpyxl.styles import Font, PatternFill, Alignment
-        from io import BytesIO
-        
-        # Build query - get all tickets
-        query = (
-            select(Ticket)
-            .options(
-                selectinload(Ticket.station).selectinload(Station.operator),
-                selectinload(Ticket.assigned_user),
-                selectinload(Ticket.assigned_department),
-                selectinload(Ticket.created_by),
-            )
-            .order_by(Ticket.created_at.desc())
-        )
-
-        result = await db.execute(query)
-        tickets = result.scalars().all()
-
-        # Create workbook
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Tickets"
-
-        # Define headers
-        headers = [
-            "Номер тікету",
-            "Заголовок",
-            "Опис",
-            "Категорія",
-            "Пріоритет",
-            "Статус",
-            "Тип інциденту",
-            "Тип клієнта",
-            "Джерело звернення",
-            "Номер станції",
-            "Назва станції",
-            "ID станції",
-            "Адреса станції",
-            "Власник станції",
-            "Номер порту",
-            "Тип порту",
-            "Модель авто",
-            "Ім'я заявника",
-            "Телефон заявника",
-            "Email заявника",
-            "Відповідальний",
-            "Відділ",
-            "Створив",
-            "Дата створення",
-            "Дата оновлення",
-            "Дата вирішення",
-            "Дата закриття",
-            "SLA дедлайн",
-            "SLA порушено",
-            "Логи станції",
-        ]
-
-        # Style header row
-        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
-        header_font = Font(bold=True, color="FFFFFF")
-        
-        for col_num, header in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col_num, value=header)
-            cell.fill = header_fill
-            cell.font = header_font
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-
-        # Add data rows
-        for row_num, ticket in enumerate(tickets, 2):
-            # Station details
-            station_number = ticket.station.station_number if ticket.station else ""
-            station_name = ticket.station.name if ticket.station else ""
-            station_id = ticket.station.station_id if ticket.station else ""
-            station_address = ticket.station.address if ticket.station else ""
-            station_operator = ticket.station.operator.name if ticket.station and ticket.station.operator else ""
-            
-            row_data = [
-                ticket.ticket_number,
-                ticket.title,
-                ticket.description,
-                ticket.category,
-                ticket.priority,
-                ticket.status,
-                ticket.incident_type or "",
-                ticket.client_type or "",
-                ticket.contact_source or "",
-                station_number,
-                station_name,
-                station_id,
-                station_address,
-                station_operator,
-                ticket.port_number or "",
-                ticket.port_type or "",
-                ticket.vehicle or "",
-                ticket.reporter_name or "",
-                ticket.reporter_phone or "",
-                ticket.reporter_email or "",
-                f"{ticket.assigned_user.first_name} {ticket.assigned_user.last_name}" if ticket.assigned_user else "",
-                ticket.assigned_department.name if ticket.assigned_department else "",
-                f"{ticket.created_by.first_name} {ticket.created_by.last_name}" if ticket.created_by else "",
-                ticket.created_at.strftime("%d.%m.%Y %H:%M") if ticket.created_at else "",
-                ticket.updated_at.strftime("%d.%m.%Y %H:%M") if ticket.updated_at else "",
-                ticket.resolved_at.strftime("%d.%m.%Y %H:%M") if ticket.resolved_at else "",
-                ticket.closed_at.strftime("%d.%m.%Y %H:%M") if ticket.closed_at else "",
-                ticket.sla_due_date.strftime("%d.%m.%Y %H:%M") if ticket.sla_due_date else "",
-                "Так" if ticket.sla_breached else "Ні",
-                ticket.station_logs or "",
-            ]
-            
-            for col_num, value in enumerate(row_data, 1):
-                ws.cell(row=row_num, column=col_num, value=value)
-
-        # Adjust column widths
-        for column in ws.columns:
-            max_length = 0
-            column_letter = column[0].column_letter
-            for cell in column:
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(str(cell.value))
-                except:
-                    pass
-            adjusted_width = min(max_length + 2, 50)
-            ws.column_dimensions[column_letter].width = adjusted_width
-
-        # Save to BytesIO
-        output = BytesIO()
-        wb.save(output)
-        output.seek(0)
-        
-        # Return file
-        from fastapi.responses import StreamingResponse
-        filename = f"tickets_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-        
-        return StreamingResponse(
-            output,
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
-        )
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Export failed: {str(e)}"
-        )
