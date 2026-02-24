@@ -132,7 +132,7 @@ export default function IncomingQueue() {
   useEffect(() => {
     const loadFilterOperators = async () => {
       try {
-        const response = await operatorsApi.list({ is_active: true, per_page: 200 })
+        const response = await operatorsApi.list({ is_active: true, per_page: 100 })
         setFilterOperators(response.items)
       } catch (error) {}
     }
