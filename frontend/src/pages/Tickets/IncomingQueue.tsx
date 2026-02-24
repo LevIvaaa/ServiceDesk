@@ -425,6 +425,13 @@ export default function IncomingQueue() {
       width: 120,
     },
     {
+      title: i18n.language === 'en' ? 'Station Owner' : 'Власник станції',
+      dataIndex: 'station',
+      key: 'station_owner',
+      render: (station: Ticket['station']) => station?.operator_name || '-',
+      width: 150,
+    },
+    {
       title: i18n.language === 'en' ? 'Department' : 'Відділ',
       dataIndex: 'assigned_department',
       key: 'assigned_department',

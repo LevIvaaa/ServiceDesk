@@ -114,10 +114,12 @@ async def list_tickets(
     # Apply filters
     if search:
         search_filter = f"%{search}%"
-        query = query.where(
+        query = query.outerjoin(Station, Ticket.station_id == Station.id).where(
             or_(
                 Ticket.ticket_number.ilike(search_filter),
                 Ticket.title.ilike(search_filter),
+                Station.station_number.ilike(search_filter),
+                Station.station_id.ilike(search_filter),
             )
         )
     if status:
@@ -180,6 +182,7 @@ async def list_tickets(
             ticket_dict["station"] = {
                 "id": ticket.station.id,
                 "station_id": ticket.station.station_id,
+                "station_number": ticket.station.station_number,
                 "name": ticket.station.name,
                 "address": ticket.station.address,
                 "operator_name": ticket.station.operator.name if ticket.station.operator else "",
