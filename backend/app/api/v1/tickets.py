@@ -102,6 +102,7 @@ async def list_tickets(
     station_id: Optional[int] = None,
     operator_id: Optional[int] = None,
     created_by_id: Optional[int] = None,
+    incident_type: Optional[str] = None,
     my_tickets: bool = False,
     delegated_to_me: bool = False,
 ):
@@ -148,6 +149,8 @@ async def list_tickets(
         query = query.where(Ticket.station.has(Station.operator_id == operator_id))
     if created_by_id is not None:
         query = query.where(Ticket.created_by_id == created_by_id)
+    if incident_type is not None:
+        query = query.where(Ticket.incident_type == incident_type)
     if my_tickets:
         query = query.where(
             or_(

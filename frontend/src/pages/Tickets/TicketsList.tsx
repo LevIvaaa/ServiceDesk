@@ -19,6 +19,7 @@ import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ClearOutlin
 import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
+import { incidentTypesApi, IncidentType } from '../../api/incidentTypes'
 import { useAuthStore } from '../../store/authStore'
 import CreateTicketNew from './CreateTicketNew'
 import TicketDetail from './TicketDetail'
@@ -59,6 +60,7 @@ export default function TicketsList() {
   const [filters, setFilters] = useState<TicketListParams>(loadSavedFilters)
   const [users, setUsers] = useState<User[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
+  const [incidentTypes, setIncidentTypes] = useState<IncidentType[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [viewTicketId, setViewTicketId] = useState<number | null>(null)
   const { t } = useTranslation('tickets')
@@ -93,6 +95,19 @@ export default function TicketsList() {
       }
     }
     loadDepartments()
+  }, [])
+
+  // Load incident types for filters
+  useEffect(() => {
+    const loadIncidentTypes = async () => {
+      try {
+        const types = await incidentTypesApi.list(true)
+        setIncidentTypes(types)
+      } catch (error) {
+        console.error('Failed to load incident types:', error)
+      }
+    }
+    loadIncidentTypes()
   }, [])
 
   const fetchTickets = async (params?: TicketListParams) => {
@@ -151,11 +166,10 @@ export default function TicketsList() {
     try {
       setLoading(true)
       
-      // Filter only supported export parameters
       const exportParams = {
         status: filters.status,
         priority: filters.priority,
-        category: filters.category,
+        incident_type: filters.incident_type,
         assigned_user_id: filters.assigned_user_id,
         assigned_department_id: filters.assigned_department_id,
         created_by_id: filters.created_by_id,
@@ -356,23 +370,6 @@ export default function TicketsList() {
           </Col>
           <Col xs={24} sm={12} lg={3}>
             <Select
-              placeholder={t('status.label')}
-              allowClear
-              style={{ width: '100%' }}
-              value={filters.status}
-              onChange={(value) => setFilters({ ...filters, status: value })}
-            >
-              {['new', 'in_progress', 'pending', 'reviewing', 'closed'].map(
-                (status) => (
-                  <Option key={status} value={status}>
-                    {t(`status.${status}`)}
-                  </Option>
-                )
-              )}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} lg={3}>
-            <Select
               placeholder={t('priority.label')}
               allowClear
               style={{ width: '100%' }}
@@ -386,26 +383,9 @@ export default function TicketsList() {
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={12} lg={3}>
-            <Select
-              placeholder={t('category.label')}
-              allowClear
-              style={{ width: '100%' }}
-              value={filters.category}
-              onChange={(value) => setFilters({ ...filters, category: value })}
-            >
-              {['hardware', 'software', 'network', 'billing', 'other'].map(
-                (category) => (
-                  <Option key={category} value={category}>
-                    {t(`category.${category}`)}
-                  </Option>
-                )
-              )}
-            </Select>
-          </Col>
           <Col xs={24} sm={12} lg={4}>
             <Select
-              placeholder={t('filters.createdBy', 'Створив')}
+              placeholder={t('filters.createdBy', 'Автор')}
               allowClear
               showSearch
               optionFilterProp="children"
@@ -416,6 +396,40 @@ export default function TicketsList() {
               {users.map((user) => (
                 <Option key={user.id} value={user.id}>
                   {user.first_name} {user.last_name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              placeholder={'Відповідальний'}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              style={{ width: '100%' }}
+              value={filters.assigned_user_id}
+              onChange={(value) => setFilters({ ...filters, assigned_user_id: value })}
+            >
+              {users.map((user) => (
+                <Option key={user.id} value={user.id}>
+                  {user.first_name} {user.last_name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              placeholder={'Причина звернення'}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              style={{ width: '100%' }}
+              value={filters.incident_type}
+              onChange={(value) => setFilters({ ...filters, incident_type: value })}
+            >
+              {incidentTypes.map((type) => (
+                <Option key={type.id} value={type.name}>
+                  {type.name}
                 </Option>
               ))}
             </Select>
@@ -433,23 +447,6 @@ export default function TicketsList() {
               {departments.map((dept) => (
                 <Option key={dept.id} value={dept.id}>
                   {dept.name}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} lg={4}>
-            <Select
-              placeholder={t('filters.assignedTo', 'Відповідальний')}
-              allowClear
-              showSearch
-              optionFilterProp="children"
-              style={{ width: '100%' }}
-              value={filters.assigned_user_id}
-              onChange={(value) => setFilters({ ...filters, assigned_user_id: value })}
-            >
-              {users.map((user) => (
-                <Option key={user.id} value={user.id}>
-                  {user.first_name} {user.last_name}
                 </Option>
               ))}
             </Select>

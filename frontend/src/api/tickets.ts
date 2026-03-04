@@ -159,6 +159,7 @@ export interface TicketListParams {
   created_by_id?: number
   my_tickets?: boolean
   delegated_to_me?: boolean
+  incident_type?: string
 }
 
 export interface PaginatedResponse<T> {

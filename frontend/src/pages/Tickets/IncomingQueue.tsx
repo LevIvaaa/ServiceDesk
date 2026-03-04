@@ -36,6 +36,7 @@ import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
 import { operatorsApi, Operator } from '../../api/operators'
+import { incidentTypesApi, IncidentType } from '../../api/incidentTypes'
 import { useAuthStore } from '../../store/authStore'
 import CreateTicketNew from './CreateTicketNew'
 import TicketDetail from './TicketDetail'
@@ -94,6 +95,7 @@ export default function IncomingQueue() {
   const [filterUsers, setFilterUsers] = useState<User[]>([])
   const [filterDepartments, setFilterDepartments] = useState<Department[]>([])
   const [filterOperators, setFilterOperators] = useState<Operator[]>([])
+  const [filterIncidentTypes, setFilterIncidentTypes] = useState<IncidentType[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [viewTicketId, setViewTicketId] = useState<number | null>(null)
 
@@ -139,6 +141,17 @@ export default function IncomingQueue() {
     loadFilterOperators()
   }, [])
 
+  // Load incident types for filters
+  useEffect(() => {
+    const loadIncidentTypes = async () => {
+      try {
+        const types = await incidentTypesApi.list(true)
+        setFilterIncidentTypes(types)
+      } catch (error) {}
+    }
+    loadIncidentTypes()
+  }, [])
+
   const fetchTickets = async () => {
     try {
       setLoading(true)
@@ -180,7 +193,7 @@ export default function IncomingQueue() {
         assigned_user_id: activeTab === 'myTickets' ? currentUser?.id : (activeTab === 'all' ? filters.assigned_user_id : undefined),
         search: activeTab === 'all' ? filters.search : undefined,
         priority: activeTab === 'all' ? filters.priority : undefined,
-        category: activeTab === 'all' ? filters.category : undefined,
+        incident_type: activeTab === 'all' ? filters.incident_type : undefined,
         created_by_id: activeTab === 'all' ? filters.created_by_id : undefined,
         operator_id: activeTab === 'all' ? filters.operator_id : undefined,
         delegated_to_me: activeTab === 'delegated' ? true : undefined,
@@ -332,7 +345,7 @@ export default function IncomingQueue() {
       const exportParams = {
         status: filters.status,
         priority: filters.priority,
-        category: filters.category,
+        incident_type: filters.incident_type,
         assigned_user_id: filters.assigned_user_id,
         assigned_department_id: filters.assigned_department_id,
         created_by_id: filters.created_by_id,
@@ -614,23 +627,6 @@ export default function IncomingQueue() {
           </Col>
           <Col xs={24} sm={12} lg={3}>
             <Select
-              placeholder={t('status.label')}
-              allowClear
-              style={{ width: '100%' }}
-              value={filters.status}
-              onChange={(value) => setFilters({ ...filters, status: value })}
-            >
-              {['new', 'in_progress', 'pending', 'reviewing', 'closed'].map(
-                (status) => (
-                  <Option key={status} value={status}>
-                    {t(`status.${status}`)}
-                  </Option>
-                )
-              )}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} lg={3}>
-            <Select
               placeholder={t('priority.label')}
               allowClear
               style={{ width: '100%' }}
@@ -644,26 +640,9 @@ export default function IncomingQueue() {
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={12} lg={3}>
-            <Select
-              placeholder={t('category.label')}
-              allowClear
-              style={{ width: '100%' }}
-              value={filters.category}
-              onChange={(value) => setFilters({ ...filters, category: value })}
-            >
-              {['hardware', 'software', 'network', 'billing', 'other'].map(
-                (category) => (
-                  <Option key={category} value={category}>
-                    {t(`category.${category}`)}
-                  </Option>
-                )
-              )}
-            </Select>
-          </Col>
           <Col xs={24} sm={12} lg={4}>
             <Select
-              placeholder={t('filters.createdBy', 'Створив')}
+              placeholder={t('filters.createdBy', 'Автор')}
               allowClear
               showSearch
               optionFilterProp="children"
@@ -674,6 +653,40 @@ export default function IncomingQueue() {
               {filterUsers.map((user) => (
                 <Option key={user.id} value={user.id}>
                   {user.first_name} {user.last_name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              placeholder={i18n.language === 'en' ? 'Assigned To' : 'Відповідальний'}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              style={{ width: '100%' }}
+              value={filters.assigned_user_id}
+              onChange={(value) => setFilters({ ...filters, assigned_user_id: value })}
+            >
+              {filterUsers.map((user) => (
+                <Option key={user.id} value={user.id}>
+                  {user.first_name} {user.last_name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              placeholder={i18n.language === 'en' ? 'Incident Type' : 'Причина звернення'}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              style={{ width: '100%' }}
+              value={filters.incident_type}
+              onChange={(value) => setFilters({ ...filters, incident_type: value })}
+            >
+              {filterIncidentTypes.map((type) => (
+                <Option key={type.id} value={type.name}>
+                  {type.name}
                 </Option>
               ))}
             </Select>
