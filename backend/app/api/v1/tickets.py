@@ -210,10 +210,18 @@ async def create_ticket(
     """Create a new ticket."""
     ticket_number = await generate_ticket_number(db)
 
+    data = ticket_data.model_dump()
+    if not data.get("title"):
+        data["title"] = data.get("incident_type") or "Новий тікет"
+    if not data.get("description"):
+        data["description"] = ""
+    if not data.get("category"):
+        data["category"] = "other"
+
     ticket = Ticket(
         ticket_number=ticket_number,
         created_by_id=current_user.id,
-        **ticket_data.model_dump(),
+        **data,
     )
     db.add(ticket)
     await db.flush()

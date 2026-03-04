@@ -5,9 +5,9 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class TicketBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=300)
-    description: str = Field(..., min_length=1)
-    category: str = Field(..., pattern="^(hardware|software|network|billing|other)$")
+    title: Optional[str] = Field(None, max_length=300)
+    description: Optional[str] = None
+    category: Optional[str] = Field(None, pattern="^(hardware|software|network|billing|other)$")
     priority: str = Field(default="medium", pattern="^(low|medium|high|critical)$")
     station_id: Optional[int] = None
     port_number: Optional[int] = None

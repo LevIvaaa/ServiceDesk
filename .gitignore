@@ -75,5 +75,10 @@ docker-compose.override.yml
 # Claude settings
 .claude/settings.local.json
 
+# Tests (local only, not for server)
+backend/tests/
+**/test_*.py
+**/conftest.py
+
 # Temporary files
 nul

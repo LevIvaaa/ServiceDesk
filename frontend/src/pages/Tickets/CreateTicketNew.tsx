@@ -235,7 +235,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
             {/* Відділ + Виконавець */}
             <Row gutter={12}>
               <Col span={12}>
-                <Form.Item label={<span style={labelStyle}>Відділ</span>} name="assigned_department_id" rules={[{ required: true, message: 'Оберіть відділ' }]} style={{ marginBottom: 12 }}>
+                <Form.Item label={<span style={labelStyle}>Відділ</span>} name="assigned_department_id" style={{ marginBottom: 12 }}>
                   <Select placeholder="---" loading={departmentsLoading} showSearch optionFilterProp="children" onChange={handleDepartmentChange}>
                     {departments.map(d => <Select.Option key={d.id} value={d.id}>{d.name}</Select.Option>)}
                   </Select>
@@ -254,7 +254,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
             </Row>
 
             {/* Станція */}
-            <Form.Item label={<span style={labelStyle}>Станція</span>} name="station_id" rules={[{ required: true, message: 'Оберіть станцію' }]} style={{ marginBottom: 4 }}>
+            <Form.Item label={<span style={labelStyle}>Станція</span>} name="station_id" style={{ marginBottom: 4 }}>
               <Select showSearch placeholder="Пошук по номеру..." loading={stationSearchLoading} onSearch={searchStations} onChange={handleStationSelect} filterOption={false}
                 onInputKeyDown={(e) => { if (e.key === ' ') { e.stopPropagation() } }}
                 notFoundContent={stationSearchLoading ? <Spin size="small" /> : null}>
@@ -325,7 +325,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
             </Row>
 
             {/* Проблема */}
-            <Form.Item label={<span style={labelStyle}>Проблема</span>} name="incident_type" rules={[{ required: true, message: 'Оберіть проблему' }]} style={{ marginBottom: 12 }}>
+            <Form.Item label={<span style={labelStyle}>Проблема</span>} name="incident_type" style={{ marginBottom: 12 }}>
               <Select placeholder="---" showSearch optionFilterProp="children" loading={incidentTypesLoading}>
                 {incidentTypes.map(t => <Select.Option key={t.id} value={t.name}>{t.name}</Select.Option>)}
               </Select>
@@ -342,7 +342,7 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
             </Form.Item>
 
             {/* Опис */}
-            <Form.Item label={<span style={labelStyle}>Опис</span>} name="description" rules={[{ required: true, message: 'Введіть опис' }]} style={{ marginBottom: 12 }}>
+            <Form.Item label={<span style={labelStyle}>Опис</span>} name="description" style={{ marginBottom: 12 }}>
               <TextArea rows={3} placeholder="Що сталося? (Ctrl+V для вставки скріншоту)" onPaste={handleDescriptionPaste} />
             </Form.Item>
 
