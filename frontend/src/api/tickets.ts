@@ -248,6 +248,15 @@ export const ticketsApi = {
     return response.data
   },
 
+  updateComment: async (ticketId: number, commentId: number, content: string): Promise<TicketComment> => {
+    const response = await client.put<TicketComment>(`/tickets/${ticketId}/comments/${commentId}`, { content })
+    return response.data
+  },
+
+  deleteComment: async (ticketId: number, commentId: number): Promise<void> => {
+    await client.delete(`/tickets/${ticketId}/comments/${commentId}`)
+  },
+
   getComments: async (id: number): Promise<TicketComment[]> => {
     const response = await client.get<TicketComment[]>(`/tickets/${id}/comments`)
     return response.data

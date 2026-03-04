@@ -28,6 +28,7 @@ from app.schemas.ticket import (
     TicketAttachmentResponse,
     TicketCommentCreate,
     TicketCommentResponse,
+    TicketCommentUpdate,
     TicketCreate,
     TicketDelegateUpdate,
     TicketDetailResponse,
@@ -854,6 +855,71 @@ async def get_comments(
     return [TicketCommentResponse.model_validate(c) for c in comments]
 
 
+@router.put("/{ticket_id}/comments/{comment_id}", response_model=TicketCommentResponse)
+async def update_comment(
+    ticket_id: int,
+    comment_id: int,
+    comment_data: TicketCommentUpdate,
+    db: DbSession,
+    current_user: Annotated[User, Depends(PermissionRequired("tickets.add_comment"))],
+):
+    """Update a comment. Only the author can edit."""
+    result = await db.execute(
+        select(TicketComment)
+        .options(selectinload(TicketComment.user))
+        .where(TicketComment.id == comment_id, TicketComment.ticket_id == ticket_id)
+    )
+    comment = result.scalar_one_or_none()
+    if not comment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
+    if comment.user_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can only edit own comments")
+
+    comment.content = comment_data.content
+    await db.commit()
+    await db.refresh(comment, ["user"])
+    return TicketCommentResponse.model_validate(comment)
+
+
+@router.delete("/{ticket_id}/comments/{comment_id}")
+async def delete_comment(
+    ticket_id: int,
+    comment_id: int,
+    db: DbSession,
+    current_user: Annotated[User, Depends(PermissionRequired("tickets.add_comment"))],
+):
+    """Delete a comment. Only the author or admin can delete."""
+    import re
+
+    result = await db.execute(
+        select(TicketComment).where(TicketComment.id == comment_id, TicketComment.ticket_id == ticket_id)
+    )
+    comment = result.scalar_one_or_none()
+    if not comment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
+    if comment.user_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can only delete own comments")
+
+    # Parse comment content for attachment markers [📷 filename] and [📎 filename]
+    filenames = re.findall(r'\[(?:📷|📎)\s+([^\]]+)\]', comment.content or '')
+    if filenames:
+        att_result = await db.execute(
+            select(TicketAttachment).where(
+                TicketAttachment.ticket_id == ticket_id,
+                TicketAttachment.filename.in_(filenames),
+            )
+        )
+        attachments_to_delete = att_result.scalars().all()
+        for att in attachments_to_delete:
+            if os.path.exists(att.file_path):
+                os.remove(att.file_path)
+            await db.delete(att)
+
+    await db.delete(comment)
+    await db.commit()
+    return {"message": "Comment deleted"}
+
+
 @router.get("/{ticket_id}/history", response_model=list[TicketHistoryResponse])
 async def get_history(
     ticket_id: int,
@@ -1381,13 +1447,13 @@ async def upload_ticket_attachment(
             detail="Ticket not found",
         )
 
-    # Check file size (100MB)
+    # Check file size (250MB)
     content = await file.read()
-    max_size = 100 * 1024 * 1024  # 100MB
+    max_size = 250 * 1024 * 1024  # 250MB
     if len(content) > max_size:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="File too large. Maximum size is 100MB",
+            detail="File too large. Maximum size is 250MB",
         )
 
     # Create storage directory

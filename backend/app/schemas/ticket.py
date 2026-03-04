@@ -99,6 +99,10 @@ class TicketCommentCreate(BaseModel):
     is_internal: bool = False
 
 
+class TicketCommentUpdate(BaseModel):
+    content: str = Field(..., min_length=1)
+
+
 class TicketCommentResponse(BaseModel):
     id: int
     ticket_id: int

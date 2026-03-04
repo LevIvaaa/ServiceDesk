@@ -23,6 +23,8 @@ import {
   Image,
   Select,
   Form,
+  Upload,
+  Popconfirm,
 } from 'antd'
 import {
   ArrowLeftOutlined,
@@ -34,6 +36,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   CodeOutlined,
+  UploadOutlined,
 } from '@ant-design/icons'
 import { ticketsApi, Ticket, TicketComment, TicketHistory, TicketAttachment } from '../../api/tickets'
 import { stationsApi, Station } from '../../api/stations'
@@ -56,6 +59,10 @@ export default function TicketDetail() {
   const [previewVisible, setPreviewVisible] = useState(false)
   const [previewAttachment, setPreviewAttachment] = useState<TicketAttachment | null>(null)
   const [newComment, setNewComment] = useState('')
+  const [commentFiles, setCommentFiles] = useState<File[]>([])
+  const [commentFilePreviews, setCommentFilePreviews] = useState<string[]>([])
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
+  const [editingCommentText, setEditingCommentText] = useState('')
   const [isInternal, setIsInternal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [editModalVisible, setEditModalVisible] = useState(false)
@@ -175,18 +182,127 @@ export default function TicketDetail() {
   }
 
   const handleAddComment = async () => {
-    if (!id || !newComment.trim()) return
+    if (!id || (!newComment.trim() && commentFiles.length === 0)) return
     try {
       setSubmitting(true)
-      const comment = await ticketsApi.addComment(parseInt(id), newComment, isInternal)
+      // Build comment text with file markers
+      let text = newComment
+      for (const f of commentFiles) {
+        if (f.type.startsWith('image/')) {
+          text += `\n[📷 ${f.name}]`
+        } else {
+          text += `\n[📎 ${f.name}]`
+        }
+      }
+      const comment = await ticketsApi.addComment(parseInt(id), text || '(файли)', isInternal)
+      // Upload files as attachments
+      for (const f of commentFiles) {
+        await ticketsApi.uploadAttachment(parseInt(id), f)
+      }
       setComments([...comments, comment])
       setNewComment('')
-      message.success('Comment added')
-    } catch (error) {
-      message.error('Failed to add comment')
+      setCommentFiles([])
+      commentFilePreviews.forEach(url => { if (url) URL.revokeObjectURL(url) })
+      setCommentFilePreviews([])
+      message.success('Коментар додано')
+      fetchTicket()
+    } catch (error: any) {
+      if (error?.response?.status === 413) {
+        message.error('Файл занадто великий. Максимум 250 MB.')
+      } else {
+        message.error('Помилка додавання коментаря')
+      }
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleCommentPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (item.type.startsWith('image/')) {
+        e.preventDefault()
+        const file = item.getAsFile()
+        if (!file) continue
+        const ext = item.type.split('/')[1] || 'png'
+        const filename = `screenshot_${Date.now()}.${ext}`
+        const renamedFile = new File([file], filename, { type: file.type })
+        setCommentFiles(prev => [...prev, renamedFile])
+        setCommentFilePreviews(prev => [...prev, URL.createObjectURL(renamedFile)])
+        message.success(`Скріншот додано: ${filename}`)
+        break
+      }
+    }
+  }
+
+  const handleCommentDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const files = e.dataTransfer?.files
+    if (!files || files.length === 0) return
+    const newFiles: File[] = []
+    const newPreviews: string[] = []
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].size > MAX_FILE_SIZE) {
+        message.error(`Файл "${files[i].name}" занадто великий (${(files[i].size / 1024 / 1024).toFixed(1)} MB). Максимум 250 MB.`)
+        continue
+      }
+      newFiles.push(files[i])
+      if (files[i].type.startsWith('image/')) {
+        newPreviews.push(URL.createObjectURL(files[i]))
+      } else {
+        newPreviews.push('')
+      }
+    }
+    if (newFiles.length > 0) {
+      setCommentFiles(prev => [...prev, ...newFiles])
+      setCommentFilePreviews(prev => [...prev, ...newPreviews])
+      message.success(`Додано ${newFiles.length} файл(ів)`)
+    }
+  }
+
+  const MAX_FILE_SIZE = 250 * 1024 * 1024 // 250MB
+
+  const handleCommentFileUpload = (file: File) => {
+    if (file.size > MAX_FILE_SIZE) {
+      message.error(`Файл "${file.name}" занадто великий (${(file.size / 1024 / 1024).toFixed(1)} MB). Максимум 250 MB.`)
+      return false
+    }
+    setCommentFiles(prev => [...prev, file])
+    if (file.type.startsWith('image/')) {
+      setCommentFilePreviews(prev => [...prev, URL.createObjectURL(file)])
+    } else {
+      setCommentFilePreviews(prev => [...prev, ''])
+    }
+    return false
+  }
+
+  const removeCommentFile = (idx: number) => {
+    if (commentFilePreviews[idx]) URL.revokeObjectURL(commentFilePreviews[idx])
+    setCommentFiles(prev => prev.filter((_, i) => i !== idx))
+    setCommentFilePreviews(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  const handleEditComment = async (commentId: number) => {
+    if (!id || !editingCommentText.trim()) return
+    try {
+      await ticketsApi.updateComment(parseInt(id), commentId, editingCommentText)
+      setEditingCommentId(null)
+      setEditingCommentText('')
+      message.success('Коментар оновлено')
+      fetchTicket()
+    } catch { message.error('Помилка оновлення') }
+  }
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!id) return
+    try {
+      await ticketsApi.deleteComment(parseInt(id), commentId)
+      setComments(comments.filter(c => c.id !== commentId))
+      message.success('Коментар видалено')
+      fetchTicket()
+    } catch { message.error('Помилка видалення') }
   }
 
   const handleDownloadAttachment = async (attachment: TicketAttachment) => {
@@ -514,6 +630,54 @@ export default function TicketDetail() {
     return null
   }
 
+  const renderCommentContent = (content: string) => {
+    // Split by markers [📷 filename] and [📎 filename]
+    const parts = content.split(/(\[📷 [^\]]+\]|\[📎 [^\]]+\])/)
+    return (
+      <div>
+        {parts.map((part, i) => {
+          const imgMatch = part.match(/\[📷 ([^\]]+)\]/)
+          const fileMatch = part.match(/\[📎 ([^\]]+)\]/)
+          if (imgMatch) {
+            const filename = imgMatch[1]
+            const att = attachments.find(a => a.filename === filename)
+            if (att && attachmentUrls[att.id]) {
+              return (
+                <div key={i} style={{ margin: '8px 0' }}>
+                  <img
+                    src={attachmentUrls[att.id]}
+                    alt={filename}
+                    style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, cursor: 'pointer', border: '1px solid #e8e8e8' }}
+                    onClick={() => openPreview(att)}
+                  />
+                </div>
+              )
+            }
+            return <Text key={i} style={{ color: '#1890ff' }}>{part}</Text>
+          }
+          if (fileMatch) {
+            const filename = fileMatch[1]
+            const att = attachments.find(a => a.filename === filename)
+            if (att) {
+              return (
+                <div key={i} style={{ margin: '4px 0' }}>
+                  <Button type="link" size="small" icon={<DownloadOutlined />} onClick={() => handleDownloadAttachment(att)}>
+                    {filename}
+                  </Button>
+                </div>
+              )
+            }
+            return <Text key={i}>{part}</Text>
+          }
+          if (part.trim()) {
+            return <Text key={i} style={{ color: '#262626', whiteSpace: 'pre-wrap' }}>{part}</Text>
+          }
+          return null
+        })}
+      </div>
+    )
+  }
+
   const tabItems = [
     {
       key: 'comments',
@@ -529,7 +693,17 @@ export default function TicketDetail() {
             itemLayout="horizontal"
             dataSource={comments}
             renderItem={(comment) => (
-              <List.Item>
+              <List.Item
+                actions={
+                  comment.user_id === user?.id || user?.is_admin ? [
+                    <Button key="edit" type="text" size="small" icon={<EditOutlined />}
+                      onClick={() => { setEditingCommentId(comment.id); setEditingCommentText(comment.content) }} />,
+                    <Popconfirm key="del" title="Видалити коментар?" onConfirm={() => handleDeleteComment(comment.id)} okText="Так" cancelText="Ні">
+                      <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>,
+                  ] : []
+                }
+              >
                 <List.Item.Meta
                   avatar={<Avatar icon={<UserOutlined />} />}
                   title={
@@ -545,20 +719,69 @@ export default function TicketDetail() {
                       )}
                     </Space>
                   }
-                  description={comment.content}
+                  description={
+                    editingCommentId === comment.id ? (
+                      <div>
+                        <TextArea rows={2} value={editingCommentText} onChange={(e) => setEditingCommentText(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditComment(comment.id) } }} />
+                        <Space style={{ marginTop: 4 }}>
+                          <Button size="small" type="primary" onClick={() => handleEditComment(comment.id)}>Зберегти</Button>
+                          <Button size="small" onClick={() => setEditingCommentId(null)}>Скасувати</Button>
+                        </Space>
+                      </div>
+                    ) : renderCommentContent(comment.content)
+                  }
                 />
               </List.Item>
             )}
           />
           {hasPermission('tickets.add_comment') && (
             <div style={{ marginTop: 16 }}>
-              <TextArea
-                rows={3}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder={t('comments.placeholder')}
-              />
+              <div
+                onDrop={handleCommentDrop}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
+                style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}
+              >
+                {commentFiles.length > 0 && (
+                  <div style={{ padding: '8px', borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
+                    <Row gutter={[8, 8]}>
+                      {commentFiles.map((file, idx) => (
+                        <Col key={idx}>
+                          {commentFilePreviews[idx] ? (
+                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                              <img src={commentFilePreviews[idx]} alt={file.name}
+                                style={{ height: 80, maxWidth: 120, borderRadius: 6, border: '1px solid #e8e8e8', objectFit: 'cover' }} />
+                              <Button type="text" size="small" danger
+                                style={{ position: 'absolute', top: -4, right: -4, background: '#fff', borderRadius: '50%', padding: 0, width: 18, height: 18, fontSize: 10, lineHeight: '18px' }}
+                                onClick={() => removeCommentFile(idx)}>✕</Button>
+                              <div style={{ fontSize: 10, textAlign: 'center', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</div>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '4px 8px', background: '#fff', borderRadius: 4, border: '1px solid #e8e8e8' }}>
+                              <PaperClipOutlined /> {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                              <Button type="text" size="small" danger style={{ padding: '0 2px', height: 16, fontSize: 10 }}
+                                onClick={() => removeCommentFile(idx)}>✕</Button>
+                            </div>
+                          )}
+                        </Col>
+                      ))}
+                    </Row>
+                  </div>
+                )}
+                <TextArea
+                  rows={3}
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onPaste={handleCommentPaste}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment() } }}
+                  placeholder="Коментар... (Ctrl+V для скріншоту, перетягніть файли)"
+                  style={{ border: 'none', boxShadow: 'none' }}
+                />
+              </div>
               <Space style={{ marginTop: 8 }}>
+                <Upload beforeUpload={handleCommentFileUpload} showUploadList={false} multiple>
+                  <Button icon={<UploadOutlined />} size="small">Файл</Button>
+                </Upload>
                 {hasPermission('tickets.view_internal_comments') && (
                   <Checkbox
                     checked={isInternal}
@@ -571,7 +794,7 @@ export default function TicketDetail() {
                   type="primary"
                   onClick={handleAddComment}
                   loading={submitting}
-                  disabled={!newComment.trim()}
+                  disabled={!newComment.trim() && commentFiles.length === 0}
                 >
                   {t('comments.add')}
                 </Button>
