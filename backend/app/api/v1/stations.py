@@ -51,7 +51,11 @@ async def list_stations(
     if city:
         query = query.where(Station.city.ilike(f"%{city}%"))
     if station_status:
-        query = query.where(Station.status == station_status)
+        statuses = [s.strip() for s in station_status.split(",")]
+        if len(statuses) == 1:
+            query = query.where(Station.status == statuses[0])
+        else:
+            query = query.where(Station.status.in_(statuses))
 
     # Count total
     count_query = select(func.count()).select_from(query.subquery())

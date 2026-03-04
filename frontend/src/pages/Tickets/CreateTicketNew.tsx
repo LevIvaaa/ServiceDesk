@@ -91,10 +91,10 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
     if (!trimmed || trimmed.length < 2) { setStationOptions([]); return }
     try {
       setStationSearchLoading(true)
-      const response = await stationsApi.list({ search: trimmed, per_page: 20 })
+      const response = await stationsApi.list({ search: trimmed, per_page: 20, station_status: 'active,maintenance' })
       setStationOptions(response.items.map((s) => ({
         value: s.id,
-        label: s.station_number ? `#${s.station_number} — ${s.name}` : `${s.station_id} — ${s.name}`,
+        label: s.station_number ? `#${s.station_number} | ${s.station_id} — ${s.name}` : `${s.station_id} — ${s.name}`,
         station: s,
       })))
     } catch { /* ignore */ } finally { setStationSearchLoading(false) }
@@ -253,6 +253,13 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
               </Col>
             </Row>
 
+            {/* Проблема */}
+            <Form.Item label={<span style={labelStyle}>Проблема</span>} name="incident_type" style={{ marginBottom: 12 }}>
+              <Select placeholder="---" showSearch optionFilterProp="children" loading={incidentTypesLoading}>
+                {incidentTypes.map(t => <Select.Option key={t.id} value={t.name}>{t.name}</Select.Option>)}
+              </Select>
+            </Form.Item>
+
             {/* Станція */}
             <Form.Item label={<span style={labelStyle}>Станція</span>} name="station_id" style={{ marginBottom: 4 }}>
               <Select showSearch placeholder="Пошук по номеру..." loading={stationSearchLoading} onSearch={searchStations} onChange={handleStationSelect} filterOption={false}
@@ -323,13 +330,6 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
                 </Form.Item>
               </Col>
             </Row>
-
-            {/* Проблема */}
-            <Form.Item label={<span style={labelStyle}>Проблема</span>} name="incident_type" style={{ marginBottom: 12 }}>
-              <Select placeholder="---" showSearch optionFilterProp="children" loading={incidentTypesLoading}>
-                {incidentTypes.map(t => <Select.Option key={t.id} value={t.name}>{t.name}</Select.Option>)}
-              </Select>
-            </Form.Item>
 
             {/* Пріоритет */}
             <Form.Item label={<span style={labelStyle}>Пріоритет</span>} name="priority" initialValue="medium" style={{ marginBottom: 12 }}>

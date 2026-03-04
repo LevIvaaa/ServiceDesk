@@ -34,12 +34,8 @@ import { useAuthStore } from '../../store/authStore'
 const { Title } = Typography
 
 const STATUS_COLORS: Record<string, string> = {
-  unknown: 'default',
-  available: 'green',
-  charging: 'blue',
-  faulted: 'red',
-  offline: 'orange',
-  decommissioned: 'default',
+  active: 'green',
+  maintenance: 'orange',
 }
 
 const CONNECTOR_TYPES = ['CCS2', 'CHAdeMO', 'Type2', 'Type1', 'GBT']
@@ -309,11 +305,8 @@ export default function StationsList() {
               style={{ width: 150 }}
               allowClear
               options={[
-                { value: 'unknown', label: t('status.unknown') },
-                { value: 'available', label: t('status.available') },
-                { value: 'charging', label: t('status.charging') },
-                { value: 'faulted', label: t('status.faulted') },
-                { value: 'offline', label: t('status.offline') },
+                { value: 'active', label: 'Активна' },
+                { value: 'maintenance', label: 'Обслуговування' },
               ]}
             />
           </Col>
@@ -458,11 +451,8 @@ export default function StationsList() {
                 <Form.Item name="status" label={t('fields.status')}>
                   <Select
                     options={[
-                      { value: 'unknown', label: t('status.unknown') },
-                      { value: 'available', label: t('status.available') },
-                      { value: 'charging', label: t('status.charging') },
-                      { value: 'faulted', label: t('status.faulted') },
-                      { value: 'offline', label: t('status.offline') },
+                      { value: 'active', label: 'Активна' },
+                      { value: 'maintenance', label: 'Обслуговування' },
                     ]}
                   />
                 </Form.Item>
