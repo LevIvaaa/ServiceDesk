@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Table,
@@ -39,6 +38,7 @@ import { departmentsApi, Department } from '../../api/departments'
 import { operatorsApi, Operator } from '../../api/operators'
 import { useAuthStore } from '../../store/authStore'
 import CreateTicketNew from './CreateTicketNew'
+import TicketDetail from './TicketDetail'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/uk'
@@ -86,7 +86,6 @@ export default function IncomingQueue() {
   const [assignComment, setAssignComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   
-  const navigate = useNavigate()
   const { t, i18n } = useTranslation('tickets')
   const { user: currentUser, hasPermission } = useAuthStore()
 
@@ -96,6 +95,7 @@ export default function IncomingQueue() {
   const [filterDepartments, setFilterDepartments] = useState<Department[]>([])
   const [filterOperators, setFilterOperators] = useState<Operator[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [viewTicketId, setViewTicketId] = useState<number | null>(null)
 
   useEffect(() => {
     dayjs.locale(i18n.language)
@@ -392,7 +392,7 @@ export default function IncomingQueue() {
       render: (text: string, record: Ticket) => (
         <Space>
           {getPriorityIcon(record.priority)}
-          <a onClick={() => navigate(`/tickets/${record.id}`)}>{text}</a>
+          <a onClick={() => setViewTicketId(record.id)}>{text}</a>
         </Space>
       ),
       width: 150,
@@ -522,7 +522,7 @@ export default function IncomingQueue() {
                 type="default"
                 size="small"
                 icon={<EyeOutlined />}
-                onClick={() => navigate(`/tickets/${record.id}`)}
+                onClick={() => setViewTicketId(record.id)}
               >
                 {i18n.language === 'en' ? 'View' : 'Переглянути'}
               </Button>
@@ -533,7 +533,7 @@ export default function IncomingQueue() {
               type="default"
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => navigate(`/tickets/${record.id}`)}
+              onClick={() => setViewTicketId(record.id)}
             >
               {i18n.language === 'en' ? 'View' : 'Переглянути'}
             </Button>
@@ -1003,7 +1003,7 @@ export default function IncomingQueue() {
         scroll={{ x: 1450 }}
         rowClassName={(record) => record.status === 'new' ? 'new-ticket-row' : ''}
         onRow={(record) => ({
-          onClick: () => navigate(`/tickets/${record.id}`),
+          onClick: () => setViewTicketId(record.id),
           style: { cursor: 'pointer' }
         })}
       />
@@ -1116,6 +1116,35 @@ export default function IncomingQueue() {
         }}
       >
         <CreateTicketNew onSuccess={handleTicketCreated} isModal={true} />
+      </Modal>
+
+      {/* View Ticket Modal */}
+      <Modal
+        open={viewTicketId !== null}
+        onCancel={() => setViewTicketId(null)}
+        footer={null}
+        width="95%"
+        style={{ top: 20, maxWidth: 1400 }}
+        styles={{
+          body: {
+            maxHeight: 'calc(100vh - 80px)',
+            overflow: 'auto',
+            padding: '16px',
+            scrollbarWidth: 'thin',
+          },
+        }}
+        destroyOnHidden
+        maskClosable={false}
+        keyboard={true}
+      >
+        {viewTicketId && (
+          <TicketDetail
+            ticketId={viewTicketId}
+            isModal={true}
+            onClose={() => setViewTicketId(null)}
+            onTicketUpdated={() => fetchTickets()}
+          />
+        )}
       </Modal>
     </div>
   )

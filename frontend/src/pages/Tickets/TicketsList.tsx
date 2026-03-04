@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Table,
@@ -22,6 +21,7 @@ import { usersApi, User } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
 import { useAuthStore } from '../../store/authStore'
 import CreateTicketNew from './CreateTicketNew'
+import TicketDetail from './TicketDetail'
 import dayjs from 'dayjs'
 
 const { Title } = Typography
@@ -60,7 +60,7 @@ export default function TicketsList() {
   const [users, setUsers] = useState<User[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false)
-  const navigate = useNavigate()
+  const [viewTicketId, setViewTicketId] = useState<number | null>(null)
   const { t } = useTranslation('tickets')
   const { hasPermission } = useAuthStore()
 
@@ -196,7 +196,7 @@ export default function TicketsList() {
       dataIndex: 'ticket_number',
       key: 'ticket_number',
       render: (text: string, record: Ticket) => (
-        <a onClick={() => navigate(`/tickets/${record.id}`)}>{text}</a>
+        <a onClick={() => setViewTicketId(record.id)}>{text}</a>
       ),
       width: 130,
     },
@@ -279,7 +279,7 @@ export default function TicketsList() {
               icon={<EditOutlined />}
               onClick={(e) => {
                 e.stopPropagation()
-                navigate(`/tickets/${record.id}`)
+                setViewTicketId(record.id)
               }}
               title={t('common:actions.edit', 'Редагувати')}
               style={{ width: '100%', padding: '0 4px' }}
@@ -481,7 +481,7 @@ export default function TicketsList() {
         }}
         scroll={{ x: 1200 }}
         onRow={(record) => ({
-          onClick: () => navigate(`/tickets/${record.id}`),
+          onClick: () => setViewTicketId(record.id),
           style: { cursor: 'pointer' }
         })}
       />
@@ -525,6 +525,35 @@ export default function TicketsList() {
         }}
       >
         <CreateTicketNew onSuccess={handleTicketCreated} isModal={true} />
+      </Modal>
+
+      {/* View Ticket Modal */}
+      <Modal
+        open={viewTicketId !== null}
+        onCancel={() => setViewTicketId(null)}
+        footer={null}
+        width="95%"
+        style={{ top: 20, maxWidth: 1400 }}
+        styles={{
+          body: {
+            maxHeight: 'calc(100vh - 80px)',
+            overflow: 'auto',
+            padding: '16px',
+            scrollbarWidth: 'thin',
+          },
+        }}
+        destroyOnHidden
+        maskClosable={false}
+        keyboard={true}
+      >
+        {viewTicketId && (
+          <TicketDetail
+            ticketId={viewTicketId}
+            isModal={true}
+            onClose={() => setViewTicketId(null)}
+            onTicketUpdated={() => fetchTickets(filters)}
+          />
+        )}
       </Modal>
     </div>
   )

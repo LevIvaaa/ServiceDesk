@@ -48,8 +48,14 @@ import dayjs from 'dayjs'
 const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
 
-export default function TicketDetail() {
-  const { id } = useParams<{ id: string }>()
+export default function TicketDetail({ ticketId: propTicketId, isModal = false, onClose, onTicketUpdated }: {
+  ticketId?: number
+  isModal?: boolean
+  onClose?: () => void
+  onTicketUpdated?: () => void
+} = {}) {
+  const { id: paramId } = useParams<{ id: string }>()
+  const id = propTicketId ? String(propTicketId) : paramId
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [comments, setComments] = useState<TicketComment[]>([])
   const [history, setHistory] = useState<TicketHistory[]>([])
@@ -148,7 +154,11 @@ export default function TicketDetail() {
       loadAttachmentUrls(attachmentsList, parseInt(id!))
     } catch (error) {
       message.error('Failed to load ticket')
-      navigate('/tickets')
+      if (isModal && onClose) {
+        onClose()
+      } else {
+        navigate('/tickets')
+      }
     } finally {
       setLoading(false)
     }
@@ -440,6 +450,7 @@ export default function TicketDetail() {
       setStatusComment('')
       message.success(t('messages.statusUpdated', 'Статус оновлено'))
       fetchTicket() // Reload to get fresh history
+      onTicketUpdated?.()
     } catch (error) {
       message.error(t('messages.statusError', 'Помилка зміни статусу'))
     } finally {
@@ -545,6 +556,7 @@ export default function TicketDetail() {
       setAssignModalVisible(false)
       message.success(t('messages.assigned', 'Тікет призначено'))
       fetchTicket()
+      onTicketUpdated?.()
     } catch (error) {
       message.error(t('messages.assignError', 'Помилка призначення'))
     } finally {
@@ -983,9 +995,11 @@ export default function TicketDetail() {
   return (
     <div>
       <Space style={{ marginBottom: 16 }}>
-        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
-          {t('common:actions.back')}
-        </Button>
+        {!isModal && (
+          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+            {t('common:actions.back')}
+          </Button>
+        )}
         {hasPermission('tickets.edit') && canEditTicket() && (
           <Button icon={<EditOutlined />} onClick={openEditModal}>
             {t('common:actions.edit', 'Редагувати')}
@@ -1133,7 +1147,12 @@ export default function TicketDetail() {
                           try {
                             await ticketsApi.delete(parseInt(id!))
                             message.success('Тікет видалено')
-                            navigate('/tickets')
+                            if (isModal && onClose) {
+                              onTicketUpdated?.()
+                              onClose()
+                            } else {
+                              navigate('/tickets')
+                            }
                           } catch {
                             message.error('Помилка видалення тікету')
                           }
