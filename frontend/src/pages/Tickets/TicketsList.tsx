@@ -11,11 +11,10 @@ import {
   Col,
   Card,
   Space,
-  Popconfirm,
   message,
   Modal,
 } from 'antd'
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ClearOutlined, DownloadOutlined } from '@ant-design/icons'
+import { PlusOutlined, SearchOutlined, ClearOutlined, DownloadOutlined } from '@ant-design/icons'
 import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
 import { departmentsApi, Department } from '../../api/departments'
@@ -147,16 +146,6 @@ export default function TicketsList() {
     closed: 'default',
   }
 
-  const handleDelete = async (ticketId: number) => {
-    try {
-      await ticketsApi.delete(ticketId)
-      message.success(t('messages.deleted', 'Тікет видалено'))
-      fetchTickets(filters)
-    } catch (error) {
-      message.error(t('messages.deleteError', 'Помилка видалення'))
-    }
-  }
-
   const handleResetFilters = () => {
     setFilters({})
     setPage(1)
@@ -240,13 +229,6 @@ export default function TicketsList() {
       width: 110,
     },
     {
-      title: t('category.label'),
-      dataIndex: 'category',
-      key: 'category',
-      render: (category: string) => t(`category.${category}`),
-      width: 130,
-    },
-    {
       title: t('fields.station'),
       dataIndex: 'station',
       key: 'station',
@@ -255,21 +237,33 @@ export default function TicketsList() {
       width: 100,
     },
     {
-      title: t('fields.assignedUser'),
-      dataIndex: 'assigned_user',
-      key: 'assigned_user',
-      render: (user: Ticket['assigned_user']) =>
+      title: 'Автор',
+      dataIndex: 'created_by',
+      key: 'created_by',
+      render: (user: Ticket['created_by']) =>
         user ? `${user.first_name} ${user.last_name}` : '-',
       width: 140,
       ellipsis: true,
     },
     {
-      title: t('fields.assignedDepartment', 'Відділ'),
-      dataIndex: 'assigned_department',
-      key: 'assigned_department',
-      render: (department: Ticket['assigned_department']) =>
-        department ? department.name : '-',
-      width: 140,
+      title: t('fields.assignedUser'),
+      dataIndex: 'assigned_user',
+      key: 'assigned_user',
+      render: (_: any, record: Ticket) => (
+        <div>
+          {record.assigned_user ? (
+            <>
+              <div>{record.assigned_user.first_name} {record.assigned_user.last_name}</div>
+              {record.assigned_department && (
+                <div style={{ fontSize: 12, color: '#888' }}>{record.assigned_department.name}</div>
+              )}
+            </>
+          ) : record.assigned_department ? (
+            <div style={{ fontSize: 12, color: '#888' }}>{record.assigned_department.name}</div>
+          ) : '-'}
+        </div>
+      ),
+      width: 170,
       ellipsis: true,
     },
     {
@@ -278,52 +272,6 @@ export default function TicketsList() {
       key: 'created_at',
       render: (date: string) => dayjs(date).format('DD.MM.YYYY HH:mm'),
       width: 140,
-    },
-    {
-      title: '',
-      key: 'actions',
-      width: 80,
-      fixed: 'right' as const,
-      render: (_: any, record: Ticket) => (
-        <Space size="small" direction="vertical" style={{ width: '100%' }}>
-          {hasPermission('tickets.edit') && (
-            <Button
-              type="text"
-              size="small"
-              icon={<EditOutlined />}
-              onClick={(e) => {
-                e.stopPropagation()
-                setViewTicketId(record.id)
-              }}
-              title={t('common:actions.edit', 'Редагувати')}
-              style={{ width: '100%', padding: '0 4px' }}
-            />
-          )}
-          {hasPermission('tickets.delete') && (record.status === 'new' || record.status === 'closed') && (
-            <Popconfirm
-              title={t('messages.deleteConfirm', 'Видалити цей тікет?')}
-              onConfirm={(e) => {
-                e?.stopPropagation()
-                handleDelete(record.id)
-              }}
-              onCancel={(e) => e?.stopPropagation()}
-              okText={t('common:actions.delete', 'Видалити')}
-              cancelText={t('common:actions.cancel', 'Скасувати')}
-              okButtonProps={{ danger: true }}
-            >
-              <Button
-                type="text"
-                size="small"
-                danger
-                icon={<DeleteOutlined />}
-                onClick={(e) => e.stopPropagation()}
-                title={t('common:actions.delete', 'Видалити')}
-                style={{ width: '100%', padding: '0 4px' }}
-              />
-            </Popconfirm>
-          )}
-        </Space>
-      ),
     },
   ]
 

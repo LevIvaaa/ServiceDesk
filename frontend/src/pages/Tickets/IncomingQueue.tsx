@@ -25,12 +25,10 @@ import {
   ClockCircleOutlined,
   WarningOutlined,
   FireOutlined,
-  EyeOutlined,
   PlusOutlined,
   SearchOutlined,
   DownloadOutlined,
   ClearOutlined,
-  DeleteOutlined,
 } from '@ant-design/icons'
 import { ticketsApi, Ticket, TicketListParams } from '../../api/tickets'
 import { usersApi, User } from '../../api/users'
@@ -48,7 +46,6 @@ import 'dayjs/locale/en'
 dayjs.extend(relativeTime)
 
 const { Title, Text } = Typography
-const { TextArea } = Input
 const { Option } = Select
 
 const FILTERS_STORAGE_KEY = 'tickets_list_filters'
@@ -76,16 +73,6 @@ export default function IncomingQueue() {
   const [stats, setStats] = useState({ new: 0, unassigned: 0, urgent: 0, total: 0, inProgress: 0 })
   const [delegatedCount, setDelegatedCount] = useState(0)
   const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState<number | undefined>(undefined)
-  
-  // Assignment modal
-  const [assignModalVisible, setAssignModalVisible] = useState(false)
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
-  const [assignDepartments, setAssignDepartments] = useState<Department[]>([])
-  const [users, setUsers] = useState<User[]>([])
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState<number | null>(null)
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
-  const [assignComment, setAssignComment] = useState('')
-  const [submitting, setSubmitting] = useState(false)
   
   const { t, i18n } = useTranslation('tickets')
   const { user: currentUser, hasPermission } = useAuthStore()
@@ -251,89 +238,6 @@ export default function IncomingQueue() {
     return () => clearInterval(interval)
   }, [page, activeTab, selectedDepartmentFilter, filters])
 
-  const loadDepartments = async () => {
-    try {
-      const response = await departmentsApi.list({ is_active: true, per_page: 100, lang: i18n.language })
-      setAssignDepartments(response.items)
-    } catch (error) {
-      console.error('Failed to load departments:', error)
-    }
-  }
-
-  const loadUsers = async (departmentId?: number) => {
-    try {
-      const params: any = { is_active: true, per_page: 100, lang: i18n.language }
-      if (departmentId) {
-        params.department_id = departmentId
-      }
-      const response = await usersApi.list(params)
-      setUsers(response.items)
-    } catch (error) {
-      console.error('Failed to load users:', error)
-    }
-  }
-
-  const openAssignModal = (ticket: Ticket) => {
-    setSelectedTicket(ticket)
-    setSelectedDepartmentId(ticket.assigned_department_id || null)
-    setSelectedUserId(ticket.assigned_user_id || null)
-    setAssignComment('')
-    loadDepartments()
-    loadUsers(ticket.assigned_department_id || undefined)
-    setAssignModalVisible(true)
-  }
-
-  const handleDepartmentChange = (departmentId: number | undefined) => {
-    setSelectedDepartmentId(departmentId || null)
-    setSelectedUserId(null)
-    if (departmentId) {
-      loadUsers(departmentId)
-    } else {
-      loadUsers()
-    }
-  }
-
-  const handleAssign = async () => {
-    if (!selectedTicket) return
-    try {
-      setSubmitting(true)
-
-      if (selectedDepartmentId) {
-        await ticketsApi.delegate(
-          selectedTicket.id,
-          selectedDepartmentId,
-          selectedUserId || undefined,
-          assignComment || undefined
-        )
-      } else if (selectedUserId) {
-        await ticketsApi.assign(selectedTicket.id, selectedUserId, assignComment || undefined)
-      }
-
-      setAssignModalVisible(false)
-      message.success(t('messages.assigned'))
-      fetchTickets()
-    } catch (error) {
-      message.error(t('messages.assignError'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleQuickAccept = async (ticket: Ticket) => {
-    try {
-      if (!ticket.assigned_user_id && currentUser) {
-        await ticketsApi.assign(ticket.id, currentUser.id, 'Прийнято в роботу')
-      }
-      await ticketsApi.updateStatus(ticket.id, 'in_progress', 'Прийнято в роботу')
-      message.success(i18n.language === 'en' 
-        ? 'Ticket accepted and moved to "In Progress"' 
-        : 'Тікет прийнято і переміщено у "В роботі"')
-      fetchTickets()
-    } catch (error) {
-      message.error(t('messages.statusError'))
-    }
-  }
-
   const handleResetFilters = () => {
     setFilters({})
     setPage(1)
@@ -415,19 +319,6 @@ export default function IncomingQueue() {
       dataIndex: 'title',
       key: 'title',
       ellipsis: true,
-      render: (text: string, record: Ticket) => (
-        <div>
-          <div>{text}</div>
-          {activeTab === 'incoming' && record.status === 'new' && (
-            <Badge status="processing" text={i18n.language === 'en' ? 'New' : 'Новий'} />
-          )}
-          {(activeTab === 'inProgress' || activeTab === 'completed') && (
-            <Tag color={statusColors[record.status] || 'default'}>
-              {t(`status.${record.status}`)}
-            </Tag>
-          )}
-        </div>
-      ),
     },
     {
       title: <span style={{ whiteSpace: 'nowrap' }}>{t('priority.label')}</span>,
@@ -439,11 +330,13 @@ export default function IncomingQueue() {
       width: 110,
     },
     {
-      title: t('category.label'),
-      dataIndex: 'category',
-      key: 'category',
-      render: (category: string) => t(`category.${category}`),
-      width: 130,
+      title: t('status.label'),
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => (
+        <Tag color={statusColors[status] || 'default'}>{t(`status.${status}`)}</Tag>
+      ),
+      width: 120,
     },
     {
       title: t('fields.station'),
@@ -460,21 +353,34 @@ export default function IncomingQueue() {
       width: 150,
     },
     {
-      title: i18n.language === 'en' ? 'Department' : 'Відділ',
-      dataIndex: 'assigned_department',
-      key: 'assigned_department',
-      render: (department: Ticket['assigned_department']) => department?.name || '-',
-      width: 150,
-    },
-    {
-      title: activeTab === 'incoming' 
-        ? (i18n.language === 'en' ? 'Created By' : 'Створив')
-        : (i18n.language === 'en' ? 'Assigned To' : 'Призначено'),
-      dataIndex: activeTab === 'incoming' ? 'created_by' : 'assigned_user',
-      key: activeTab === 'incoming' ? 'created_by' : 'assigned_user',
-      render: (user: Ticket['created_by'] | Ticket['assigned_user']) =>
+      title: i18n.language === 'en' ? 'Created By' : 'Автор',
+      dataIndex: 'created_by',
+      key: 'created_by',
+      render: (user: Ticket['created_by']) =>
         user ? `${user.first_name} ${user.last_name}` : '-',
       width: 150,
+      ellipsis: true,
+    },
+    {
+      title: i18n.language === 'en' ? 'Assigned To' : 'Відповідальний',
+      dataIndex: 'assigned_user',
+      key: 'assigned_user',
+      render: (_: any, record: Ticket) => (
+        <div>
+          {record.assigned_user ? (
+            <>
+              <div>{record.assigned_user.first_name} {record.assigned_user.last_name}</div>
+              {record.assigned_department && (
+                <div style={{ fontSize: 12, color: '#888' }}>{record.assigned_department.name}</div>
+              )}
+            </>
+          ) : record.assigned_department ? (
+            <div style={{ fontSize: 12, color: '#888' }}>{record.assigned_department.name}</div>
+          ) : '-'}
+        </div>
+      ),
+      width: 170,
+      ellipsis: true,
     },
     {
       title: activeTab === 'completed'
@@ -488,96 +394,6 @@ export default function IncomingQueue() {
         </Tooltip>
       ),
       width: 120,
-    },
-    {
-      title: i18n.language === 'en' ? 'Actions' : 'Дії',
-      key: 'actions',
-      width: activeTab === 'completed' ? 120 : 220,
-      fixed: 'right' as const,
-      render: (_: any, record: Ticket) => (
-        <Space size="small">
-          {activeTab === 'incoming' && (
-            <>
-              {(record.status === 'new') && (
-                <Button
-                  type="primary"
-                  size="small"
-                  icon={<CheckCircleOutlined />}
-                  onClick={() => handleQuickAccept(record)}
-                >
-                  {i18n.language === 'en' ? 'Accept' : 'Прийняти'}
-                </Button>
-              )}
-              <Button
-                type="default"
-                size="small"
-                icon={<UserAddOutlined />}
-                onClick={() => openAssignModal(record)}
-              >
-                {i18n.language === 'en' ? 'Assign' : 'Призначити'}
-              </Button>
-            </>
-          )}
-          {activeTab === 'all' && (
-            <>
-              {(record.status === 'new') && 
-               record.assigned_department_id === currentUser?.department_id && (
-                <Button
-                  type="primary"
-                  size="small"
-                  icon={<CheckCircleOutlined />}
-                  onClick={() => handleQuickAccept(record)}
-                >
-                  {i18n.language === 'en' ? 'Accept' : 'Прийняти'}
-                </Button>
-              )}
-              <Button
-                type="default"
-                size="small"
-                icon={<EyeOutlined />}
-                onClick={() => setViewTicketId(record.id)}
-              >
-                {i18n.language === 'en' ? 'View' : 'Переглянути'}
-              </Button>
-            </>
-          )}
-          {(activeTab === 'inProgress' || activeTab === 'myTickets' || activeTab === 'completed' || activeTab === 'delegated') && (
-            <Button
-              type="default"
-              size="small"
-              icon={<EyeOutlined />}
-              onClick={() => setViewTicketId(record.id)}
-            >
-              {i18n.language === 'en' ? 'View' : 'Переглянути'}
-            </Button>
-          )}
-          {currentUser?.is_admin && (
-            <Button
-              danger
-              size="small"
-              icon={<DeleteOutlined />}
-              onClick={() => {
-                Modal.confirm({
-                  title: 'Видалити тікет?',
-                  content: 'Цю дію неможливо скасувати.',
-                  okText: 'Видалити',
-                  cancelText: 'Скасувати',
-                  okButtonProps: { danger: true },
-                  onOk: async () => {
-                    try {
-                      await ticketsApi.delete(record.id)
-                      message.success('Тікет видалено')
-                      fetchTickets()
-                    } catch {
-                      message.error('Помилка видалення')
-                    }
-                  },
-                })
-              }}
-            />
-          )}
-        </Space>
-      ),
     },
   ]
 
@@ -1020,71 +836,6 @@ export default function IncomingQueue() {
           style: { cursor: 'pointer' }
         })}
       />
-
-      <Modal
-        title={i18n.language === 'en' ? 'Assign Ticket' : 'Призначити тікет'}
-        open={assignModalVisible}
-        onOk={handleAssign}
-        onCancel={() => setAssignModalVisible(false)}
-        confirmLoading={submitting}
-        okText={i18n.language === 'en' ? 'Assign' : 'Призначити'}
-        cancelText={i18n.language === 'en' ? 'Cancel' : 'Скасувати'}
-        width={600}
-      >
-        {selectedTicket && (
-          <div>
-            <div style={{ marginBottom: 16 }}>
-              <Text strong>{t('ticketNumber')}:</Text> {selectedTicket.ticket_number}
-              <br />
-              <Text strong>{t('fields.title')}:</Text> {selectedTicket.title}
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <Text>{i18n.language === 'en' ? 'Select Department' : 'Оберіть відділ'}:</Text>
-              <Select
-                style={{ width: '100%', marginTop: 8 }}
-                placeholder={i18n.language === 'en' ? 'Select department' : 'Оберіть відділ'}
-                allowClear
-                value={selectedDepartmentId}
-                onChange={handleDepartmentChange}
-                options={assignDepartments.map(d => ({
-                  value: d.id,
-                  label: d.name,
-                }))}
-              />
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <Text>{i18n.language === 'en' ? 'Select Assignee' : 'Оберіть виконавця'}:</Text>
-              <Select
-                style={{ width: '100%', marginTop: 8 }}
-                placeholder={i18n.language === 'en' ? 'Select user' : 'Оберіть користувача'}
-                allowClear
-                showSearch
-                optionFilterProp="children"
-                value={selectedUserId}
-                onChange={setSelectedUserId}
-                disabled={!selectedDepartmentId}
-                options={users.map(u => ({
-                  value: u.id,
-                  label: `${u.first_name} ${u.last_name}`,
-                }))}
-              />
-            </div>
-
-            <div>
-              <Text>{i18n.language === 'en' ? 'Comment (optional)' : 'Коментар (необов\'язково)'}:</Text>
-              <TextArea
-                rows={3}
-                value={assignComment}
-                onChange={(e) => setAssignComment(e.target.value)}
-                placeholder={i18n.language === 'en' ? 'Add a comment...' : 'Додайте коментар...'}
-                style={{ marginTop: 8 }}
-              />
-            </div>
-          </div>
-        )}
-      </Modal>
 
       <style>{`
         .new-ticket-row {
