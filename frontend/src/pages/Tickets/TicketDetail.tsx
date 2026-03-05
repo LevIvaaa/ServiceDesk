@@ -1000,6 +1000,11 @@ export default function TicketDetail({ ticketId: propTicketId, isModal = false, 
             {t('common:actions.back')}
           </Button>
         )}
+        {isModal && onClose && (
+          <Button icon={<ArrowLeftOutlined />} onClick={onClose}>
+            {i18n.language === 'en' ? '← All tickets' : '← Всі тікети'}
+          </Button>
+        )}
         {hasPermission('tickets.edit') && canEditTicket() && (
           <Button icon={<EditOutlined />} onClick={openEditModal}>
             {t('common:actions.edit', 'Редагувати')}

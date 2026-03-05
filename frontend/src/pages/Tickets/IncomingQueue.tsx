@@ -86,6 +86,16 @@ export default function IncomingQueue() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [viewTicketId, setViewTicketId] = useState<number | null>(null)
 
+  // Browser back button closes ticket modal
+  useEffect(() => {
+    if (viewTicketId !== null) {
+      window.history.pushState({ ticketModal: true }, '')
+      const onPopState = () => setViewTicketId(null)
+      window.addEventListener('popstate', onPopState)
+      return () => window.removeEventListener('popstate', onPopState)
+    }
+  }, [viewTicketId])
+
   useEffect(() => {
     dayjs.locale(i18n.language)
   }, [i18n.language])
