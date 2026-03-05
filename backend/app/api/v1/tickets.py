@@ -9,7 +9,7 @@ import aiofiles
 from pydantic import BaseModel as PydanticBaseModel
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
-from sqlalchemy import func, select, or_
+from sqlalchemy import Integer, func, select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -47,28 +47,18 @@ router = APIRouter()
 
 
 async def generate_ticket_number(db: AsyncSession) -> str:
-    """Generate unique ticket number: EF-YYYY-NNNNNN with retry logic"""
-    year = datetime.utcnow().year
+    """Generate unique ticket number: simple sequential integer as string"""
     max_retries = 5
     
     for attempt in range(max_retries):
-        # Get the maximum ticket number for this year
+        # Get the maximum numeric ticket number
         result = await db.execute(
-            select(func.max(Ticket.ticket_number))
-            .where(Ticket.ticket_number.like(f"EF-{year}-%"))
+            select(func.max(func.cast(Ticket.ticket_number, Integer)))
         )
         max_number = result.scalar()
         
-        if max_number:
-            # Extract counter from last ticket number
-            try:
-                counter = int(max_number.split('-')[-1]) + 1
-            except (ValueError, IndexError):
-                counter = 1
-        else:
-            counter = 1
-        
-        ticket_number = f"EF-{year}-{counter:06d}"
+        counter = (max_number or 0) + 1
+        ticket_number = str(counter)
         
         # Check if this number already exists
         check_result = await db.execute(
@@ -80,10 +70,9 @@ async def generate_ticket_number(db: AsyncSession) -> str:
         # If exists, try next number
         counter += 1
     
-    # Fallback: use timestamp-based unique number
+    # Fallback
     import time
-    timestamp = int(time.time() * 1000) % 1000000
-    return f"EF-{year}-{timestamp:06d}"
+    return str(int(time.time() * 1000) % 1000000)
 
 
 @router.get("", response_model=PaginatedResponse[TicketListResponse])
