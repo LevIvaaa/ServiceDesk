@@ -11,6 +11,7 @@ import {
   Spin,
   Row,
   Col,
+  Tag,
 } from 'antd'
 import type { UploadFile } from 'antd'
 import {
@@ -334,10 +335,10 @@ export default function CreateTicketNew({ onSuccess, isModal = false }: CreateTi
             {/* Пріоритет */}
             <Form.Item label={<span style={labelStyle}>Пріоритет</span>} name="priority" initialValue="medium" style={{ marginBottom: 12 }}>
               <Select>
-                <Select.Option value="low">Низький</Select.Option>
-                <Select.Option value="medium">Середній</Select.Option>
-                <Select.Option value="high">Високий</Select.Option>
-                <Select.Option value="critical">Критичний</Select.Option>
+                <Select.Option value="low"><Tag color="#52c41a" style={{ marginRight: 0 }}>Низький</Tag></Select.Option>
+                <Select.Option value="medium"><Tag color="#fa8c16" style={{ marginRight: 0 }}>Середній</Tag></Select.Option>
+                <Select.Option value="high"><Tag color="#f5222d" style={{ marginRight: 0 }}>Високий</Tag></Select.Option>
+                <Select.Option value="critical"><Tag color="#8B0000" style={{ marginRight: 0 }}>Критичний</Tag></Select.Option>
               </Select>
             </Form.Item>
 

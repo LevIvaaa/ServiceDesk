@@ -616,10 +616,10 @@ export default function TicketDetail({ ticketId: propTicketId, isModal = false, 
   }
 
   const priorityColors: Record<string, string> = {
-    low: 'green',
-    medium: 'gold',
-    high: 'orange',
-    critical: 'red',
+    low: '#52c41a',
+    medium: '#fa8c16',
+    high: '#f5222d',
+    critical: '#8B0000',
   }
 
   const statusColors: Record<string, string> = {

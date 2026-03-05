@@ -132,10 +132,10 @@ export default function TicketsList() {
   }, [page, filters])
 
   const priorityColors: Record<string, string> = {
-    low: 'green',
-    medium: 'gold',
-    high: 'orange',
-    critical: 'red',
+    low: '#52c41a',
+    medium: '#fa8c16',
+    high: '#f5222d',
+    critical: '#8B0000',
   }
 
   const statusColors: Record<string, string> = {
@@ -326,7 +326,7 @@ export default function TicketsList() {
             >
               {['low', 'medium', 'high', 'critical'].map((priority) => (
                 <Option key={priority} value={priority}>
-                  {t(`priority.${priority}`)}
+                  <Tag color={priorityColors[priority]} style={{ marginRight: 0 }}>{t(`priority.${priority}`)}</Tag>
                 </Option>
               ))}
             </Select>

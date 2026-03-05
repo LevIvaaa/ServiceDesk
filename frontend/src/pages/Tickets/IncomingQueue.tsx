@@ -281,10 +281,10 @@ export default function IncomingQueue() {
   const hasActiveFilters = Object.values(filters).some(v => v !== undefined && v !== '')
 
   const priorityColors: Record<string, string> = {
-    low: 'green',
-    medium: 'gold',
-    high: 'orange',
-    critical: 'red',
+    low: '#52c41a',
+    medium: '#fa8c16',
+    high: '#f5222d',
+    critical: '#8B0000',
   }
 
   const statusColors: Record<string, string> = {
@@ -296,8 +296,8 @@ export default function IncomingQueue() {
   }
 
   const getPriorityIcon = (priority: string) => {
-    if (priority === 'critical') return <FireOutlined style={{ color: '#ff4d4f' }} />
-    if (priority === 'high') return <WarningOutlined style={{ color: '#faad14' }} />
+    if (priority === 'critical') return <FireOutlined style={{ color: '#8B0000' }} />
+    if (priority === 'high') return <WarningOutlined style={{ color: '#f5222d' }} />
     return null
   }
 
@@ -451,7 +451,7 @@ export default function IncomingQueue() {
             >
               {['low', 'medium', 'high', 'critical'].map((priority) => (
                 <Option key={priority} value={priority}>
-                  {t(`priority.${priority}`)}
+                  <Tag color={priorityColors[priority]} style={{ marginRight: 0 }}>{t(`priority.${priority}`)}</Tag>
                 </Option>
               ))}
             </Select>
